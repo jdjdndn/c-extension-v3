@@ -40,6 +40,12 @@ chrome.storage.sync.get(null, function (result) {
     ...result,
     host
   }
+  if (configParams && configParams.mapInfo && !configParams.mapInfo[host]) {
+    configParams.mapInfo[host] = {
+      videoPlayRate: defaultparams.defaultVideoPlayRate
+    }
+  }
+  console.log(configParams, result, 'configParams');
   chrome.storage.sync.set(configParams, function () {});
   commonEvents(configParams)
   copyTargetText()

@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-01-15 15:31:09
+ * @LastEditTime: 2022-01-15 18:28:32
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -40,7 +40,8 @@ let target = null,
   YUCHENG_USE_DELAY = 1000,
   {
     log
-  } = console
+  } = console,
+  noAuxclick = false // auxclick不触发
 YUCHENG_USE_BOX.classList.add('yucheng-use-box')
 YUCHENG_USE_BOX.style.cssText = `
   position: fixed;
@@ -128,7 +129,15 @@ export function mouseClick(configParams = configParamsDefault) {
   window.removeEventListener('pointermove', pointermove)
   window.addEventListener("pointermove", pointermove);
 
+  window.addEventListener('contextmenu', e => {
+    noAuxclick = true
+    setTimeout(() => {
+      noAuxclick = false
+    }, 100)
+  })
+
   window.addEventListener("auxclick", (e) => {
+    if (noAuxclick) return
     const flag = findParentClick(target)
     if (flag) {
       boxInfo('auxclick s')
