@@ -74,7 +74,8 @@ let kIndex, linkObj = {},
   requestObj = {}, //请求参数对象
   requestList = [], //请求参数列表
   maxRecordIndex = 200,
-  configParams = {} // 配置参数对象
+  configParams = {}, // 配置参数对象
+  requestIndex = 0 // 请求条数
 
 function log(...msg) {
   msg.forEach(it => {
@@ -246,110 +247,36 @@ function clearCache(configParams) {
   }, callback);
 }
 // TODO
+const connections = {};
 
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-// background.js
-
-var connections = {};
-
-var cache = {};
+const cache = {};
 
 chrome.runtime.onConnect.addListener(function (port) {
 
-  var extensionListener = function (message, sender, sendResponse) {
-    console.log(message, '-----------------message');
+  const extensionListener = function (message, sender, sendResponse) {
     if (message.name === "init") {
-      var tabId = message.tabId;
-      connections[tabId] = port;
-      if (cache[tabId] && cache[tabId].length) {
-        for (var i = 0; i < cache[tabId].length; i++) {
-          var req = cache[tabId][i];
-          port.postMessage(req);
-        }
-      }
-      return;
+      console.log('init');
+    } else {
+      requestIndex++
+      console.log(message, requestIndex);
     }
+    const tabId = message.tabId;
+    connections[tabId] = port;
+    if (cache[tabId] && cache[tabId].length) {
+      for (let i = 0; i < cache[tabId].length; i++) {
+        const req = cache[tabId][i];
+        port.postMessage(req);
+      }
+    }
+    return;
   }
 
   port.onMessage.addListener(extensionListener);
 
   port.onDisconnect.addListener(function (port) {
     port.onMessage.removeListener(extensionListener);
-    var tabs = Object.keys(connections);
-    for (var i = 0, len = tabs.length; i < len; i++) {
+    const tabs = Object.keys(connections);
+    for (let i = 0, len = tabs.length; i < len; i++) {
       if (connections[tabs[i]] == port) {
         delete connections[tabs[i]]
         break;
@@ -360,7 +287,7 @@ chrome.runtime.onConnect.addListener(function (port) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (sender.tab) {
-    var tabId = sender.tab.id;
+    const tabId = sender.tab.id;
     if (tabId in connections) {
       connections[tabId].postMessage(request);
     } else {

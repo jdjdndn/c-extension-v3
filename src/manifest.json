@@ -41,13 +41,13 @@
     "tabs",
     "activeTab",
     "notifications",
-    "webRequest",
     "storage",
     "fontSettings",
     "bookmarks",
     "browsingData",
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
+    "webRequest",
     "webRequestBlocking"
   ]
 }

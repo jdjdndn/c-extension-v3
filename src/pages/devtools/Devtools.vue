@@ -1,13 +1,12 @@
 <!--
  * @Author: yucheng
  * @Date: 2022-01-15 15:38:39
- * @LastEditTime: 2022-01-15 17:24:37
+ * @LastEditTime: 2022-01-15 18:11:21
  * @LastEditors: yucheng
  * @Description: ...
 -->
 <template>
   <div>
-    <h1>This is the devtools page</h1>
     {{ msg }}
   </div>
 </template>
@@ -17,8 +16,8 @@ export default {
   name: 'Options',
   data() {
     return {
-      title: '',
-      msg: null
+      msg: null,
+      port: null
     };
   },
   mounted() {
@@ -36,8 +35,9 @@ export default {
           const port = chrome.runtime.connect({
             name: 'panel'
           });
+          that.port = port;
           port.postMessage({
-            name: 'init',
+            name: 'from -> devtools, init',
             tabId: chrome.devtools.inspectedWindow.tabId
           });
           port.onMessage.addListener(function (request) {
@@ -71,15 +71,23 @@ export default {
         res.response,
         'onRequestFinished-----------'
       );
+      if (!that.port) return;
+      that.port.postMessage({
+        name: 'from -> devtools',
+        tabId: chrome.devtools.inspectedWindow.tabId,
+        ...res
+      });
     });
-    chrome.devtools.network.onFinished.addListener((res) => {
-      that.log(
-        'onFinished----',
-        res.request,
-        res.response,
-        'onFinished-----------'
-      );
-    });
+    // chrome.devtools.network.onFinished.addListener((res) => {
+    //   that.log(
+    //     'onFinished----',
+    //     // res.request,
+    //     // res.response,
+    //     this,
+    //     that,
+    //     'onFinished-----------'
+    //   );
+    // });
   },
   methods: {
     log(...msg) {
