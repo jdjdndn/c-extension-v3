@@ -1,8 +1,12 @@
 const webpack = require('webpack');
-const { VueLoaderPlugin } = require("vue-loader");
+const {
+  VueLoaderPlugin
+} = require("vue-loader");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const {
+  CleanWebpackPlugin
+} = require("clean-webpack-plugin");
 const autoprefixer = require("autoprefixer");
 const path = require("path");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -13,6 +17,7 @@ var options = {
   entry: {
     "options": path.join(__dirname, 'src', 'pages', 'options', 'options.js'),
     "popup": path.join(__dirname, 'src', 'pages', 'popup', 'popup.js'),
+    "devtools": path.join(__dirname, 'src', 'pages', 'devtools', 'devtools.js'),
     "service-worker": path.join(__dirname, 'src', 'background', 'background.js'),
     // Content Scripts
     contentScript: path.join(__dirname, 'src', 'contents', 'index.js'),
@@ -24,8 +29,7 @@ var options = {
     globalObject: 'this'
   },
   module: {
-    rules: [
-      {
+    rules: [{
         test: /\.js$/,
         exclude: /node_modules/,
         use: [
@@ -98,9 +102,14 @@ var options = {
       chunks: ['popup'],
       cache: false,
     }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, "src", "pages", "devtools", "devtools.html"),
+      filename: 'devtools.html',
+      chunks: ['devtools'],
+      cache: false,
+    }),
     new CopyWebpackPlugin({
-      patterns: [
-        {
+      patterns: [{
           from: path.resolve(__dirname, "src", "manifest.json"),
           to: path.resolve(__dirname, "dist"),
           force: true,
@@ -114,8 +123,16 @@ var options = {
             );
           },
         },
-        { from: 'src/icons', to: 'icons', force: true, },
-        { from: 'src/assets', to: 'assets', force: true, },
+        {
+          from: 'src/icons',
+          to: 'icons',
+          force: true,
+        },
+        {
+          from: 'src/assets',
+          to: 'assets',
+          force: true,
+        },
       ]
     }),
   ],
