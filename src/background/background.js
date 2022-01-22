@@ -75,18 +75,8 @@ let kIndex, linkObj = {},
   requestList = [], //请求参数列表
   maxRecordIndex = 200,
   configParams = {}, // 配置参数对象
-  requestIndex = 0 // 请求条数
-
-function log(...msg) {
-  msg.forEach(it => {
-    if (typeof it === 'string') {
-      console.log('%c' + it, 'color:red;');
-    } else {
-      console.log(it);
-    }
-  })
-}
-log('background start');
+  requestIndex = 0, // 请求条数
+  hasDeleteHerfList = [] // 进入过的网址记录
 
 function handlerRequest(details) {
   // console.log(details, 'details')
@@ -164,13 +154,13 @@ function handlerRequest(details) {
 }
 
 // 拦截请求
-chrome.webRequest.onBeforeRequest.addListener(
-  handlerRequest, {
-    urls: ['<all_urls>'],
-  },
-  // 定义获取哪些权限
-  ['blocking', 'requestBody', 'extraHeaders']
-)
+// chrome.webRequest.onBeforeRequest.addListener(
+//   handlerRequest, {
+//     urls: ['<all_urls>'],
+//   },
+//   // 定义获取哪些权限
+//   ['blocking', 'requestBody', 'extraHeaders']
+// )
 
 // chrome.contextMenus.create({
 //   title: '使用谷歌搜索：%s', // %s表示选中的文字
@@ -189,6 +179,7 @@ chrome.runtime.onMessage.addListener(function notify(
   sender,
   sendResponse
 ) {
+  colectHref(message.href)
   if (message.linkObj) {
     linkObj = {
       ...linkObj,
@@ -211,15 +202,37 @@ chrome.runtime.onMessage.addListener(function notify(
   } else {
     configParams = message
   }
+  if (sender.tab) {
+    const tabId = sender.tab.id;
+    if (tabId in connections) {
+      connections[tabId].postMessage(message);
+    } else {
+      cache[tabId] = cache[tabId] || [];
+      cache[tabId].push(message);
+    }
+  } else {
+    console.log("sender.tab not defined.");
+  }
+  return true
 });
 
 // 获取配置
 chrome.storage.sync.get(null, function (result) {
-  log(result, 'result');
+  console.log(result, 'result');
   configParams = result
   // 清理缓存
   clearCache(configParams)
 })
+
+function colectHref(href) {
+  hasDeleteHerfList = hasDeleteHerfList.filter(it => Boolean)
+  const index = hasDeleteHerfList.findIndex((it => it === href))
+  if (index !== -1) {
+    hasDeleteHerfList.splice(index, 1)
+  }
+  hasDeleteHerfList.unshift(href)
+  console.log('历史记录列表', hasDeleteHerfList);
+}
 
 function clearCache(configParams) {
   const callback = function () {
@@ -283,19 +296,4 @@ chrome.runtime.onConnect.addListener(function (port) {
       }
     }
   });
-});
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (sender.tab) {
-    const tabId = sender.tab.id;
-    if (tabId in connections) {
-      connections[tabId].postMessage(request);
-    } else {
-      cache[tabId] = cache[tabId] || [];
-      cache[tabId].push(request);
-    }
-  } else {
-    console.log("sender.tab not defined.");
-  }
-  return true;
 });

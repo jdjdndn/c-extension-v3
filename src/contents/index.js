@@ -42,6 +42,7 @@ chrome.storage.sync.get(null, function (result) {
   }
   if (configParams && configParams.mapInfo && !configParams.mapInfo[host]) {
     configParams.mapInfo[host] = {
+      ...configParams.mapInfo[host],
       videoPlayRate: defaultparams.defaultVideoPlayRate
     }
   }
@@ -95,15 +96,33 @@ function removeErrListening(configParams) {
   if (!needRecord && script) {
     script.remove()
   }
-  if (needRecord && !script) {
+  if ((needRecord || !host) && !script) {
+    // ajax-hook
+    const ajaxProxyScript = document.createElement('script')
+    ajaxProxyScript.src = chrome.runtime.getURL('js/ajaxHook.js')
+    document.head.appendChild(ajaxProxyScript)
+
     errListening()
+
+    const YUCHENG_PUTDATA_BOX = document.createElement('iframe')
+    YUCHENG_PUTDATA_BOX.classList.add('yucheng-putdata-box')
+    YUCHENG_PUTDATA_BOX.style.cssText = `
+    position:fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+  `
+    YUCHENG_PUTDATA_BOX.src = chrome.runtime.getURL('options.html')
+    document.body.appendChild(YUCHENG_PUTDATA_BOX)
+
   }
 }
 
 function errListening() {
   const script = document.createElement("script");
   script.className = 'yucheng-error-record'
-  script.src = chrome.extension.getURL('../error-record.js')
+  script.src = chrome.runtime.getURL('js/error-record.js')
   document.head.appendChild(script)
 }
 
@@ -1325,7 +1344,8 @@ window.addEventListener('visibilitychange', function (event) {
 function sendMessage(object = {}) {
   object = {
     ...object,
-    host
+    host,
+    href
   }
   try {
     chrome.runtime.sendMessage(object, function (response) {

@@ -133,6 +133,16 @@ var options = {
           to: 'assets',
           force: true,
         },
+        {
+          from: 'src/modules/error-record.js',
+          to: 'js',
+          force: true,
+        },
+        {
+          from: 'src/modules/ajaxHook.js',
+          to: 'js',
+          force: true,
+        },
       ]
     }),
   ],

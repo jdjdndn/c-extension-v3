@@ -30,13 +30,18 @@
     {
       "resources": [
         "assets/*",
-        "modules/common.js",
-        "modules/error-record.js"
+        "js/*",
+        "options.html"
       ],
-      "matches": []
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "<all_urls>"
+      ]
     }
   ],
   "permissions": [
+    "<all_urls>",
     "contextMenus",
     "tabs",
     "activeTab",
@@ -47,7 +52,6 @@
     "browsingData",
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
-    "webRequest",
-    "webRequestBlocking"
+    "webRequest"
   ]
 }

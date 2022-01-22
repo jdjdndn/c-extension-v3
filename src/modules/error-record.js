@@ -1,13 +1,16 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-05 19:02:41
- * @LastEditTime: 2022-01-15 14:58:27
+ * @LastEditTime: 2022-01-22 20:09:29
  * @LastEditors: yucheng
  * @Description: ...
  */
 let YUCHENG_ERROR_BOX = document.createElement('div'),
   YUCHENG_TIMER = null,
   YUCHENG_DELAY = 3000,
+  YUCHENG_RESPONSE = {}, // 响应
+  YUCHENG_REQUEST = {}, // 请求
+  responseURL = '', // 响应地址
   {
     log
   } = console,
@@ -29,6 +32,9 @@ YUCHENG_ERROR_BOX.style.cssText = `
 `
 document.body.appendChild(YUCHENG_ERROR_BOX)
 
+const putDataBox = document.querySelector('.yucheng-putdata-box')
+
+// 收集的请求列表
 let yuchengRequestList = []
 window.addEventListener('keyup', (e) => {
   if (e.keyCode === 13) {
@@ -87,68 +93,73 @@ window.addEventListener('error', e => {
     boxInfo(JSON.stringify(e) + '资源加载失败')
   })
 }, true)
-// 监听请求错误
-function ajaxEventTrigger(event) {
-  var ajaxEvent = new CustomEvent(event, {
-    detail: this
-  });
-  window.dispatchEvent(ajaxEvent);
-}
-let oldXHR = window.XMLHttpRequest;
 
-function newXHR() {
-  var realXHR = new oldXHR();
-  realXHR.addEventListener('abort', function () {
-    ajaxEventTrigger.call(this, 'ajaxAbort');
-  }, false);
-  realXHR.addEventListener('error', function () {
-    ajaxEventTrigger.call(this, 'ajaxError');
-  }, false);
-  realXHR.addEventListener('load', function () {
-    ajaxEventTrigger.call(this, 'ajaxLoad');
-  }, false);
-  realXHR.addEventListener('loadstart', function () {
-    ajaxEventTrigger.call(this, 'ajaxLoadStart');
-  }, false);
-  realXHR.addEventListener('progress', function () {
-    ajaxEventTrigger.call(this, 'ajaxProgress');
-  }, false);
-  realXHR.addEventListener('timeout', function () {
-    ajaxEventTrigger.call(this, 'ajaxTimeout');
-  }, false);
-  realXHR.addEventListener('loadend', function () {
-    ajaxEventTrigger.call(this, 'ajaxLoadEnd');
-  }, false);
-  realXHR.addEventListener('readystatechange', function () {
-    ajaxEventTrigger.call(this, 'ajaxReadyStateChange');
-  }, false);
-  return realXHR;
-}
-window.XMLHttpRequest = newXHR;
-window.addEventListener('ajaxReadyStateChange', function (e) {
-  const status = String(e.detail.status)
-  if (!status.startsWith('2') && (e.detail.responseText || e.detail.responseURL)) {
-    const info = '错误码：' + e.detail.status + '，错误信息：' + e.detail.responseText + '，错误url:' + e.detail.responseURL
-    boxInfo(info)
-  } else {
-    if (e.detail.responseURL && (e.detail.responseText || e.detail.response)) {
-      yuchengRequestList.push({
-        url: e.detail.responseURL,
-        data: JSON.parse(e.detail.responseText || "{}")
-      })
-      if (yuchengRequestList.length > MAX_RECORD_REQUEST_LIST) {
-        const len = yuchengRequestList.length - MAX_RECORD_REQUEST_LIST
-        yuchengRequestList = yuchengRequestList.slice(len)
+ah.hook({
+  //拦截回调
+  onreadystatechange: function (xhr) {
+    // console.log("onreadystatechange called: %O", xhr);
+  },
+  onload: function (xhr) {
+    // console.log("onload called: %O", xhr);
+  },
+  //拦截函数
+  open: function (arg) {
+    // console.log(
+    //   "open called: method:%s,url:%s,async:%s",
+    //   arg[0],
+    //   arg[1],
+    //   arg[2]
+    // );
+    responseURL = arg[1]
+  },
+  send: function (arg, xhr) {
+    putDataBox.contentWindow.postMessage({
+      1997: '5201314',
+      data: {
+        ...arg[0],
+        responseURL,
+        type: 'request'
       }
-      debounce(() => {
-        console.log(yuchengRequestList, '请求对象')
-      }, 100)
+    }, '*')
+    // console.log(
+    //   "send:",
+    //   arg[0]
+    // );
+  },
+  responseText: {
+    getter: tryParseJson2,
+  },
+  response: {
+    getter: tryParseJson2,
+  },
+});
+
+function tryParseJson2(v, xhr) {
+  let data = v
+  for (const k in YUCHENG_RESPONSE) {
+    if (xhr.responseURL.includes(k) && YUCHENG_RESPONSE[k] && YUCHENG_RESPONSE[k].checked) {
+      newV = YUCHENG_RESPONSE[k].data
+      break
     }
   }
-});
-window.addEventListener('ajaxAbort', function (e) {
-  if (e.detail.responseText || e.detail.responseURL) {
-    const info = '错误码：' + e.detail.status + '，错误信息：' + e.detail.responseText + '，错误url:' + e.detail.responseURL
-    boxInfo(info)
+  putDataBox.contentWindow.postMessage({
+    1997: '5201314',
+    data: {
+      data,
+      responseURL: xhr.responseURL,
+      type: 'response'
+    }
+  }, '*')
+  return data;
+}
+
+window.addEventListener('message', (e) => {
+  // console.log(e.data, '收到消息-error');
+  const data = e.data
+  if (data['1997']) {
+    YUCHENG_RESPONSE[data.path] = {
+      data: data.data,
+      checked: data.checked
+    }
   }
 });

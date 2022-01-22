@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-01-15 18:28:32
+ * @LastEditTime: 2022-01-22 18:26:42
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -23,7 +23,7 @@ export const defaultparams = {
   clearTimeList: [1, 3, 7, 30], // 清理缓存事件列表
   clearTime: 1,
   changeEleMiaoBian: false, // 是否开启移入元素加样式
-  noChangeHrefList: ['iflytek', 'zhixue', 'localhost'], // 不跳转其他url列表
+  noChangeHrefList: ['iflytek', 'zhixue', 'localhost', 'google'], // 不跳转其他url列表
   debug: false, // 调试模式
   recordErrorList: ['localhost'], // 记录报错列表
   videoPlayRate: 1.5 // 默认播放速度
@@ -37,11 +37,10 @@ let target = null,
     debug: true
   },
   YUCHENG_USE_BOX = document.createElement('div'),
-  YUCHENG_USE_DELAY = 1000,
-  {
-    log
-  } = console,
-  noAuxclick = false // auxclick不触发
+  YUCHENG_USE_DELAY = 1000
+const {
+  log
+} = console
 YUCHENG_USE_BOX.classList.add('yucheng-use-box')
 YUCHENG_USE_BOX.style.cssText = `
   position: fixed;
@@ -94,13 +93,11 @@ export function mouseClick(configParams = configParamsDefault) {
       const listeners = getEventListeners(item)
       if (listeners && listeners.click) {
         item.click()
-        boxInfo('click s')
         return isClick
       }
     } else if ('click' in item) {
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click()
-      boxInfo('click s')
       return isClick
     }
     const parent = item.parentNode
@@ -121,7 +118,7 @@ export function mouseClick(configParams = configParamsDefault) {
         e.target.style.cssText += 'box-shadow: 0px 0px 1px 1px #ccc;'
       }
       if (!target || !target.nodeName || !target.classList || target.innerText === '') return false
-      logInfo(target.nodeName.toLowerCase(), target.classList, 'target');
+      // console.log(target.nodeName.toLowerCase(), target.classList, 'target');
     })
   }
 
@@ -129,15 +126,14 @@ export function mouseClick(configParams = configParamsDefault) {
   window.removeEventListener('pointermove', pointermove)
   window.addEventListener("pointermove", pointermove);
 
-  window.addEventListener('contextmenu', e => {
-    noAuxclick = true
-    setTimeout(() => {
-      noAuxclick = false
-    }, 100)
-  })
+  // window.addEventListener('contextmenu', e => {
+  //   noAuxclick = true
+  //   setTimeout(() => {
+  //     noAuxclick = false
+  //   }, 100)
+  // })
 
   window.addEventListener("auxclick", (e) => {
-    if (noAuxclick) return
     const flag = findParentClick(target)
     if (flag) {
       boxInfo('auxclick s')

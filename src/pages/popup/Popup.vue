@@ -1,7 +1,7 @@
 <!--
  * @Author: yucheng
  * @Date: 2021-08-31 08:23:13
- * @LastEditTime: 2022-01-15 14:32:38
+ * @LastEditTime: 2022-01-22 18:13:38
  * @LastEditors: yucheng
  * @Description: ...
 -->
@@ -69,8 +69,10 @@
           :key="i"
         ></option>
       </select>
+      <!-- 7、iframe
+      <iframe src="./options.html" frameborder="0"></iframe> -->
     </div>
-    <button @click="openBackground">打开popup页面</button>
+    <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
 </template>
 
