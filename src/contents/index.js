@@ -102,19 +102,28 @@ function removeErrListening(configParams) {
     ajaxProxyScript.src = chrome.runtime.getURL('js/ajaxHook.js')
     document.head.appendChild(ajaxProxyScript)
 
-    errListening()
-
     const YUCHENG_PUTDATA_BOX = document.createElement('iframe')
     YUCHENG_PUTDATA_BOX.classList.add('yucheng-putdata-box')
     YUCHENG_PUTDATA_BOX.style.cssText = `
-    position:fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-  `
+      position:fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      display: none;
+    `
     YUCHENG_PUTDATA_BOX.src = chrome.runtime.getURL('options.html')
     document.body.appendChild(YUCHENG_PUTDATA_BOX)
+
+    let i = 0
+    try {
+      errListening()
+    } catch (error) {
+      i++
+      if (i < 5) {
+        errListening()
+      }
+    }
 
   }
 }

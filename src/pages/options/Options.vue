@@ -9,17 +9,18 @@
       />
       requestData:<input
         type="text"
-        v-model="requestList[i]"
-        @focus="showValue(requestList[i], i, 'request')"
-        @input="showValue(requestList[i], i, 'request')"
+        v-model="responseList[i].requestData"
+        @focus="showValue(responseList[i].requestData, i, 'request')"
+        @input="showValue(responseList[i].requestData, i, 'request')"
       />
       responseData:<input
         type="text"
-        v-model="responseList[i].data"
-        @focus="showValue(responseList[i].data, i, 'response')"
-        @input="showValue(responseList[i].data, i, 'response')"
+        v-model="responseList[i].responseData"
+        @focus="showValue(responseList[i].responseData, i, 'response')"
+        @input="showValue(responseList[i].responseData, i, 'response')"
       />
-      <button @click="put(i)">修改</button>
+      <button @click="put(i, 'request')">改req</button>
+      <button @click="put(i, 'response')">改res</button>
       <button @click="deleteFn(i)">删除</button>
       <input
         type="checkbox"
@@ -57,7 +58,6 @@ export default {
       responseList: [
         {
           path: '/',
-          data: '',
           checked: true,
           responseData: '',
           requestData: ''
@@ -67,7 +67,8 @@ export default {
       checked: true,
       allGetList: [], // 请求参数与响应结果组成的数组
       inputValue: '', // 激活输入框的内容在大框里展示
-      originInputSite: {} // 记录激活的输入框
+      originInputSite: {}, // 记录激活的输入框
+      obj: {} // 收集请求地址为k,请求参数跟响应结果为value的对象
     };
   },
   mounted() {
@@ -83,9 +84,9 @@ export default {
       let { originInputSite } = this;
       const { i, type } = originInputSite;
       if (type === 'request') {
-        this.requestList[i] = value;
+        this.responseList[i].requestData = value;
       } else if (type === 'response') {
-        this.responseList[i].data = value;
+        this.responseList[i].responseData = value;
       } else if (type === 'path') {
         this.responseList[i].path = e.target.value;
       }
@@ -111,22 +112,94 @@ export default {
     },
     // 增
     add() {
-      this.responseList.push({ path: '/', data: '', checked: true });
+      this.responseList.push({
+        path: '/',
+        checked: true,
+        responseData: '',
+        requestData: ''
+      });
     },
     // 删
     deleteFn(i) {
       this.responseList.splice(i, 1);
     },
-    // 改
-    put(i) {
-      this.postMessage(this.responseList[i]);
+    // 改 请求参数 或者 响应结果
+    put(i, type) {
+      if (type === 'request') {
+        this.postMessage({
+          ...this.filterObjKey(this.responseList[i], 'responseData'),
+          type
+        });
+      } else {
+        this.postMessage({
+          ...this.filterObjKey(this.responseList[i], 'requestData'),
+          type
+        });
+      }
+    },
+    // 过滤对象的某个属性
+    filterObjKey(obj, k) {
+      const newObj = {};
+      for (const i in obj) {
+        if (i !== k) {
+          newObj[i] = obj[i];
+        }
+      }
+      return newObj;
     },
     message(e) {
-      console.log(e.data, '收到消息-options');
+      // console.log(e.data, '收到消息-options');
       const data = e.data;
       if (data['1997']) {
-        this.requestList.push(JSON.stringify(data.data));
+        // this.responseList.push(JSON.stringify(data.data));
+        this.allGetList.push(data.data);
+        console.log('====================================');
+        console.log(this.allGetList);
+        console.log('====================================');
+        this.changeResponseList();
       }
+    },
+    // 根据请求结果 修改 responseList
+    changeResponseList() {
+      const { obj } = this;
+      this.allGetList.forEach((it) => {
+        if (!obj[it.responseURL]) {
+          const newObj = {};
+          if (it.type === 'request') {
+            newObj.requestData = it.data;
+          } else {
+            newObj.responseData = it.data;
+          }
+          obj[it.responseURL] = {
+            responseURL: it.responseURL,
+            type: it.type,
+            ...newObj
+          };
+        } else if (obj[it.responseURL].type) {
+          if (
+            obj[it.responseURL].type === 'request' &&
+            it.type === 'response'
+          ) {
+            obj[it.responseURL].responseData = it.data;
+          } else if (
+            obj[it.responseURL].type === 'response' &&
+            it.type === 'request'
+          ) {
+            obj[it.responseURL].requestData = it.data;
+          }
+        }
+      });
+      const list = [];
+      for (const k in obj) {
+        list.push({
+          ...obj[k],
+          requestData: JSON.stringify(obj[k].requestData),
+          responseData: JSON.stringify(obj[k].responseData),
+          path: obj[k].responseURL,
+          checked: this.checked
+        });
+      }
+      this.responseList = list;
     },
     // 发消息
     postMessage(data) {
@@ -152,6 +225,7 @@ export default {
 * {
   margin: 0;
   padding: 0;
+  font-family: arial, x-locale-body, sans-serif;
 }
 html,
 body {
