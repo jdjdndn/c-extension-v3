@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-05 19:02:41
- * @LastEditTime: 2022-01-23 12:39:18
+ * @LastEditTime: 2022-01-23 13:11:50
  * @LastEditors: yucheng
  * @Description: ...
  */
@@ -37,7 +37,7 @@ document.body.appendChild(YUCHENG_ERROR_BOX)
 
 // 收集的请求列表
 let yuchengRequestList = []
-window.addEventListener('keyup', (e) => {
+const keyup = (e) => {
   if (e.keyCode === 13) {
     clearTimeout(YUCHENG_TIMER);
     YUCHENG_ERROR_BOX.style.display = 'none'
@@ -49,7 +49,8 @@ window.addEventListener('keyup', (e) => {
       YUCHENG_PUTDATA_BOX.style.display = 'none'
     }
   }
-})
+}
+window.addEventListener('keyup', keyup)
 
 function debounce(fn, YUCHENG_DELAY = 16) {
   if (YUCHENG_TIMER) {
@@ -137,10 +138,10 @@ ah.hook({
       responseURL,
       type: 'request'
     })
-    console.log(
-      "send:",
-      arg
-    );
+    // console.log(
+    //   "send:",
+    //   arg
+    // );
   },
   responseText: {
     getter: tryParseJson2,

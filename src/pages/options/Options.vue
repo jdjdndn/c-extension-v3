@@ -35,7 +35,7 @@
       <textarea
         name=""
         id=""
-        cols="68"
+        cols="67"
         rows="5"
         v-model="inputValue"
         @input="changeOriginValue"
@@ -153,9 +153,6 @@ export default {
       if (data['1997']) {
         // this.responseList.push(JSON.stringify(data.data));
         this.allGetList.push(data.data);
-        console.log('====================================');
-        console.log(this.allGetList);
-        console.log('====================================');
         this.changeResponseList();
       }
     },
