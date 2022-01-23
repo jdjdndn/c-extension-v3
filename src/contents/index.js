@@ -115,7 +115,7 @@ function removeErrListening(configParams) {
     YUCHENG_PUTDATA_BOX.src = chrome.runtime.getURL('options.html')
     document.body.appendChild(YUCHENG_PUTDATA_BOX)
 
-    errListening()
+    setTimeout(errListening, 0)
   }
 }
 
