@@ -297,7 +297,7 @@ function videoPlay(rate = 1.5, index = 0) {
   const video = $('video')
   if (video) {
     const realRate = Number(rate) === rate ? rate : 1.5
-    if (video.playbackRate === realRate) {
+    if (video.playbackRate === realRate && video.paused) {
       video.play()
       return false
     } else {
@@ -497,14 +497,12 @@ const list = {
   },
   'www.4hu.tv': {
     callback: hu4tv,
-    hasVideo: true
   },
   'www.csdn.net': {
     callback: csdn,
   },
   'www.youtube.com': {
     callback: youtube,
-    hasVideo: true,
     scroll: '#primary .style-scope #contents'
   },
   'developer.mozilla.org': {
@@ -538,20 +536,20 @@ const list = {
   },
   'cn.pornhub.com': {
     callback: pornhub,
-    hasVideo: true
+
   },
   'www.yyyweb.com': {
     callback: yyyweb,
   },
   'yt5.tv': {
     callback: yt5,
-    hasVideo: true
+
   },
   '360yy.cn': {
-    hasVideo: true
+
   },
   'www.tiktok.com': {
-    hasVideo: true
+
   },
   'www.qidian.com': {
     callback: qidian
@@ -664,10 +662,6 @@ function main() {
         window.addEventListener('keydown', loadData)
       }
 
-      if (list[k].hasVideo) {
-        videoPlay()
-      }
-
       const callback = function (mutationsList, observer) {
         logInfo('回调执行-observer', )
         list[k].callback(params)
@@ -677,8 +671,8 @@ function main() {
       break
     }
   }
-
 }
+videoPlay()
 main()
 // iflytek自动登录
 function iflytek() {

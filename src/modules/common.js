@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-01-22 18:26:42
+ * @LastEditTime: 2022-02-08 10:25:24
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -37,7 +37,10 @@ let target = null,
     debug: true
   },
   YUCHENG_USE_BOX = document.createElement('div'),
-  YUCHENG_USE_DELAY = 1000
+  YUCHENG_USE_DELAY = 1000,
+  BLACK = '_blank',
+  YUCHENG_ALINK = document.createElement('a')
+YUCHENG_ALINK.target = BLACK
 const {
   log
 } = console
@@ -89,7 +92,12 @@ export function mouseClick(configParams = configParamsDefault) {
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick
     // 获取元素上的监听事件
-    if (typeof getEventListeners === 'function') {
+    if (item.nodeName === 'A' && item.target !== BLACK) {
+      // 开一个新窗口
+      YUCHENG_ALINK.href = item.href
+      YUCHENG_ALINK.click()
+      return isClick
+    } else if (typeof getEventListeners === 'function') {
       const listeners = getEventListeners(item)
       if (listeners && listeners.click) {
         item.click()
