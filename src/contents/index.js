@@ -11,6 +11,7 @@ let performance_now = performance.now(),
   linkObj = {},
   timer = null,
   win = '',
+  youtubeFlag = false, // YouTube中文翻译只设置一次
   configParams = {
     mapInfo: {}
   } // popup配置参数
@@ -262,9 +263,14 @@ function hideArrList(classList, badge) {
 
 // 设置样式
 function setStyle(str, css) {
-  const strObj = document.querySelector(str)
-  if (strObj) {
-    strObj.style.cssText = css
+  if (str instanceof HTMLElement) {
+    const oldCssText = str.style.cssText
+    str.style.cssText = css + oldCssText
+  } else {
+    const strObj = document.querySelector(str)
+    if (strObj) {
+      strObj.style.cssText = css
+    }
   }
 }
 // 节流
@@ -883,8 +889,60 @@ function csdn() {}
 // youtube
 function youtube() {
   setStyle('.html5-video-player', 'display: block')
-  // const linkList = [...getDomList('.ytd-rich-grid-renderer #meta #video-title-link'), ...getDomList('.ytd-watch-next-secondary-results-renderer #dismissible .metadata a')]
-  // addLinkListBox(linkList, 'youtube-toolbox')
+  if (youtubeFlag) return
+  const zimuShowBtn = $('.ytp-subtitles-button.ytp-button')
+  if (zimuShowBtn.ariaPressed !== 'true') {
+    zimuShowBtn.click()
+  }
+  // 打开面板
+  const pannel = $('.ytp-button.ytp-settings-button')
+  pannel && pannel.click()
+  // 左侧  字幕（1）
+  const zimuTxt = [...$$('.ytp-menuitem-label')]
+  let zimuTxtBtn = null,
+    playRateBtn = null
+  // if (!zimuTxt.length) return youtubeFlag = true
+  zimuTxt.forEach(t => {
+    if (t.innerText.includes('字幕')) {
+      zimuTxtBtn = t
+    }
+    if (t.innerText.includes('播放速度')) {
+      playRateBtn = t
+    }
+    console.log(t.innerText, '----', playRateBtn);
+  })
+  // 设置播放速度
+  if (playRateBtn) {
+    playRateBtn.click()
+    const playRateList = [...$$('.ytp-menuitem')]
+    playRateList.forEach(t => {
+      console.log(configParams.mapInfo[host], 'configParams.mapInfo[host].videoPlayRate');
+      if (t.innerText.includes((configParams.mapInfo[host] && configParams.mapInfo[host].videoPlayRate) || defaultparams.videoPlayRate)) {
+        t.click()
+      }
+    })
+    youtubeFlag = true
+  }
+  // 设置中文
+  if (zimuTxtBtn) {
+    const parentBox = zimuTxtBtn.parentNode
+    if (parentBox.querySelector('.ytp-menuitem-content').innerText.includes('中文')) {
+      return youtubeFlag = true
+    }
+    parentBox.click()
+    console.log('当前不是中文字幕');
+    const languateBtnList = [...$$('.ytp-menuitem')]
+    languateBtnList.some(t => {
+      if (t.innerText.includes('中文')) {
+        t.click()
+        return true
+      } else {
+        return false
+      }
+    })
+    youtubeFlag = true
+  }
+  pannel.click()
 }
 
 function mdn({
