@@ -892,9 +892,13 @@ function youtube() {
   if (youtubeFlag) return
   const zimuShowBtn = $('.ytp-subtitles-button.ytp-button')
   if (zimuShowBtn.ariaPressed !== 'true') {
+    console.log(zimuShowBtn.ariaPressed, 'zimuShowBtn.ariaPressed');
     zimuShowBtn.click()
   }
-  // 打开面板
+  // 字幕文本
+  const zimuText = $('.captions-text')
+  if (zimuText) return false
+  // 打开面板按钮
   const pannel = $('.ytp-button.ytp-settings-button')
   pannel && pannel.click()
   // 左侧  字幕（1）
@@ -909,14 +913,12 @@ function youtube() {
     if (t.innerText.includes('播放速度')) {
       playRateBtn = t
     }
-    console.log(t.innerText, '----', playRateBtn);
   })
   // 设置播放速度
   if (playRateBtn) {
     playRateBtn.click()
     const playRateList = [...$$('.ytp-menuitem')]
     playRateList.forEach(t => {
-      console.log(configParams.mapInfo[host], 'configParams.mapInfo[host].videoPlayRate');
       if (t.innerText.includes((configParams.mapInfo[host] && configParams.mapInfo[host].videoPlayRate) || defaultparams.videoPlayRate)) {
         t.click()
       }
@@ -932,17 +934,36 @@ function youtube() {
     parentBox.click()
     console.log('当前不是中文字幕');
     const languateBtnList = [...$$('.ytp-menuitem')]
+    let needChooseLanguage = false
     languateBtnList.some(t => {
       if (t.innerText.includes('中文')) {
         t.click()
+        return true
+      } else if (t.innerText.includes('自动翻译')) {
+        console.log(t.innerText, 't.innerText');
+        t.click()
+        needChooseLanguage = true
         return true
       } else {
         return false
       }
     })
+    console.log(needChooseLanguage, 'needChooseLanguage');
+    // 自动翻译要多走一步
+    if (needChooseLanguage) {
+      const languateBtnList2 = [...$$('.ytp-menuitem')]
+      languateBtnList2.some(t => {
+        if (t.innerText.includes('中文（简体）')) {
+          t.click()
+          return true
+        }
+        return false
+      })
+    }
+    $$('.ytp-panel')[0].style.display = 'none'
+    pannel.click()
     youtubeFlag = true
   }
-  pannel.click()
 }
 
 function mdn({
