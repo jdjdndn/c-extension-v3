@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-02-08 10:25:24
+ * @LastEditTime: 2022-02-13 11:53:24
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -37,10 +37,10 @@ let target = null,
     debug: true
   },
   YUCHENG_USE_BOX = document.createElement('div'),
-  YUCHENG_USE_DELAY = 1000,
-  BLACK = '_blank',
-  YUCHENG_ALINK = document.createElement('a')
-YUCHENG_ALINK.target = BLACK
+  YUCHENG_USE_DELAY = 1000
+// BLACK = '_blank',
+// YUCHENG_ALINK = document.createElement('a')
+// YUCHENG_ALINK.target = BLACK
 const {
   log
 } = console
@@ -92,12 +92,13 @@ export function mouseClick(configParams = configParamsDefault) {
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick
     // 获取元素上的监听事件
-    if (item.nodeName === 'A' && item.target !== BLACK) {
-      // 开一个新窗口
-      YUCHENG_ALINK.href = item.href
-      YUCHENG_ALINK.click()
-      return isClick
-    } else if (typeof getEventListeners === 'function') {
+    // if (item.nodeName === 'A' && item.target !== BLACK) {
+    //   // 开一个新窗口
+    //   YUCHENG_ALINK.href = item.href
+    //   YUCHENG_ALINK.click()
+    //   return isClick
+    // } else
+    if (typeof getEventListeners === 'function') {
       const listeners = getEventListeners(item)
       if (listeners && listeners.click) {
         item.click()
@@ -125,6 +126,16 @@ export function mouseClick(configParams = configParamsDefault) {
         targetCssText = e.target.style.cssText
         e.target.style.cssText += 'box-shadow: 0px 0px 1px 1px #ccc;'
       }
+      if (target.nodeName === 'IFRAME') {
+        console.log(target, 'iframe-target');
+        const targetWin = target.contentWindow
+        if (targetWin) {
+          targetWin.addEventListener('pointermove', pointermove)
+          targetWin.onload = function () {
+            console.log('targetWin-load');
+          }
+        }
+      }
       if (!target || !target.nodeName || !target.classList || target.innerText === '') return false
       // console.log(target.nodeName.toLowerCase(), target.classList, 'target');
     })
@@ -134,6 +145,17 @@ export function mouseClick(configParams = configParamsDefault) {
   window.removeEventListener('pointermove', pointermove)
   window.addEventListener("pointermove", pointermove);
 
+  const iframes = [...document.querySelectorAll('iframe')]
+  iframes.forEach(it => {
+    it.onload = function () {
+      const targetWin = it.contentWindow
+      if (targetWin) {
+        targetWin.addEventListener('pointermove', pointermove)
+      }
+    }
+  })
+
+
   // window.addEventListener('contextmenu', e => {
   //   noAuxclick = true
   //   setTimeout(() => {
@@ -141,14 +163,14 @@ export function mouseClick(configParams = configParamsDefault) {
   //   }, 100)
   // })
 
-  window.addEventListener("auxclick", (e) => {
-    const flag = findParentClick(target)
-    if (flag) {
-      boxInfo('auxclick s')
-    } else {
-      boxInfo('auxclick e')
-    }
-  });
+  // window.addEventListener("auxclick", (e) => {
+  //   const flag = findParentClick(target)
+  //   if (flag) {
+  //     boxInfo('auxclick s')
+  //   } else {
+  //     boxInfo('auxclick e')
+  //   }
+  // });
 
   function keyup(e) {
     const code = e.keyCode;
