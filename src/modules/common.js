@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-02-13 11:53:24
+ * @LastEditTime: 2022-02-22 21:26:38
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -29,6 +29,9 @@ export const defaultparams = {
   videoPlayRate: 1.5 // 默认播放速度
 }
 import './index.scss'
+import {
+  gotoLink
+} from '../contents/index'
 let target = null,
   timer = null,
   targetCssText = null,
@@ -114,6 +117,30 @@ export function mouseClick(configParams = configParamsDefault) {
     return !isClick
   }
 
+  // 跳转方法
+  function gotoLink(href) {
+    const a = document.createElement('a')
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer nofollow'
+    a.href = href
+    a.click()
+    a.remove()
+  }
+
+  // 从子孙往上找，直到找到可以点击的a链接
+  function findParentAClick(item, index = 0) {
+    if (!item) return
+    index++
+    if (index > 10) {
+      return
+    }
+    if (item.nodeName === 'A') {
+      return gotoLink(item.href)
+    }
+    const parent = item.parentNode
+    findParentAClick(parent, index)
+  }
+
   function pointermove(e) {
     moveObj.debounce(() => {
       if (configParams.changeEleMiaoBian) {
@@ -127,12 +154,12 @@ export function mouseClick(configParams = configParamsDefault) {
         e.target.style.cssText += 'box-shadow: 0px 0px 1px 1px #ccc;'
       }
       if (target.nodeName === 'IFRAME') {
-        console.log(target, 'iframe-target');
         const targetWin = target.contentWindow
         if (targetWin) {
-          targetWin.addEventListener('pointermove', pointermove)
-          targetWin.onload = function () {
-            console.log('targetWin-load');
+          try {
+            targetWin.addEventListener('pointermove', pointermove)
+          } catch (error) {
+            boxInfo('iframe e')
           }
         }
       }
@@ -193,6 +220,11 @@ export function mouseClick(configParams = configParamsDefault) {
       //处理的部分
       boxInfo('forward')
       history.go(1)
+    }
+    console.log(777, '----------', target);
+    // alt + x 点击打开新页面
+    if (e.altKey && code === 88 && target) {
+      findParentAClick(target)
     }
   }
 

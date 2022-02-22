@@ -76,7 +76,8 @@ let kIndex, linkObj = {},
   maxRecordIndex = 200,
   configParams = {}, // 配置参数对象
   requestIndex = 0, // 请求条数
-  hasDeleteHerfList = [] // 进入过的网址记录
+  hasDeleteHerfList = [], // 进入过的网址记录
+  windowList = [] // window列表
 
 function handlerRequest(details) {
   // console.log(details, 'details')
@@ -297,3 +298,13 @@ chrome.runtime.onConnect.addListener(function (port) {
     }
   });
 });
+
+chrome.windows.getAll({
+  populate: true
+}, (a) => {
+  windowList = []
+  a.forEach(it => {
+    windowList.push(...it.tabs)
+  })
+  console.log(windowList, 'windowList');
+})

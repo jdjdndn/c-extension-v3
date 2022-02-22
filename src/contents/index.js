@@ -605,6 +605,12 @@ const list = {
   },
   'v3.vuejs.org': {
     rehref: 'https://v3.cn.vuejs.org'
+  },
+  'www.bqxs520.com': {
+    callback: biquge520
+  },
+  'www.007hdys.com': {
+    callback: hdys007
   }
 }
 
@@ -678,8 +684,30 @@ function main() {
     }
   }
 }
-videoPlay()
 main()
+
+// 007影视
+function hdys007() {
+  const iframe = $('#player_swf')
+  if (iframe) {
+    // gotoLink(iframe.src)
+    console.log(iframe.src, '------');
+  }
+}
+
+// 笔趣阁
+function biquge520() {
+  // const contentDom = $('.box_con')
+  // if (contentDom) {
+  //   const newContentDom = contentDom.cloneNode(true)
+  //   // console.log(newContentDom.innerText, '--');
+  //   document.body.appendChild(newContentDom)
+  // }
+  // const classList = ['box_con']
+  // removeArrList(classList, '.')
+  // setStyle('.box_con', 'display:none;')
+}
+
 // iflytek自动登录
 function iflytek() {
   // const loginBtn = document.querySelector('.user-btn')
@@ -1036,6 +1064,10 @@ function juejin() {
   rmSomeSelf('.entry-list>.item', '.tag')
   // const linkList = [...getDomList('.content-wrapper .title-row a'), ...getDomList('.result-list .item .title-row a')]
   // addLinkListBox(linkList, 'juejin-toolbox')
+  const a = $('.like-btn.panel-btn.like-adjust')
+  if (!a.classList.contains('active')) {
+    a.click()
+  }
 }
 // 简书
 function jianshu() {
