@@ -686,6 +686,69 @@ function main() {
 }
 main()
 
+function base64ToBlob(base64Data) {
+  let arr = base64Data.split(','),
+    fileType = arr[0].match(/:(.*?);/)[1],
+    bstr = atob(arr[1]),
+    l = bstr.length,
+    u8Arr = new Uint8Array(l);
+
+  while (l--) {
+    u8Arr[l] = bstr.charCodeAt(l);
+  }
+  return new Blob([u8Arr], {
+    type: fileType
+  });
+}
+
+function getWebUrl(file) {
+  let url = null;
+  if (window.createObjectURL != undefined) { // basic
+    url = window.createObjectURL(file);
+  } else if (window.URL != undefined) { // mozilla(firefox)
+    url = window.URL.createObjectURL(file);
+  } else if (window.webkitURL != undefined) { // webkit or chrome
+    url = window.webkitURL.createObjectURL(file);
+  }
+  return url;
+}
+
+function keyUp(e) {
+  const code = e.keyCode
+  // ctrl + , 下载所有图片
+  if (e.ctrlKey && code === 188) {
+    let downloadImgList = [],
+      type = null
+    const imgList = [...$$('img')].map(it => it.dataset.src || it.src).filter(Boolean)
+    imgList.forEach(t => {
+      let url = null
+      if (t.startsWith('data')) {
+        let start = t.indexOf('/')
+        let end = t.indexOf(';')
+        if (start !== -1 && end !== -1) {
+          type = t.slice(start + 1, end)
+        }
+        url = getWebUrl(base64ToBlob(t))
+      } else if (t.startsWith('blob')) {
+        url = getWebUrl(t)
+      } else if (t.startsWith('http')) {
+        url = t
+      }
+      downloadImgList.push(url)
+    })
+    downloadImgList.forEach((t, i) => {
+      const imgDom = document.createElement('a')
+      imgDom.href = t
+      const date = new Date()
+      imgDom.download = date.toLocaleDateString() + '-' + date.toLocaleTimeString() + '-' + Math.random() + i + '.' + type
+      imgDom.click()
+      imgDom.remove()
+    })
+  }
+}
+window.removeEventListener('keydown', keyUp)
+window.addEventListener('keydown', keyUp)
+
 // 007影视
 function hdys007() {
   const iframe = $('#player_swf')
@@ -1065,7 +1128,7 @@ function juejin() {
   // const linkList = [...getDomList('.content-wrapper .title-row a'), ...getDomList('.result-list .item .title-row a')]
   // addLinkListBox(linkList, 'juejin-toolbox')
   const a = $('.like-btn.panel-btn.like-adjust')
-  if (!a.classList.contains('active')) {
+  if (a && !a.classList.contains('active')) {
     a.click()
   }
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-02-22 21:26:38
+ * @LastEditTime: 2022-02-25 22:03:59
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -29,9 +29,7 @@ export const defaultparams = {
   videoPlayRate: 1.5 // 默认播放速度
 }
 import './index.scss'
-import {
-  gotoLink
-} from '../contents/index'
+
 let target = null,
   timer = null,
   targetCssText = null,
@@ -127,6 +125,21 @@ export function mouseClick(configParams = configParamsDefault) {
     a.remove()
   }
 
+  // 旧链接拿到新链接，没有返回 '
+  function hrefChange(href) {
+    let newHref = href
+    if (otherSiteHref(href)) {
+      newHref = href.slice(href.lastIndexOf('http'))
+    }
+    return decodeURIComponent(newHref)
+  }
+
+  // 判断网址是否需要跳转
+  function otherSiteHref(href) {
+    return href.indexOf('http') !== href.lastIndexOf('http')
+  }
+
+
   // 从子孙往上找，直到找到可以点击的a链接
   function findParentAClick(item, index = 0) {
     if (!item) return
@@ -135,7 +148,7 @@ export function mouseClick(configParams = configParamsDefault) {
       return
     }
     if (item.nodeName === 'A') {
-      return gotoLink(item.href)
+      return gotoLink(hrefChange(item.href))
     }
     const parent = item.parentNode
     findParentAClick(parent, index)
@@ -221,7 +234,6 @@ export function mouseClick(configParams = configParamsDefault) {
       boxInfo('forward')
       history.go(1)
     }
-    console.log(777, '----------', target);
     // alt + x 点击打开新页面
     if (e.altKey && code === 88 && target) {
       findParentAClick(target)
@@ -348,18 +360,4 @@ export function autoSelect() {
       clipboardWrite(window.getSelection().toString(), true)
     }, 1000)
   })
-}
-
-// 旧链接拿到新链接，没有返回 ''
-function hrefChange(href) {
-  let newHref = ''
-  if (otherSiteHref(href)) {
-    newHref = href.slice(href.lastIndexOf('http'))
-  }
-  return decodeURIComponent(newHref)
-}
-
-// 判断网址是否需要跳转
-function otherSiteHref(href) {
-  return href.indexOf('http') !== href.lastIndexOf('http')
 }
