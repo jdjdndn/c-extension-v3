@@ -1,12 +1,13 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-02-25 22:03:59
+ * @LastEditTime: 2022-02-27 19:00:47
  * @LastEditors: yucheng
  * @Description: ..
  */
 export const defaultparams = {
   defaultVideoPlayRate: 1.5,
+  defaultFanyiFlag: false,
   configParamsBacket: {}, // 深拷贝所有配置参数
   mapInfo: {}, // content对象信息
   host: '', // location.host
@@ -38,7 +39,8 @@ let target = null,
     debug: true
   },
   YUCHENG_USE_BOX = document.createElement('div'),
-  YUCHENG_USE_DELAY = 1000
+  YUCHENG_USE_DELAY = 1000,
+  contentMenuEventsFlag = false // 是否contentmenu事件
 // BLACK = '_blank',
 // YUCHENG_ALINK = document.createElement('a')
 // YUCHENG_ALINK.target = BLACK
@@ -79,11 +81,7 @@ class Util {
 
 // noClose 为 false 时，不关闭
 export function boxInfo(info, noClose = true) {
-  YUCHENG_USE_BOX.innerHTML = info
-  YUCHENG_USE_BOX.style.display = 'block'
-  noClose && setTimeout(() => {
-    YUCHENG_USE_BOX.style.display = 'none'
-  }, YUCHENG_USE_DELAY)
+  return false
 }
 
 // shift + space 实现点击鼠标所在位置
@@ -177,7 +175,6 @@ export function mouseClick(configParams = configParamsDefault) {
         }
       }
       if (!target || !target.nodeName || !target.classList || target.innerText === '') return false
-      // console.log(target.nodeName.toLowerCase(), target.classList, 'target');
     })
   }
 
@@ -185,7 +182,7 @@ export function mouseClick(configParams = configParamsDefault) {
   window.removeEventListener('pointermove', pointermove)
   window.addEventListener("pointermove", pointermove);
 
-  const iframes = [...document.querySelectorAll('iframe')]
+  const iframes = [...document.querySelectorAll('iframe')].filter(it => !it.src.startsWith('chrome-extension'))
   iframes.forEach(it => {
     it.onload = function () {
       const targetWin = it.contentWindow
@@ -196,21 +193,17 @@ export function mouseClick(configParams = configParamsDefault) {
   })
 
 
-  // window.addEventListener('contextmenu', e => {
-  //   noAuxclick = true
-  //   setTimeout(() => {
-  //     noAuxclick = false
-  //   }, 100)
-  // })
+  window.addEventListener('contextmenu', e => {
+    contentMenuEventsFlag = true
+  })
 
-  // window.addEventListener("auxclick", (e) => {
-  //   const flag = findParentClick(target)
-  //   if (flag) {
-  //     boxInfo('auxclick s')
-  //   } else {
-  //     boxInfo('auxclick e')
-  //   }
-  // });
+  window.addEventListener("auxclick", (e) => {
+    setTimeout(() => {
+      if (contentMenuEventsFlag) return
+      contentMenuEventsFlag = false
+      findParentClick(target)
+    }, 100)
+  });
 
   function keyup(e) {
     const code = e.keyCode;

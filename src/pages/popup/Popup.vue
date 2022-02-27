@@ -1,7 +1,7 @@
 <!--
  * @Author: yucheng
  * @Date: 2021-08-31 08:23:13
- * @LastEditTime: 2022-01-22 18:13:38
+ * @LastEditTime: 2022-02-27 15:43:03
  * @LastEditors: yucheng
  * @Description: ...
 -->
@@ -71,6 +71,15 @@
       </select>
       <!-- 7、iframe
       <iframe src="./options.html" frameborder="0"></iframe> -->
+      <div class="popup-item">
+        7、开启翻译
+        <label for="e" @click="changeFanyi(true)"
+          >开<input id="e" type="radio" name="e" :checked="debug"
+        /></label>
+        <label for="f" @click="changeFanyi()"
+          >关<input id="f" type="radio" name="e" :checked="!debug"
+        /></label>
+      </div>
     </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
@@ -102,6 +111,16 @@ export default {
     this.start();
   },
   methods: {
+    // 开启翻译
+    changeFanyi(fanyiFlag = false) {
+      console.log(fanyiFlag);
+      const { host, mapInfo, noChangeLog } = this;
+      if (!mapInfo || !mapInfo[host]) return false;
+      if (mapInfo[host].fanyiFlag === fanyiFlag)
+        return noChangeLog('不需要切换');
+      mapInfo[host].fanyiFlag = fanyiFlag;
+      this.saveAndSend({ fanyiFlag });
+    },
     start() {
       chrome.windows.getAll({ populate: true }, function (windowList) {
         console.log(windowList, 'windowList');
@@ -206,7 +225,19 @@ export default {
     },
     // 分割并替换逗号
     replaceComma(val) {
-      return val.replaceAll('，', ',').split(',').filter(Boolean);
+      const strList = val
+        .replaceAll('，', ',')
+        .split(',')
+        .map((t) => {
+          let newT = '';
+          if (t.includes('\n')) {
+            newT = t.split('\n')[0];
+          } else {
+            newT = t;
+          }
+          return newT;
+        });
+      return strList;
     },
     // 保存参数并且发消息
     saveAndSend(payload) {

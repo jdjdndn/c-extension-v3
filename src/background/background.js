@@ -77,7 +77,8 @@ let kIndex, linkObj = {},
   configParams = {}, // 配置参数对象
   requestIndex = 0, // 请求条数
   hasDeleteHerfList = [], // 进入过的网址记录
-  windowList = [] // window列表
+  windowList = [], // window列表
+  hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/
 
 function handlerRequest(details) {
   // console.log(details, 'details')
@@ -180,6 +181,7 @@ chrome.runtime.onMessage.addListener(function notify(
   sender,
   sendResponse
 ) {
+  console.log(message, '------message---------');
   colectHref(message.href)
   if (message.linkObj) {
     linkObj = {
@@ -189,7 +191,7 @@ chrome.runtime.onMessage.addListener(function notify(
     // 这种只分类一次
     const newLinkObj = {}
     for (const k in linkObj) {
-      if (!k) continue
+      if (!k || !hrefReg.test(k)) continue
       const {
         origin
       } = new URL(k)

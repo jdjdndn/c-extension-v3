@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-05 19:02:41
- * @LastEditTime: 2022-01-23 13:11:50
+ * @LastEditTime: 2022-02-27 10:58:02
  * @LastEditors: yucheng
  * @Description: ...
  */
@@ -21,8 +21,8 @@ YUCHENG_ERROR_BOX.classList.add('yucheng-error-box')
 YUCHENG_ERROR_BOX.style.cssText = `
   position: fixed;
   display: none;
-  width: 400px;
-  height: 150px;
+  width: 500px;
+  height: 250px;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -30,6 +30,7 @@ YUCHENG_ERROR_BOX.style.cssText = `
   box-shadow: 0px 0px 1px 1px #ccc;
   z-index: 999999 !important;
   overflow-y: auto;
+  border: 0;
 `
 document.body.appendChild(YUCHENG_ERROR_BOX)
 

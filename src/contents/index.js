@@ -44,7 +44,8 @@ chrome.storage.sync.get(null, function (result) {
   if (configParams && configParams.mapInfo && !configParams.mapInfo[host]) {
     configParams.mapInfo[host] = {
       ...configParams.mapInfo[host],
-      videoPlayRate: defaultparams.defaultVideoPlayRate
+      videoPlayRate: defaultparams.defaultVideoPlayRate,
+      fanyiFlag: defaultparams.fanyiFlag
     }
   }
   console.log(configParams, result, 'configParams');
@@ -80,6 +81,190 @@ function commonEvents(configParams) {
   // 添加/移除错误监听
   removeErrListening(configParams)
   videoPlay((configParams.mapInfo[host] || {}).videoPlayRate || defaultparams.defaultVideoPlayRate)
+  setFanyi((configParams.mapInfo[host] || {}).fanyiFlag || defaultparams.defaultFanyiFlag)
+}
+
+function setFanyi(fanyiFlag) {
+  // 谷歌翻译
+  // 不翻译的列表
+  const fanYiList = ['stackoverflow.com', 'www.npmjs.com', 'developer.chrome.com']
+  const fanyiFlag1 = fanYiList.some(item => host === item)
+
+  function addNewElement(innerhtml, node, src) {
+    const element = document.createElement(node)
+    if (src) {
+      element.src = innerhtml
+    } else {
+      element.innerHTML = innerhtml
+    }
+    document.getElementsByTagName('head')[0].appendChild(element)
+  }
+  if (fanyiFlag || fanyiFlag1) {
+    // 隐藏顶部栏
+    const {
+      head
+    } = document
+    const style = document.createElement('style')
+    const text = [
+      // 翻译按钮样式设置
+      '#google_translate_element {',
+      '  position: fixed;',
+      '  width: 80px;', // 按钮宽度(仅PC端生效)
+      '  left: 0px;', // 左侧边距离设置；如果要靠右设置，left改成right即可
+      '  bottom: 25px;', // 距离底部高度
+      '  height: 22px;', // 按钮高度
+      '  border: 2px solid #0000;', // 边框线设置
+      '  border-radius: 5px;', // 边界半径设置
+      '  z-index: 10000000;',
+      '  overflow: hidden;',
+      '  box-shadow: 1px 1px 3px 0 #0000;', // 外边框阴影设置
+      '  opacity: 0.4;', // 初始透明度设置
+      '  transform: translateX(-75%);', // 按钮隐藏百分比设置(仅PC端生效)
+      '  transition: all 0.3s;',
+      '}',
+      '#google_translate_element:hover {',
+      '  opacity: 1;', // 透明度设置
+      '  transform: translateX(0);',
+      '}',
+      '#google_translate_element .goog-te-gadget-simple {',
+      '  width: 100%;',
+      '}',
+      '.goog-te-banner-frame.skiptranslate {',
+      '  display: none',
+      '}',
+      'html,body{',
+      '  top: 0!important',
+      '}',
+      // 原文按钮样式设置
+      '.recoverPage {',
+      '  width: 45px;', // 按钮宽度(仅PC端生效)
+      '  background-color: #F0F8FF;', // 背景色设置
+      '  position: fixed;',
+      '  left: -5px;', // 左侧边距离设置；如果要靠右设置，left改成right即可
+      '  z-index: 10000000;',
+      '  bottom: 50px;', // 距离底部高度
+      '  user-select: none;',
+      '  text-align: center;',
+      '  border: 1px solid #a8a8a8;', // 边框线设置
+      '  font-size: small;',
+      '  line-height: 25px;', // 按钮高度设置(仅PC端生效)
+      '  border-radius: 15px;', // 边界半径设置
+      '  box-shadow: 1px 1px 3px 0 #C0C0C0;', // 外边框阴影设置
+      '  opacity: 0.4;', // 初始透明度设置
+      '  transform: translateX(-70%);', // 按钮隐藏百分比设置(仅PC端生效)
+      '  transition: all 0.3s;',
+      '  }',
+      '.recoverPage:hover {',
+      '  opacity: 1;', // 透明度设置
+      '  transform: translateX(0);',
+      '  }',
+      '.recoverPage:active {',
+      '  box-shadow: 1px 1px 3px 0 #888 inset;',
+      '  }',
+
+      /* ----移动端UI适配设置（PC端不生效）-----------------------------------------*/
+      ' @media handheld, only screen and (max-width: 768px) {',
+      // 翻译按钮样式设置
+      ' #google_translate_element {',
+      '  width: 104px;', // 按钮宽度
+      '  }',
+      '  #google_translate_element .goog-te-combo {',
+      '  margin: 0;',
+      '  padding-top: 2px;',
+      '  border: none;',
+      '  }',
+      // 原文按钮样式设置
+      ' .recoverPage {',
+      '  width: 34px;', // 按钮宽度
+      '  line-height: 24px;', // 按钮高度设置
+      '  transform: translateX(-40%);', // 按钮隐藏百分比设置
+      '  transform: translateX(1);', // 隐藏功能开关，0为关闭；1为打开
+      '  }',
+      '  }',
+    ].join('\n')
+    const style_text = document.createTextNode(text)
+    style.appendChild(style_text)
+    head.appendChild(style)
+
+    // 恢复原网页按钮设置
+    const initScript = document.createElement('script')
+    const initText = document.createTextNode(
+      [
+        // 清除图片的请求，加快访问速度
+        "  img = [].slice.call(document.querySelectorAll('#goog-gt-tt img,#google_translate_element img'));",
+        '  img.forEach(function(v, i){',
+        "   v.src = '';",
+        '  });',
+
+        "  const recoverPage = document.createElement('div')",
+        "  recoverPage.setAttribute('class', 'notranslate recoverPage')",
+        "  recoverPage.innerText = '原文'",
+        '  document.body.appendChild(recoverPage)',
+        '  recoverPage.onclick = (() => {',
+        "  const phoneRecoverIframe = document.getElementById(':1.container')",
+        "  const PCRecoverIframe = document.getElementById(':2.container')",
+        '    if (phoneRecoverIframe) {',
+        '      const recoverDocument = phoneRecoverIframe.contentWindow.document',
+        "      recoverDocument.getElementById(':1.restore').click()",
+        ' } else if (PCRecoverIframe) {',
+        '      const recoverDocument = PCRecoverIframe.contentWindow.document',
+        "      recoverDocument.getElementById(':2.restore').click()",
+        '    }',
+        '  })',
+      ].join('\n')
+    )
+    initScript.appendChild(initText)
+    head.appendChild(initScript)
+
+    // 翻译按钮设置
+    const google_translate_element = document.createElement('div')
+    google_translate_element.id = 'google_translate_element'
+    document.documentElement.appendChild(google_translate_element)
+
+    const gtehtml =
+      'function googleTranslateElementInit() {' +
+      'new google.translate.TranslateElement({' +
+      'autoDisplay: true,' +
+      'layout: google.translate.TranslateElement.InlineLayout.SIMPLE,' +
+      'multilanguagePage: true,' +
+      "pageLanguage: 'auto'," +
+      "includedLanguages: 'zh-CN,zh-TW,en,ja,ru'" +
+      "}, 'google_translate_element');}"
+
+    addNewElement(gtehtml, 'script', false)
+    addNewElement(
+      'https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js',
+      'script',
+      true
+    )
+
+    //   google翻译的网址  //translate.google.com/translate_a/element.js?cb=googleTranslateElementInit
+    addNewElement(
+      'https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js',
+      'script',
+      true
+    )
+
+    // 翻译按钮
+    ;
+    (function ziDongFanYi() {
+      const d = $('#google_translate_element')
+      if (d) {
+        // 选择语言的弹出盒子
+        const iframe = $('.goog-te-menu-frame.skiptranslate')
+        if (!iframe) return
+        if (d.innerText.includes('中文')) return
+        const zhBtn = iframe.contentWindow.document
+          .getElementById(':1.menuBody')
+          .querySelectorAll('a')
+        Array.from(zhBtn).forEach(item => {
+          if (item.innerHTML.includes('简体')) {
+            item.click()
+          }
+        })
+      }
+    })()
+  }
 }
 
 function replaceHref(configParams) {
@@ -366,13 +551,9 @@ function rmSomeSelf(father, child, lsit = [], flag = true) {
 }
 
 // 将一个dom元素下的一个a标签放进一行li中
-function addLinkListBox(linkList = [], boxName = '', customlinkStr) {
+function addLinkListBox(linkList = []) {
   liListStr = ''
   const hrefList = []
-  // const box = document.querySelector('.' + boxName)
-  // if (customlinkStr) {
-  //   liListStr = customlinkStr
-  // } else {
   linkList.forEach((item, i) => {
     linkObj[item.toString()] = item.innerText
     hrefList.push({
@@ -382,7 +563,6 @@ function addLinkListBox(linkList = [], boxName = '', customlinkStr) {
     })
     liListStr += `<li title='${item.innerText}'><a href='${item.toString()}' rel="noopener noreferrer" target="_blank">${item.innerText}</a></li>\n`
   })
-  // }
   if (!liListStr) return
   debounce(() => {
     sendMessage({
@@ -981,80 +1161,140 @@ function csdn() {}
 function youtube() {
   setStyle('.html5-video-player', 'display: block')
   if (youtubeFlag) return
-  const zimuShowBtn = $('.ytp-subtitles-button.ytp-button')
-  if (zimuShowBtn.ariaPressed !== 'true') {
-    console.log(zimuShowBtn.ariaPressed, 'zimuShowBtn.ariaPressed');
-    zimuShowBtn.click()
-  }
-  // 字幕文本
-  const zimuText = $('.captions-text')
-  if (zimuText) return false
-  // 打开面板按钮
-  const pannel = $('.ytp-button.ytp-settings-button')
-  pannel && pannel.click()
-  // 左侧  字幕（1）
-  const zimuTxt = [...$$('.ytp-menuitem-label')]
-  let zimuTxtBtn = null,
-    playRateBtn = null
-  // if (!zimuTxt.length) return youtubeFlag = true
-  zimuTxt.forEach(t => {
-    if (t.innerText.includes('字幕')) {
-      zimuTxtBtn = t
-    }
-    if (t.innerText.includes('播放速度')) {
-      playRateBtn = t
-    }
-  })
-  // 设置播放速度
-  if (playRateBtn) {
-    playRateBtn.click()
-    const playRateList = [...$$('.ytp-menuitem')]
-    playRateList.forEach(t => {
-      if (t.innerText.includes((configParams.mapInfo[host] && configParams.mapInfo[host].videoPlayRate) || defaultparams.videoPlayRate)) {
-        t.click()
-      }
-    })
+  const video = $('video')
+  if (video && !youtubeFlag) {
     youtubeFlag = true
-  }
-  // 设置中文
-  if (zimuTxtBtn) {
-    const parentBox = zimuTxtBtn.parentNode
-    if (parentBox.querySelector('.ytp-menuitem-content').innerText.includes('中文')) {
-      return youtubeFlag = true
-    }
-    parentBox.click()
-    console.log('当前不是中文字幕');
-    const languateBtnList = [...$$('.ytp-menuitem')]
-    let needChooseLanguage = false
-    languateBtnList.some(t => {
-      if (t.innerText.includes('中文')) {
-        t.click()
-        return true
-      } else if (t.innerText.includes('自动翻译')) {
-        console.log(t.innerText, 't.innerText');
-        t.click()
-        needChooseLanguage = true
-        return true
-      } else {
-        return false
+    video.addEventListener('canplay', e => {
+      const zimuShowBtn = $('.ytp-subtitles-button.ytp-button')
+      if (zimuShowBtn.ariaPressed !== 'true') {
+        console.log(zimuShowBtn.ariaPressed, 'zimuShowBtn.ariaPressed');
+        zimuShowBtn.click()
       }
-    })
-    console.log(needChooseLanguage, 'needChooseLanguage');
-    // 自动翻译要多走一步
-    if (needChooseLanguage) {
-      const languateBtnList2 = [...$$('.ytp-menuitem')]
-      languateBtnList2.some(t => {
-        if (t.innerText.includes('中文（简体）')) {
-          t.click()
-          return true
+      // 字幕文本
+      const zimuText = $('.captions-text')
+      if (zimuText) return false
+      // 打开面板按钮
+      const pannel = $('.ytp-button.ytp-settings-button')
+      pannel && pannel.click()
+      // 左侧  字幕（1）
+      const zimuTxt = [...$$('.ytp-menuitem-label')]
+      let zimuTxtBtn = null
+      zimuTxt.forEach(t => {
+        if (t.innerText.includes('字幕')) {
+          zimuTxtBtn = t
         }
-        return false
       })
-    }
-    $$('.ytp-panel')[0].style.display = 'none'
-    pannel.click()
-    youtubeFlag = true
+      // 设置中文
+      if (zimuTxtBtn) {
+        const parentBox = zimuTxtBtn.parentNode
+        if (parentBox.querySelector('.ytp-menuitem-content').innerText.includes('中文')) {
+          return
+        }
+        parentBox.click()
+        console.log('当前不是中文字幕');
+        const languateBtnList = [...$$('.ytp-menuitem')]
+        let needChooseLanguage = false
+        languateBtnList.some(t => {
+          if (t.innerText.includes('中文')) {
+            t.click()
+            return true
+          } else if (t.innerText.includes('自动翻译')) {
+            console.log(t.innerText, 't.innerText');
+            t.click()
+            needChooseLanguage = true
+            return true
+          } else {
+            return false
+          }
+        })
+        // 自动翻译要多走一步
+        if (needChooseLanguage) {
+          const languateBtnList2 = [...$$('.ytp-menuitem')]
+          languateBtnList2.some(t => {
+            if (t.innerText.includes('中文（简体）')) {
+              t.click()
+              return true
+            }
+            return false
+          })
+        }
+        $$('.ytp-panel')[0].style.display = 'none'
+        pannel.click()
+      }
+    })
   }
+  // const zimuShowBtn = $('.ytp-subtitles-button.ytp-button')
+  // if (zimuShowBtn.ariaPressed !== 'true') {
+  //   console.log(zimuShowBtn.ariaPressed, 'zimuShowBtn.ariaPressed');
+  //   zimuShowBtn.click()
+  // }
+  // // 字幕文本
+  // const zimuText = $('.captions-text')
+  // if (zimuText) return false
+  // // 打开面板按钮
+  // const pannel = $('.ytp-button.ytp-settings-button')
+  // pannel && pannel.click()
+  // // 左侧  字幕（1）
+  // const zimuTxt = [...$$('.ytp-menuitem-label')]
+  // let zimuTxtBtn = null
+  // // playRateBtn = null
+  // // if (!zimuTxt.length) return youtubeFlag = true
+  // zimuTxt.forEach(t => {
+  //   if (t.innerText.includes('字幕')) {
+  //     zimuTxtBtn = t
+  //   }
+  //   // if (t.innerText.includes('播放速度')) {
+  //   //   playRateBtn = t
+  //   // }
+  // })
+  // // 设置播放速度
+  // // if (playRateBtn) {
+  // //   playRateBtn.click()
+  // //   const playRateList = [...$$('.ytp-menuitem')]
+  // //   playRateList.forEach(t => {
+  // //     if (t.innerText.includes((configParams.mapInfo[host] && configParams.mapInfo[host].videoPlayRate) || defaultparams.videoPlayRate)) {
+  // //       t.click()
+  // //     }
+  // //   })
+  // //   youtubeFlag = true
+  // // }
+  // // 设置中文
+  // if (zimuTxtBtn) {
+  //   const parentBox = zimuTxtBtn.parentNode
+  //   if (parentBox.querySelector('.ytp-menuitem-content').innerText.includes('中文')) {
+  //     return youtubeFlag = true
+  //   }
+  //   parentBox.click()
+  //   console.log('当前不是中文字幕');
+  //   const languateBtnList = [...$$('.ytp-menuitem')]
+  //   let needChooseLanguage = false
+  //   languateBtnList.some(t => {
+  //     if (t.innerText.includes('中文')) {
+  //       t.click()
+  //       return true
+  //     } else if (t.innerText.includes('自动翻译')) {
+  //       console.log(t.innerText, 't.innerText');
+  //       t.click()
+  //       needChooseLanguage = true
+  //       return true
+  //     } else {
+  //       return false
+  //     }
+  //   })
+  //   // 自动翻译要多走一步
+  //   if (needChooseLanguage) {
+  //     const languateBtnList2 = [...$$('.ytp-menuitem')]
+  //     languateBtnList2.some(t => {
+  //       if (t.innerText.includes('中文（简体）')) {
+  //         t.click()
+  //         return true
+  //       }
+  //       return false
+  //     })
+  //   }
+  //   $$('.ytp-panel')[0].style.display = 'none'
+  //   pannel.click()
+  // youtubeFlag = true
 }
 
 function mdn({
@@ -1277,187 +1517,6 @@ document.addEventListener('copy', function (e) {
   e.clipboardData.setData('text/plain', selection)
 })
 
-// 谷歌翻译
-// 不翻译的列表
-const fanYiList = ['stackoverflow.com', 'www.npmjs.com', 'developer.chrome.com']
-const fanyiFlag = fanYiList.some(item => host === item)
-
-function addNewElement(innerhtml, node, src) {
-  const element = document.createElement(node)
-  if (src) {
-    element.src = innerhtml
-  } else {
-    element.innerHTML = innerhtml
-  }
-  document.getElementsByTagName('head')[0].appendChild(element)
-}
-if (fanyiFlag) {
-  // 隐藏顶部栏
-  const {
-    head
-  } = document
-  const style = document.createElement('style')
-  const text = [
-    // 翻译按钮样式设置
-    '#google_translate_element {',
-    '  position: fixed;',
-    '  width: 80px;', // 按钮宽度(仅PC端生效)
-    '  left: 0px;', // 左侧边距离设置；如果要靠右设置，left改成right即可
-    '  bottom: 25px;', // 距离底部高度
-    '  height: 22px;', // 按钮高度
-    '  border: 2px solid #0000;', // 边框线设置
-    '  border-radius: 5px;', // 边界半径设置
-    '  z-index: 10000000;',
-    '  overflow: hidden;',
-    '  box-shadow: 1px 1px 3px 0 #0000;', // 外边框阴影设置
-    '  opacity: 0.4;', // 初始透明度设置
-    '  transform: translateX(-75%);', // 按钮隐藏百分比设置(仅PC端生效)
-    '  transition: all 0.3s;',
-    '}',
-    '#google_translate_element:hover {',
-    '  opacity: 1;', // 透明度设置
-    '  transform: translateX(0);',
-    '}',
-    '#google_translate_element .goog-te-gadget-simple {',
-    '  width: 100%;',
-    '}',
-    '.goog-te-banner-frame.skiptranslate {',
-    '  display: none',
-    '}',
-    'html,body{',
-    '  top: 0!important',
-    '}',
-    // 原文按钮样式设置
-    '.recoverPage {',
-    '  width: 45px;', // 按钮宽度(仅PC端生效)
-    '  background-color: #F0F8FF;', // 背景色设置
-    '  position: fixed;',
-    '  left: -5px;', // 左侧边距离设置；如果要靠右设置，left改成right即可
-    '  z-index: 10000000;',
-    '  bottom: 50px;', // 距离底部高度
-    '  user-select: none;',
-    '  text-align: center;',
-    '  border: 1px solid #a8a8a8;', // 边框线设置
-    '  font-size: small;',
-    '  line-height: 25px;', // 按钮高度设置(仅PC端生效)
-    '  border-radius: 15px;', // 边界半径设置
-    '  box-shadow: 1px 1px 3px 0 #C0C0C0;', // 外边框阴影设置
-    '  opacity: 0.4;', // 初始透明度设置
-    '  transform: translateX(-70%);', // 按钮隐藏百分比设置(仅PC端生效)
-    '  transition: all 0.3s;',
-    '  }',
-    '.recoverPage:hover {',
-    '  opacity: 1;', // 透明度设置
-    '  transform: translateX(0);',
-    '  }',
-    '.recoverPage:active {',
-    '  box-shadow: 1px 1px 3px 0 #888 inset;',
-    '  }',
-
-    /* ----移动端UI适配设置（PC端不生效）-----------------------------------------*/
-    ' @media handheld, only screen and (max-width: 768px) {',
-    // 翻译按钮样式设置
-    ' #google_translate_element {',
-    '  width: 104px;', // 按钮宽度
-    '  }',
-    '  #google_translate_element .goog-te-combo {',
-    '  margin: 0;',
-    '  padding-top: 2px;',
-    '  border: none;',
-    '  }',
-    // 原文按钮样式设置
-    ' .recoverPage {',
-    '  width: 34px;', // 按钮宽度
-    '  line-height: 24px;', // 按钮高度设置
-    '  transform: translateX(-40%);', // 按钮隐藏百分比设置
-    '  transform: translateX(1);', // 隐藏功能开关，0为关闭；1为打开
-    '  }',
-    '  }',
-  ].join('\n')
-  const style_text = document.createTextNode(text)
-  style.appendChild(style_text)
-  head.appendChild(style)
-
-  // 恢复原网页按钮设置
-  const initScript = document.createElement('script')
-  const initText = document.createTextNode(
-    [
-      // 清除图片的请求，加快访问速度
-      "  img = [].slice.call(document.querySelectorAll('#goog-gt-tt img,#google_translate_element img'));",
-      '  img.forEach(function(v, i){',
-      "   v.src = '';",
-      '  });',
-
-      "  const recoverPage = document.createElement('div')",
-      "  recoverPage.setAttribute('class', 'notranslate recoverPage')",
-      "  recoverPage.innerText = '原文'",
-      '  document.body.appendChild(recoverPage)',
-      '  recoverPage.onclick = (() => {',
-      "  const phoneRecoverIframe = document.getElementById(':1.container')",
-      "  const PCRecoverIframe = document.getElementById(':2.container')",
-      '    if (phoneRecoverIframe) {',
-      '      const recoverDocument = phoneRecoverIframe.contentWindow.document',
-      "      recoverDocument.getElementById(':1.restore').click()",
-      ' } else if (PCRecoverIframe) {',
-      '      const recoverDocument = PCRecoverIframe.contentWindow.document',
-      "      recoverDocument.getElementById(':2.restore').click()",
-      '    }',
-      '  })',
-    ].join('\n')
-  )
-  initScript.appendChild(initText)
-  head.appendChild(initScript)
-
-  // 翻译按钮设置
-  const google_translate_element = document.createElement('div')
-  google_translate_element.id = 'google_translate_element'
-  document.documentElement.appendChild(google_translate_element)
-
-  const gtehtml =
-    'function googleTranslateElementInit() {' +
-    'new google.translate.TranslateElement({' +
-    'autoDisplay: true,' +
-    'layout: google.translate.TranslateElement.InlineLayout.SIMPLE,' +
-    'multilanguagePage: true,' +
-    "pageLanguage: 'auto'," +
-    "includedLanguages: 'zh-CN,zh-TW,en,ja,ru'" +
-    "}, 'google_translate_element');}"
-
-  addNewElement(gtehtml, 'script', false)
-  addNewElement(
-    'https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js',
-    'script',
-    true
-  )
-
-  //   google翻译的网址  //translate.google.com/translate_a/element.js?cb=googleTranslateElementInit
-  addNewElement(
-    'https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js',
-    'script',
-    true
-  )
-
-  // 翻译按钮
-  ;
-  (function ziDongFanYi() {
-    const d = $('#google_translate_element')
-    if (d) {
-      // 选择语言的弹出盒子
-      const iframe = $('.goog-te-menu-frame.skiptranslate')
-      if (!iframe) return
-      if (d.innerText.includes('中文')) return
-      const zhBtn = iframe.contentWindow.document
-        .getElementById(':1.menuBody')
-        .querySelectorAll('a')
-      Array.from(zhBtn).forEach(item => {
-        if (item.innerHTML.includes('简体')) {
-          item.click()
-        }
-      })
-    }
-  })()
-}
-
 // 页面离开事件
 // window.addEventListener('beforeunload', function (event) {})
 
@@ -1509,16 +1568,17 @@ window.addEventListener('visibilitychange', function (event) {
   })
 });
 
-function sendMessage(object = {}) {
+function sendMessage(object = {}, fn = function (response) {
+  logInfo(response, 'response-content');
+}) {
   object = {
     ...object,
     host,
     href
   }
+  console.log('sendMessage-content');
   try {
-    chrome.runtime.sendMessage(object, function (response) {
-      logInfo(response, 'content-script');
-    });
+    chrome.runtime.sendMessage(object, fn);
   } catch (error) {
     logInfo('发送消息错误', error)
   }
