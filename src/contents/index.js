@@ -4,7 +4,9 @@ import {
   copyTargetText,
   autoSelect,
   boxInfo,
-  defaultparams
+  defaultparams,
+  // hrefChange,
+  otherSiteHref
 } from '../modules/common.js'
 let performance_now = performance.now(),
   liListStr = '', // 链接列表字符串
@@ -31,8 +33,7 @@ const {
   error,
   dir
 } = console
-const vueAroundList = ['router.vuejs.org', 'vuex.vuejs.org', 'cli.vuejs.org'],
-  hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/
+const vueAroundList = ['router.vuejs.org', 'vuex.vuejs.org', 'cli.vuejs.org']
 
 // 获取配置参数
 chrome.storage.sync.get(null, function (result) {
@@ -268,10 +269,11 @@ function setFanyi(fanyiFlag) {
 }
 
 function replaceHref(configParams) {
-  const needChange = otherSiteHref(href)
+  const needChange = otherSiteHref(href).needChange
   const noChange = (configParams.noChangeHrefList || []).some(it => host.includes(it))
   if (needChange && !noChange) {
-    location.replace(hrefChange(href))
+    // location.replace(hrefChange(href))
+    location.replace(otherSiteHref(href).href)
   }
 }
 
@@ -791,6 +793,9 @@ const list = {
   },
   'www.007hdys.com': {
     callback: hdys007
+  },
+  'www.douyin.com': {
+    callback: douyin
   }
 }
 
@@ -856,7 +861,7 @@ function main() {
 
       const callback = function (mutationsList, observer) {
         logInfo('回调执行-observer', )
-        list[k].callback(params)
+        list[k].callback && list[k].callback(params)
       }
       const observer = new MutationObserver(callback)
       observer.observe(document, config)
@@ -928,6 +933,19 @@ function keyUp(e) {
 }
 window.removeEventListener('keydown', keyUp)
 window.addEventListener('keydown', keyUp)
+
+function douyin() {
+  const classList = ['login-guide-container', 'mPWahmAI.screen-mask.login-mask-enter-done', 'recommend-comment-login.recommend-comment-login-mask']
+  removeArrList(classList, '.')
+
+  const adIdList = ['captcha_container']
+  removeArrList(adIdList, '#')
+
+  const widnowBox = $('.windows-os')
+  if (widnowBox.children.length === 3) {
+    widnowBox.children[0].remove()
+  }
+}
 
 // 007影视
 function hdys007() {
@@ -1156,7 +1174,10 @@ function hu4tv() {
   }
 }
 // csdn
-function csdn() {}
+function csdn() {
+  const classList = ['passport-login-container']
+  removeArrList(classList, '.')
+}
 // youtube
 function youtube() {
   setStyle('.html5-video-player', 'display: block')
@@ -1343,6 +1364,7 @@ function zhihu({
     'Card.TopstoryItem.TopstoryItem--old.TopstoryItem--advertCard.TopstoryItem-isRecommend',
     'Pc-card.Card>a',
     'Sticky>a',
+    'Card.TopstoryItem.TopstoryItem--advertCard.TopstoryItem-isRecommend'
   ]
   removeArrList(adClassList, '.')
   rmSomeSelf('.Card.TopstoryItem.TopstoryItem--old.TopstoryItem-isFollow', '.advert-signpc-label')
@@ -1351,7 +1373,7 @@ function zhihu({
   win.addEventListener('scroll', function scroll() {
     throlleRemove(adClassList, '.')
   })
-  // const includesList = ['web', 'js', 'javascript', 'node', 'npm', 'github', 'jquery', 'css', 'html', '音视频', '前端', 'vue', 'react', 'nginx', 'webpack', 'http', 'websocket', 'ts', 'typescript', 'chrome', 'linux', 'iframe', 'electron']
+  // const includesList = ['web', 'js', 'javascript', 'node', 'npm', 'github', 'jquery', 'css', 'html', '音视频', '前端', 'vue', 'react', 'nginx', 'webpack', 'http', 'websocket', 'ts', 'typescript', 'chrome', 'linux', 'iframe', 'electron', 'es6', 'es7', 'es8', 'es9', 'es10', 'es11', 'es12', 'async', 'await']
   // const root = document.querySelector('#root')
   // let linkList = Array.from(root.querySelectorAll('a'))
   // linkList = linkList.filter(link => {
@@ -1359,6 +1381,16 @@ function zhihu({
   //   return includesList.some(item => (link.innerText || ('innerText' in link.firstElementChild && link.firstElementChild.innerText) || "").toLowerCase().includes(item))
   // })
   // addLinkListBox(linkList, 'zhihu-toolbox')
+  // const boxList = $$('.Card.TopstoryItem.TopstoryItem-isRecommend')
+  // boxList.forEach(it => {
+  //   const text = it.innerText
+  //   includesList.forEach(t => {
+  //     if (!text.includes(t.toLocaleLowerCase())) {
+  //       console.log(text, '---text');
+  //       it && it.remove()
+  //     }
+  //   })
+  // })
 }
 
 function juejin() {
@@ -1454,20 +1486,6 @@ function tiaozhuan() {
   // })
 }
 
-// 旧链接拿到新链接，没有返回 '
-function hrefChange(href) {
-  let newHref = ''
-  if (otherSiteHref(href)) {
-    newHref = href.slice(href.lastIndexOf('http'))
-  }
-  return decodeURIComponent(newHref)
-}
-
-// 判断网址是否需要跳转
-function otherSiteHref(href) {
-  return href.indexOf('http') !== href.lastIndexOf('http')
-}
-
 // 公共跳转方法
 function commonTiaozhuan(e, needGo) {
   logInfo(e, '有href的node元素', e.target);
@@ -1491,7 +1509,8 @@ function commonTiaozhuan(e, needGo) {
   // if (index !== -1) {
   //   newHref = href.slice(index)
   // }
-  newHref = hrefChange(href)
+  // newHref = hrefChange(href)
+  newHref = otherSiteHref(href).href
   // 判断是否为网址，是网址可以直接跳转
   if (newHref) {
     const hrefStr = decodeURIComponent(newHref)

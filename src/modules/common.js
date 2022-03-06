@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-02-27 19:00:47
+ * @LastEditTime: 2022-03-06 18:54:53
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -40,7 +40,8 @@ let target = null,
   },
   YUCHENG_USE_BOX = document.createElement('div'),
   YUCHENG_USE_DELAY = 1000,
-  contentMenuEventsFlag = false // 是否contentmenu事件
+  contentMenuEventsFlag = false, // 是否contentmenu事件
+  hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/
 // BLACK = '_blank',
 // YUCHENG_ALINK = document.createElement('a')
 // YUCHENG_ALINK.target = BLACK
@@ -84,6 +85,53 @@ export function boxInfo(info, noClose = true) {
   return false
 }
 
+// // 旧链接拿到新链接，没有返回 '
+// export function hrefChange(href) {
+//   let newHref = ''
+//   if (otherSiteHref(href)) {
+//     const str = href.slice(4)
+//     newHref = href.slice(str.indexOf('http') + 4)
+//   }
+//   const realHref = decodeURIComponent(newHref)
+//   if (!hrefReg.test(realHref)) {
+//     return false
+//   }
+//   console.log(realHref, '-newHref');
+//   return realHref
+// }
+
+// 判断网址是否需要跳转
+export function otherSiteHref(href) {
+  let splitArr = [],
+    newStr = decodeURIComponent(href)
+  const protocolList = ['https://', 'http://']
+  protocolList.forEach(protocol => {
+    let str = newStr
+    while (str) {
+      const index = str.indexOf(protocol)
+      if (index !== -1) {
+        splitArr.push({
+          index,
+          protocol
+        })
+      }
+      str = str.slice(index + protocol.length)
+    }
+  })
+  // console.log({
+  //   needChange: splitArr.length > 1,
+  //   href: splitArr.length > 1 ? newStr.slice(splitArr[1].index) : href
+  // }, '========splitArr');
+  // return splitArr.length > 1 && false
+  return {
+    needChange: splitArr.length > 1,
+    href: splitArr.length > 1 ? newStr.slice(splitArr[1].index) : href
+  }
+  // if (href.slice(4).indexOf('http') === -1) return false
+  // return href.indexOf('http') !== href.slice(4).indexOf('http')
+}
+
+
 // shift + space 实现点击鼠标所在位置
 export function mouseClick(configParams = configParamsDefault) {
   // console.log(configParams, 'common.js------');
@@ -123,21 +171,6 @@ export function mouseClick(configParams = configParamsDefault) {
     a.remove()
   }
 
-  // 旧链接拿到新链接，没有返回 '
-  function hrefChange(href) {
-    let newHref = href
-    if (otherSiteHref(href)) {
-      newHref = href.slice(href.lastIndexOf('http'))
-    }
-    return decodeURIComponent(newHref)
-  }
-
-  // 判断网址是否需要跳转
-  function otherSiteHref(href) {
-    return href.indexOf('http') !== href.lastIndexOf('http')
-  }
-
-
   // 从子孙往上找，直到找到可以点击的a链接
   function findParentAClick(item, index = 0) {
     if (!item) return
@@ -146,7 +179,8 @@ export function mouseClick(configParams = configParamsDefault) {
       return
     }
     if (item.nodeName === 'A') {
-      return gotoLink(hrefChange(item.href))
+      // return gotoLink(hrefChange(item.href))
+      return gotoLink(otherSiteHref(href).href)
     }
     const parent = item.parentNode
     findParentAClick(parent, index)
@@ -201,6 +235,7 @@ export function mouseClick(configParams = configParamsDefault) {
     setTimeout(() => {
       if (contentMenuEventsFlag) return
       contentMenuEventsFlag = false
+      console.log(target, 'auxclick-target');
       findParentClick(target)
     }, 100)
   });
