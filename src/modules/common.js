@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-03-08 22:42:18
+ * @LastEditTime: 2022-03-08 23:07:57
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -179,6 +179,30 @@ export function mouseClick(configParams = configParamsDefault) {
     findParentAClick(parent, index)
   }
 
+  function getDomain(href) {
+    if (!hrefReg.test(href)) {
+      return false
+    }
+    const urlParams = new URL(href)
+    const {
+      protocol,
+      origin
+    } = urlParams
+    let defaultHost = 80
+    if (protocol === 'https:') {
+      defaultHost = 443
+    }
+    return origin + ':' + defaultHost
+  }
+
+  // 判断是否同源
+  function sameOrigin(src) {
+    if (getDomain(href) && getDomain(src)) {
+      return true
+    }
+    return false
+  }
+
   function pointermove(e) {
     moveObj.debounce(() => {
       if (configParams.changeEleMiaoBian) {
@@ -193,7 +217,7 @@ export function mouseClick(configParams = configParamsDefault) {
       }
       if (target.nodeName === 'IFRAME') {
         const targetWin = target.contentWindow
-        if (targetWin) {
+        if (targetWin && sameOrigin(target.src)) {
           try {
             targetWin.addEventListener('pointermove', pointermove)
           } catch (error) {
@@ -213,7 +237,7 @@ export function mouseClick(configParams = configParamsDefault) {
   iframes.forEach(it => {
     it.onload = function () {
       const targetWin = it.contentWindow
-      if (targetWin) {
+      if (targetWin && sameOrigin(target.src)) {
         targetWin.addEventListener('pointermove', pointermove)
       }
     }

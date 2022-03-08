@@ -689,6 +689,9 @@ const list = {
   'www.csdn.net': {
     callback: csdn,
   },
+  'blog.csdn.net': {
+    callback: csdn,
+  },
   'www.youtube.com': {
     callback: youtube,
     scroll: '#primary .style-scope #contents'
@@ -1177,6 +1180,11 @@ function hu4tv() {
 function csdn() {
   const classList = ['passport-login-container']
   removeArrList(classList, '.')
+
+  // const linkCount = $('#spanCount')
+  // if (!linkCount.classList.contains('active')) {
+  //   linkCount.parentNode.click()
+  // }
 }
 // youtube
 function youtube() {
