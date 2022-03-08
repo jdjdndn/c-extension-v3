@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-03-06 18:54:53
+ * @LastEditTime: 2022-03-08 22:42:18
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -118,17 +118,10 @@ export function otherSiteHref(href) {
       str = str.slice(index + protocol.length)
     }
   })
-  // console.log({
-  //   needChange: splitArr.length > 1,
-  //   href: splitArr.length > 1 ? newStr.slice(splitArr[1].index) : href
-  // }, '========splitArr');
-  // return splitArr.length > 1 && false
   return {
     needChange: splitArr.length > 1,
-    href: splitArr.length > 1 ? newStr.slice(splitArr[1].index) : href
+    href: splitArr.length > 1 ? newStr.slice(splitArr[1].index + splitArr[1].protocol.length) : href
   }
-  // if (href.slice(4).indexOf('http') === -1) return false
-  // return href.indexOf('http') !== href.slice(4).indexOf('http')
 }
 
 
@@ -180,7 +173,7 @@ export function mouseClick(configParams = configParamsDefault) {
     }
     if (item.nodeName === 'A') {
       // return gotoLink(hrefChange(item.href))
-      return gotoLink(otherSiteHref(href).href)
+      return gotoLink(otherSiteHref(item.href).href)
     }
     const parent = item.parentNode
     findParentAClick(parent, index)

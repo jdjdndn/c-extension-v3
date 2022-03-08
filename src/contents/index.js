@@ -942,7 +942,7 @@ function douyin() {
   removeArrList(adIdList, '#')
 
   const widnowBox = $('.windows-os')
-  if (widnowBox.children.length === 3) {
+  if (widnowBox && widnowBox.children.length === 3) {
     widnowBox.children[0].remove()
   }
 }
