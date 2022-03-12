@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-03-08 23:07:57
+ * @LastEditTime: 2022-03-12 13:59:01
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -30,6 +30,12 @@ export const defaultparams = {
   videoPlayRate: 1.5 // 默认播放速度
 }
 import './index.scss'
+
+const {
+  href,
+  host,
+  origin
+} = location
 
 let target = null,
   timer = null,
@@ -84,21 +90,6 @@ class Util {
 export function boxInfo(info, noClose = true) {
   return false
 }
-
-// // 旧链接拿到新链接，没有返回 '
-// export function hrefChange(href) {
-//   let newHref = ''
-//   if (otherSiteHref(href)) {
-//     const str = href.slice(4)
-//     newHref = href.slice(str.indexOf('http') + 4)
-//   }
-//   const realHref = decodeURIComponent(newHref)
-//   if (!hrefReg.test(realHref)) {
-//     return false
-//   }
-//   console.log(realHref, '-newHref');
-//   return realHref
-// }
 
 // 判断网址是否需要跳转
 export function otherSiteHref(href) {

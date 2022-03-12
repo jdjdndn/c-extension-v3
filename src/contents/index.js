@@ -294,11 +294,12 @@ function removeErrListening(configParams) {
     YUCHENG_PUTDATA_BOX.classList.add('yucheng-putdata-box')
     YUCHENG_PUTDATA_BOX.style.cssText = `
       position:fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      top: 0;
+      right: 0;
       width: 500px;
+      height: 100%;
       display: none;
+      z-index: 9999;
     `
     YUCHENG_PUTDATA_BOX.src = chrome.runtime.getURL('options.html')
     document.body.appendChild(YUCHENG_PUTDATA_BOX)
