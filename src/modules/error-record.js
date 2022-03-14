@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-05 19:02:41
- * @LastEditTime: 2022-02-27 10:58:02
+ * @LastEditTime: 2022-03-14 20:17:06
  * @LastEditors: yucheng
  * @Description: ...
  */
@@ -177,14 +177,6 @@ function tryParseJson2(v, xhr) {
     })
     return data;
   }
-  // putDataBox.contentWindow.postMessage({
-  //   1997: '5201314',
-  //   data: {
-  //     data,
-  //     responseURL: xhr.responseURL,
-  //     type: 'response'
-  //   }
-  // }, '*')
 }
 
 window.addEventListener('message', (e) => {

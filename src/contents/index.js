@@ -85,21 +85,22 @@ function commonEvents(configParams) {
   setFanyi((configParams.mapInfo[host] || {}).fanyiFlag || defaultparams.defaultFanyiFlag)
 }
 
+function addNewElement(innerhtml, node, src) {
+  const element = document.createElement(node)
+  if (src) {
+    element.src = innerhtml
+  } else {
+    element.innerHTML = innerhtml
+  }
+  document.getElementsByTagName('head')[0].appendChild(element)
+}
+
 function setFanyi(fanyiFlag) {
   // 谷歌翻译
   // 不翻译的列表
   const fanYiList = ['stackoverflow.com', 'www.npmjs.com', 'developer.chrome.com']
   const fanyiFlag1 = fanYiList.some(item => host === item)
 
-  function addNewElement(innerhtml, node, src) {
-    const element = document.createElement(node)
-    if (src) {
-      element.src = innerhtml
-    } else {
-      element.innerHTML = innerhtml
-    }
-    document.getElementsByTagName('head')[0].appendChild(element)
-  }
   if (fanyiFlag || fanyiFlag1) {
     // 隐藏顶部栏
     const {

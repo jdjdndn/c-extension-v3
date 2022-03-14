@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-03-12 13:59:01
+ * @LastEditTime: 2022-03-14 19:40:55
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -103,15 +103,20 @@ export function otherSiteHref(href) {
       if (index !== -1) {
         splitArr.push({
           index,
-          protocol
+          protocol,
+          remain: str.slice(index)
         })
       }
       str = str.slice(index + protocol.length)
     }
   })
+  // return {
+  //   needChange: false,
+  //   href: 'http://www.baidu.com'
+  // }
   return {
     needChange: splitArr.length > 1,
-    href: splitArr.length > 1 ? newStr.slice(splitArr[1].index + splitArr[1].protocol.length) : href
+    href: splitArr.length > 1 ? splitArr[1].remain : href
   }
 }
 

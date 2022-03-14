@@ -36,7 +36,7 @@
         name=""
         id=""
         cols="67"
-        rows="5"
+        rows="50"
         v-model="inputValue"
         @input="changeOriginValue"
       ></textarea>
