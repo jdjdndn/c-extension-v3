@@ -1,7 +1,7 @@
 <!--
  * @Author: yucheng
  * @Date: 2021-08-31 08:23:13
- * @LastEditTime: 2022-02-27 15:43:03
+ * @LastEditTime: 2022-03-20 16:48:17
  * @LastEditors: yucheng
  * @Description: ...
 -->
@@ -80,6 +80,15 @@
           >关<input id="f" type="radio" name="e" :checked="!debug"
         /></label>
       </div>
+      <div class="popup-item">
+        8、开启信息收集
+        <label for="g" @click="collectInfo(true)"
+          >开<input id="g" type="radio" name="g" :checked="collectInfoFlag"
+        /></label>
+        <label for="h" @click="collectInfo()"
+          >关<input id="h" type="radio" name="g" :checked="!collectInfoFlag"
+        /></label>
+      </div>
     </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
@@ -111,6 +120,14 @@ export default {
     this.start();
   },
   methods: {
+    collectInfo(collectInfoFlag = false) {
+      const { host, mapInfo, noChangeLog } = this;
+      if (!mapInfo || !mapInfo[host]) return false;
+      if (mapInfo[host].collectInfoFlag === collectInfoFlag)
+        return noChangeLog('不需要切换');
+      mapInfo[host].collectInfoFlag = collectInfoFlag;
+      this.saveAndSend({ collectInfoFlag });
+    },
     // 开启翻译
     changeFanyi(fanyiFlag = false) {
       console.log(fanyiFlag);
@@ -157,6 +174,7 @@ export default {
           recordErrorList,
           mapInfo,
           host,
+          collectInfoFlag,
           clearTime
         } = that.result;
         that.host = host;
@@ -164,6 +182,7 @@ export default {
         that.debug = debug || that.debug;
         that.mapInfo = mapInfo || {};
         that.clearTime = clearTime || 1;
+        that.collectInfoFlag = collectInfoFlag || that.collectInfoFlag;
 
         that.noChangeHrefList =
           noChangeHrefList && noChangeHrefList.length
@@ -300,13 +319,21 @@ export default {
       handler(val, oldval) {
         if (!val) return;
         if (val == oldval) return;
-        let { mapInfo, videoPlayRate, saveAndSend, recordErrorList } = this;
+        let {
+          mapInfo,
+          videoPlayRate,
+          saveAndSend,
+          recordErrorList,
+          collectInfoFlag
+        } = this;
         if (!mapInfo[val]) {
           mapInfo[val] = {};
           mapInfo[val].videoPlayRate = videoPlayRate;
+          mapInfo[val].collectInfoFlag = collectInfoFlag;
           saveAndSend({ mapInfo });
         } else {
           this.videoPlayRate = mapInfo[val].videoPlayRate;
+          this.collectInfoFlag = mapInfo[val].collectInfoFlag;
         }
         const valIndex = val.indexOf(':');
         if (valIndex !== -1) {

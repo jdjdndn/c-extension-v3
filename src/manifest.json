@@ -51,6 +51,8 @@
     "browsingData",
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
-    "webRequest"
+    "webRequest",
+    "webRequest",
+    "webRequestBlocking"
   ]
 }
