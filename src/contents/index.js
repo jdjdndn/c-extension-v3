@@ -844,6 +844,9 @@ const list = {
   "www.douyin.com": {
     callback: douyin,
   },
+  "babeljs.io": {
+    rehref: "www.babeljs.cn",
+  },
 };
 
 // mutationObsever配置
@@ -1694,7 +1697,7 @@ function sendMessage(
     host,
     href,
   };
-  console.log("sendMessage-content", object);
+  console.log("sendMessage-content");
   try {
     chrome.runtime.sendMessage(object, fn);
   } catch (error) {
