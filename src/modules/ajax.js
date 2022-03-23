@@ -1,6 +1,6 @@
 export function ajax(options) {
   // 基础请求url
-  const baseUrl = "http://localhost:88";
+  const baseUrl = "http://124.221.192.209:88";
   // 存储的是默认值
   var defaults = {
     type: "get",
