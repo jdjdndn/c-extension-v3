@@ -1,40 +1,40 @@
-const webpack = require('webpack');
-const {
-  VueLoaderPlugin
-} = require("vue-loader");
+const webpack = require("webpack");
+const { VueLoaderPlugin } = require("vue-loader");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const {
-  CleanWebpackPlugin
-} = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const autoprefixer = require("autoprefixer");
 const path = require("path");
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 var options = {
-  mode: process.env.NODE_ENV || 'development',
+  mode: process.env.NODE_ENV || "development",
   entry: {
-    "options": path.join(__dirname, 'src', 'pages', 'options', 'options.js'),
-    "popup": path.join(__dirname, 'src', 'pages', 'popup', 'popup.js'),
-    "devtools": path.join(__dirname, 'src', 'pages', 'devtools', 'devtools.js'),
-    "service-worker": path.join(__dirname, 'src', 'background', 'background.js'),
+    options: path.join(__dirname, "src", "pages", "options", "options.js"),
+    popup: path.join(__dirname, "src", "pages", "popup", "popup.js"),
+    devtools: path.join(__dirname, "src", "pages", "devtools", "devtools.js"),
+    "service-worker": path.join(
+      __dirname,
+      "src",
+      "background",
+      "background.js"
+    ),
     // Content Scripts
-    contentScript: path.join(__dirname, 'src', 'contents', 'index.js'),
+    contentScript: path.join(__dirname, "src", "contents", "index.js"),
   },
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
     // chunkFilename: "[name].js",
-    globalObject: 'this'
+    globalObject: "this",
   },
   module: {
-    rules: [{
+    rules: [
+      {
         test: /\.js$/,
         exclude: /node_modules/,
-        use: [
-          "babel-loader",
-        ]
+        use: ["babel-loader"],
       },
       {
         test: /\.vue$/,
@@ -79,7 +79,7 @@ var options = {
   plugins: [
     new webpack.ProgressPlugin(),
     // expose and write the allowed env vars on the compiled bundle
-    new webpack.EnvironmentPlugin(['NODE_ENV']),
+    new webpack.EnvironmentPlugin(["NODE_ENV"]),
     // Clean the Build Folder
     new CleanWebpackPlugin({
       verbose: true,
@@ -91,29 +91,42 @@ var options = {
       chunkFilename: "[name].css",
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "src", "pages", "options", "options.html"),
-      filename: 'options.html',
-      chunks: ['options'],
+      template: path.resolve(
+        __dirname,
+        "src",
+        "pages",
+        "options",
+        "options.html"
+      ),
+      filename: "options.html",
+      chunks: ["options"],
       cache: false,
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "src", "pages", "popup", "popup.html"),
-      filename: 'popup.html',
-      chunks: ['popup'],
+      filename: "popup.html",
+      chunks: ["popup"],
       cache: false,
     }),
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "src", "pages", "devtools", "devtools.html"),
-      filename: 'devtools.html',
-      chunks: ['devtools'],
+      template: path.resolve(
+        __dirname,
+        "src",
+        "pages",
+        "devtools",
+        "devtools.html"
+      ),
+      filename: "devtools.html",
+      chunks: ["devtools"],
       cache: false,
     }),
     new CopyWebpackPlugin({
-      patterns: [{
+      patterns: [
+        {
           from: path.resolve(__dirname, "src", "manifest.json"),
           to: path.resolve(__dirname, "dist"),
           force: true,
-          transform: function (content, path) {
+          transform: function(content, path) {
             return Buffer.from(
               JSON.stringify({
                 description: process.env.npm_package_description,
@@ -124,35 +137,42 @@ var options = {
           },
         },
         {
-          from: 'src/icons',
-          to: 'icons',
+          from: "src/icons",
+          to: "icons",
           force: true,
         },
         {
-          from: 'src/assets',
-          to: 'assets',
+          from: "src/assets",
+          to: "assets",
           force: true,
         },
         {
-          from: 'src/modules/error-record.js',
-          to: 'js',
+          from: "src/modules/error-record.js",
+          to: "js",
           force: true,
         },
         {
-          from: 'src/modules/ajaxHook.js',
-          to: 'js',
+          from: "src/modules/ajaxHook.js",
+          to: "js",
           force: true,
         },
-      ]
+      ],
     }),
   ],
   infrastructureLogging: {
-    level: 'info',
+    level: "info",
+  },
+  devServer: {
+    compress: true,
+    // port: 3000,
+    proxy: {
+      "/sockjs-node": "http://localhost:4444",
+    },
   },
 };
 
-if (process.env.NODE_ENV === 'development') {
-  options.devtool = 'cheap-module-source-map';
+if (process.env.NODE_ENV === "development") {
+  options.devtool = "cheap-module-source-map";
 } else {
   options.optimization = {
     minimize: true,
@@ -161,7 +181,7 @@ if (process.env.NODE_ENV === 'development') {
         extractComments: false,
       }),
     ],
-  }
+  };
 }
 
 module.exports = options;

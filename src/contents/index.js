@@ -659,6 +659,7 @@ function gotoLink(href) {
   a.click();
   a.remove();
 }
+
 const params = {
   href,
   win,
@@ -1010,10 +1011,8 @@ function douyin() {
     "recommend-comment-login.recommend-comment-login-mask",
   ];
   removeArrList(classList, ".");
-
   const adIdList = ["captcha_container"];
   removeArrList(adIdList, "#");
-
   const widnowBox = $(".windows-os");
   if (widnowBox && widnowBox.children.length === 3) {
     widnowBox.children[0].remove();
@@ -1022,10 +1021,35 @@ function douyin() {
 
 // 007影视
 function hdys007() {
-  const iframe = $("#player_swf");
-  if (iframe) {
-    // gotoLink(iframe.src)
-    console.log(iframe.src, "------");
+  // const iframe = $("#player_swf");
+  // if (iframe) {
+  //   // gotoLink(iframe.src)
+  //   console.log(iframe.src, "------");
+  // }
+  if (href.includes("/play/")) {
+    const btnList = [...$$(".dslist-group-item")];
+    function changeItem(e) {
+      const code = e.keyCode;
+      let index = btnList.findIndex((it) => it.classList.contains("on"));
+      let clickBtn = null;
+      if (code === 37) {
+        const preBtn = btnList[--index];
+        if (preBtn) {
+          clickBtn = preBtn.querySelector("a");
+          clickBtn && clickBtn.click();
+        }
+        // 上一个
+      } else if (code === 39) {
+        // 下一个
+        const nextBtn = btnList[++index];
+        if (nextBtn) {
+          clickBtn = nextBtn.querySelector("a");
+          clickBtn && clickBtn.click();
+        }
+      }
+    }
+    window.removeEventListener("keyup", changeItem);
+    window.addEventListener("keyup", changeItem);
   }
 }
 

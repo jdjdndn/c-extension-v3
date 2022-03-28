@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-03-19 10:51:24
+ * @LastEditTime: 2022-03-28 21:28:09
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -239,18 +239,22 @@ export function mouseClick(configParams = configParamsDefault) {
     };
   });
 
-  window.addEventListener("contextmenu", (e) => {
+  function contextmenu(e) {
     contentMenuEventsFlag = true;
-  });
+  }
+  window.removeEventListener("contextmenu", contextmenu);
+  window.addEventListener("contextmenu", contextmenu);
 
-  window.addEventListener("auxclick", (e) => {
+  function auxclick(e) {
     setTimeout(() => {
       if (contentMenuEventsFlag) return;
       contentMenuEventsFlag = false;
       console.log(target, "auxclick-target");
       findParentClick(target);
     }, 100);
-  });
+  }
+  window.removeEventListener("auxclick", auxclick);
+  window.addEventListener("auxclick", auxclick);
 
   function keyup(e) {
     const code = e.keyCode;
