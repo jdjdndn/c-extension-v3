@@ -222,7 +222,7 @@ chrome.storage.sync.get(null, function(result) {
   console.log(result, "result");
   configParams = result;
   // 清理缓存
-  clearCache(configParams);
+  // clearCache(configParams);
 });
 
 function colectHref(href) {
@@ -236,6 +236,7 @@ function colectHref(href) {
 }
 
 function clearCache(configParams) {
+  console.log("清除缓存");
   const callback = function() {
     log(
       "Do something clever here once data has been removed",

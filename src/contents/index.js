@@ -1496,7 +1496,7 @@ function juejin() {
   rmSomeSelf(".entry-list>.item", ".tag");
   // const linkList = [...getDomList('.content-wrapper .title-row a'), ...getDomList('.result-list .item .title-row a')]
   // addLinkListBox(linkList, 'juejin-toolbox')
-  const a = $(".like-btn.panel-btn.like-adjust");
+  const a = $(".panel-btn.with-badge");
   if (a && !a.classList.contains("active")) {
     a.click();
   }
