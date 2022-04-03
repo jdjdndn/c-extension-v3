@@ -575,13 +575,14 @@ function rmSomeSelf(father, child, lsit = [], flag = true) {
 // 将一个dom元素下的一个a标签放进一行li中
 function addLinkListBox(linkList = []) {
   liListStr = "";
-  const hrefList = [];
+  let hrefList = [];
   linkList.forEach((item, i) => {
     linkObj[item.toString()] = item.innerText;
     hrefList.push({
       nodeName: "a",
       href: item.toString(),
       text: item.innerText,
+      host,
     });
     liListStr += `<li title='${
       item.innerText
@@ -589,6 +590,7 @@ function addLinkListBox(linkList = []) {
       item.innerText
     }</a></li>\n`;
   });
+  hrefList = linkFilter(hrefList);
   if (!liListStr) return;
   debounce(() => {
     sendMessage({
@@ -857,6 +859,22 @@ const config = {
 };
 
 clearInterval(timer);
+
+// 过滤链接
+function linkFilter(linkList = []) {
+  if (host === "juejin.cn") {
+    return linkList.filter(
+      (it) =>
+        (it.href.includes("/post/") && !it.href.includes("#")) ||
+        it.href.includes("//link.juejin")
+    );
+  } else if (host === "www.zhihu.com") {
+    return linkList.filter(
+      (it) => it.href.includes("/question/") || it.href.includes("/zvideo/")
+    );
+  }
+  return linkList;
+}
 
 function main() {
   // 获取所有a链接
