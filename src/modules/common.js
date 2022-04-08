@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-03-19 10:51:24
+ * @LastEditTime: 2022-04-04 15:40:59
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -293,7 +293,7 @@ export function mouseClick(configParams = configParamsDefault) {
 // ctrl+c 复制文本
 export function copyTargetText() {
   const preList = [...document.querySelectorAll("pre")];
-  window.addEventListener("keyup", (e) => {
+  const keyUp2 = (e) => {
     if (e.ctrlKey && e.keyCode === 67) {
       const text = window.getSelection().toString();
       if (text) {
@@ -309,7 +309,9 @@ export function copyTargetText() {
         clipboardWrite(target.innerText);
       }
     }
-  });
+  };
+  window.removeEventListener("keyup", keyUp2);
+  window.addEventListener("keyup", keyUp2);
 }
 
 function clipboardWrite(text, needClear = false) {
