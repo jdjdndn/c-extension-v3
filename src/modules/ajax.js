@@ -1,6 +1,8 @@
 export function ajax(options) {
   // 基础请求url
-  const baseUrl = "http://localhost:88";
+  const baseUrl = process.env.https
+    ? "https://chengyu.site:8889/https-api"
+    : "http://localhost:88";
   // 存储的是默认值
   var defaults = {
     type: "get",

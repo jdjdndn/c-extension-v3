@@ -572,6 +572,27 @@ function rmSomeSelf(father, child, lsit = [], flag = true) {
   });
 }
 
+// 过滤链接
+function linkFilter(linkList = []) {
+  if (host === "juejin.cn") {
+    return linkList.filter(
+      (it) =>
+        (it.href.includes("/post/") && !it.href.includes("#")) ||
+        it.href.includes("//link.juejin")
+    );
+  } else if (host === "www.zhihu.com") {
+    return linkList.filter(
+      (it) => it.href.includes("/question/") || it.href.includes("/zvideo/")
+    );
+  } else if (host === "www.cnblogs.com") {
+    return linkList.filter((it) => it.href.includes("/p/"));
+  } else if (host === "www.google.com") {
+    return linkList.filter((it) => !it.href.includes("www.google.com/search"));
+  }
+  console.log(linkList, "=linkList=");
+  return linkList;
+}
+
 // 将一个dom元素下的一个a标签放进一行li中
 function addLinkListBox(linkList = []) {
   liListStr = "";
