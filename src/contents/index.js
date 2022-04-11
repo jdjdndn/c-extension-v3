@@ -504,11 +504,12 @@ function videoPlay(rate = 1.5, index = 0) {
   const video = $("video");
   if (video) {
     const realRate = Number(rate) === rate ? rate : 1.5;
-    if (video.playbackRate === realRate && video.paused) {
-      video.play();
-      return false;
-    } else {
+    if (video.playbackRate !== realRate) {
+      video.autoplay = true;
       video.playbackRate = realRate;
+    } else if (!video.paused) {
+      video.play();
+      return;
     }
   } else {
     setTimeout(() => {
@@ -589,7 +590,6 @@ function linkFilter(linkList = []) {
   } else if (host === "www.google.com") {
     return linkList.filter((it) => !it.href.includes("www.google.com/search"));
   }
-  console.log(linkList, "=linkList=");
   return linkList;
 }
 
@@ -880,22 +880,6 @@ const config = {
 };
 
 clearInterval(timer);
-
-// 过滤链接
-function linkFilter(linkList = []) {
-  if (host === "juejin.cn") {
-    return linkList.filter(
-      (it) =>
-        (it.href.includes("/post/") && !it.href.includes("#")) ||
-        it.href.includes("//link.juejin")
-    );
-  } else if (host === "www.zhihu.com") {
-    return linkList.filter(
-      (it) => it.href.includes("/question/") || it.href.includes("/zvideo/")
-    );
-  }
-  return linkList;
-}
 
 function main() {
   // 获取所有a链接
@@ -1331,145 +1315,75 @@ function csdn() {
 // youtube
 function youtube() {
   setStyle(".html5-video-player", "display: block");
-  if (youtubeFlag) return;
-  const video = $("video");
-  if (video && !youtubeFlag) {
-    youtubeFlag = true;
-    video.addEventListener("canplay", (e) => {
-      const zimuShowBtn = $(".ytp-subtitles-button.ytp-button");
-      if (zimuShowBtn.ariaPressed !== "true") {
-        console.log(zimuShowBtn.ariaPressed, "zimuShowBtn.ariaPressed");
-        zimuShowBtn.click();
-      }
-      // 字幕文本
-      const zimuText = $(".captions-text");
-      if (zimuText) return false;
-      // 打开面板按钮
-      const pannel = $(".ytp-button.ytp-settings-button");
-      pannel && pannel.click();
-      // 左侧  字幕（1）
-      const zimuTxt = [...$$(".ytp-menuitem-label")];
-      let zimuTxtBtn = null;
-      zimuTxt.forEach((t) => {
-        if (t.innerText.includes("字幕")) {
-          zimuTxtBtn = t;
-        }
-      });
-      // 设置中文
-      if (zimuTxtBtn) {
-        const parentBox = zimuTxtBtn.parentNode;
-        if (
-          parentBox
-            .querySelector(".ytp-menuitem-content")
-            .innerText.includes("中文")
-        ) {
-          return;
-        }
-        parentBox.click();
-        console.log("当前不是中文字幕");
-        const languateBtnList = [...$$(".ytp-menuitem")];
-        let needChooseLanguage = false;
-        languateBtnList.some((t) => {
-          if (t.innerText.includes("中文")) {
-            t.click();
-            return true;
-          } else if (t.innerText.includes("自动翻译")) {
-            console.log(t.innerText, "t.innerText");
-            t.click();
-            needChooseLanguage = true;
-            return true;
-          } else {
-            return false;
-          }
-        });
-        // 自动翻译要多走一步
-        if (needChooseLanguage) {
-          const languateBtnList2 = [...$$(".ytp-menuitem")];
-          languateBtnList2.some((t) => {
-            if (t.innerText.includes("中文（简体）")) {
-              t.click();
-              return true;
-            }
-            return false;
-          });
-        }
-        $$(".ytp-panel")[0].style.display = "none";
-        pannel.click();
-      }
-    });
-  }
-  // const zimuShowBtn = $('.ytp-subtitles-button.ytp-button')
-  // if (zimuShowBtn.ariaPressed !== 'true') {
-  //   console.log(zimuShowBtn.ariaPressed, 'zimuShowBtn.ariaPressed');
-  //   zimuShowBtn.click()
-  // }
-  // // 字幕文本
-  // const zimuText = $('.captions-text')
-  // if (zimuText) return false
-  // // 打开面板按钮
-  // const pannel = $('.ytp-button.ytp-settings-button')
-  // pannel && pannel.click()
-  // // 左侧  字幕（1）
-  // const zimuTxt = [...$$('.ytp-menuitem-label')]
-  // let zimuTxtBtn = null
-  // // playRateBtn = null
-  // // if (!zimuTxt.length) return youtubeFlag = true
-  // zimuTxt.forEach(t => {
-  //   if (t.innerText.includes('字幕')) {
-  //     zimuTxtBtn = t
-  //   }
-  //   // if (t.innerText.includes('播放速度')) {
-  //   //   playRateBtn = t
-  //   // }
-  // })
-  // // 设置播放速度
-  // // if (playRateBtn) {
-  // //   playRateBtn.click()
-  // //   const playRateList = [...$$('.ytp-menuitem')]
-  // //   playRateList.forEach(t => {
-  // //     if (t.innerText.includes((configParams.mapInfo[host] && configParams.mapInfo[host].videoPlayRate) || defaultparams.videoPlayRate)) {
-  // //       t.click()
-  // //     }
-  // //   })
-  // //   youtubeFlag = true
-  // // }
-  // // 设置中文
-  // if (zimuTxtBtn) {
-  //   const parentBox = zimuTxtBtn.parentNode
-  //   if (parentBox.querySelector('.ytp-menuitem-content').innerText.includes('中文')) {
-  //     return youtubeFlag = true
-  //   }
-  //   parentBox.click()
-  //   console.log('当前不是中文字幕');
-  //   const languateBtnList = [...$$('.ytp-menuitem')]
-  //   let needChooseLanguage = false
-  //   languateBtnList.some(t => {
-  //     if (t.innerText.includes('中文')) {
-  //       t.click()
-  //       return true
-  //     } else if (t.innerText.includes('自动翻译')) {
-  //       console.log(t.innerText, 't.innerText');
-  //       t.click()
-  //       needChooseLanguage = true
-  //       return true
-  //     } else {
-  //       return false
+  videoPlay(
+    (configParams.mapInfo[host] || {}).videoPlayRate ||
+      defaultparams.defaultVideoPlayRate
+  );
+  // const video = $("video");
+  // if (video) {
+  //   // youtubeFlag = true;
+  //   video.addEventListener("canplay", (e) => {
+  //     const zimuShowBtn = $(".ytp-subtitles-button.ytp-button");
+  //     if (zimuShowBtn.ariaPressed !== "true") {
+  //       zimuShowBtn.click();
   //     }
-  //   })
-  //   // 自动翻译要多走一步
-  //   if (needChooseLanguage) {
-  //     const languateBtnList2 = [...$$('.ytp-menuitem')]
-  //     languateBtnList2.some(t => {
-  //       if (t.innerText.includes('中文（简体）')) {
-  //         t.click()
-  //         return true
+  //     // 字幕文本
+  //     const zimuText = $(".captions-text");
+  //     if (zimuText) return false;
+  //     // 打开面板按钮
+  //     const pannel = $(".ytp-button.ytp-settings-button");
+  //     pannel && pannel.click();
+  //     // 左侧  字幕（1）
+  //     const zimuTxt = [...$$(".ytp-menuitem-label")];
+  //     let zimuTxtBtn = null;
+  //     zimuTxt.forEach((t) => {
+  //       if (t.innerText.includes("字幕")) {
+  //         zimuTxtBtn = t;
   //       }
-  //       return false
-  //     })
-  //   }
-  //   $$('.ytp-panel')[0].style.display = 'none'
-  //   pannel.click()
-  // youtubeFlag = true
+  //     });
+  //     // 设置中文
+  //     if (zimuTxtBtn) {
+  //       const parentBox = zimuTxtBtn.parentNode;
+  //       if (
+  //         parentBox
+  //           .querySelector(".ytp-menuitem-content")
+  //           .innerText.includes("中文")
+  //       ) {
+  //         return;
+  //       }
+  //       parentBox.click();
+  //       console.log("当前不是中文字幕");
+  //       const languateBtnList = [...$$(".ytp-menuitem")];
+  //       let needChooseLanguage = false;
+  //       languateBtnList.some((t) => {
+  //         if (t.innerText.includes("中文")) {
+  //           t.click();
+  //           return true;
+  //         } else if (t.innerText.includes("自动翻译")) {
+  //           console.log(t.innerText, "t.innerText");
+  //           t.click();
+  //           needChooseLanguage = true;
+  //           return true;
+  //         } else {
+  //           return false;
+  //         }
+  //       });
+  //       // 自动翻译要多走一步
+  //       if (needChooseLanguage) {
+  //         const languateBtnList2 = [...$$(".ytp-menuitem")];
+  //         languateBtnList2.some((t) => {
+  //           if (t.innerText.includes("中文（简体）")) {
+  //             t.click();
+  //             return true;
+  //           }
+  //           return false;
+  //         });
+  //       }
+  //       $$(".ytp-panel")[0].style.display = "none";
+  //       pannel.click();
+  //     }
+  //   });
+  // }
 }
 
 function mdn({ href, win }) {
@@ -1760,7 +1674,7 @@ function sendMessage(
     host,
     href,
   };
-  console.log("sendMessage-content");
+  chrome.storage.sync.set({ ...configParams, host }, function() {});
   try {
     chrome.runtime.sendMessage(object, fn);
   } catch (error) {

@@ -89,6 +89,15 @@
           >关<input id="h" type="radio" name="g" :checked="!collectInfoFlag"
         /></label>
       </div>
+      <div class="popup-item">
+        9、新页面开链接
+        <label for="i" @click="openNewPage()"
+          >开<input id="i" type="radio" name="i" :checked="openNewPageFlag"
+        /></label>
+        <label for="j" @click="openNewPage(false)"
+          >关<input id="j" type="radio" name="i" :checked="!openNewPageFlag"
+        /></label>
+      </div>
     </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
@@ -104,7 +113,7 @@ export default {
     };
   },
   mounted() {
-    const { getAndSetParams, sendMessage } = this;
+    const { getAndSetParams, sendMessage, sendMessage2 } = this;
     const that = this;
     getAndSetParams();
     console.log(chrome, 'chrome');
@@ -112,14 +121,25 @@ export default {
       that.host = request.host;
       console.log(request, sender, '接受消息');
     });
-    sendMessage({}, (res) => {
+    const fn = (res) => {
+      // console.log(res, 'popup-host');
       if (res && res.host) {
         that.host = res.host;
       }
-    });
+    };
+    sendMessage({}, fn);
+    // sendMessage2({}, fn);
     this.start();
   },
   methods: {
+    openNewPage(openNewPageFlag = true) {
+      const { host, mapInfo, noChangeLog } = this;
+      if (!mapInfo || !mapInfo[host]) return false;
+      if (mapInfo[host].openNewPageFlag === openNewPageFlag)
+        return noChangeLog('不需要切换');
+      mapInfo[host].openNewPageFlag = openNewPageFlag;
+      this.saveAndSend({ openNewPageFlag });
+    },
     collectInfo(collectInfoFlag = false) {
       const { host, mapInfo, noChangeLog } = this;
       if (!mapInfo || !mapInfo[host]) return false;
@@ -156,6 +176,10 @@ export default {
       mouseClick(result);
       this.sendMessage2(result);
     },
+    // 判断是否undefined,null
+    unDef(data) {
+      return data == void 0;
+    },
     // 获取storage并设置参数
     getAndSetParams() {
       let that = this;
@@ -164,9 +188,7 @@ export default {
         that.result = result;
         console.log('看看获取的参数', result);
         if (!result) return false;
-        that.configParamsBacket = JSON.parse(
-          JSON.stringify(result.configParams) || '{}'
-        );
+        that.configParamsBacket = JSON.parse(JSON.stringify(result) || '{}');
         const {
           changeEleMiaoBian,
           noChangeHrefList,
@@ -175,14 +197,23 @@ export default {
           mapInfo,
           host,
           collectInfoFlag,
+          openNewPageFlag,
           clearTime
         } = that.result;
+        console.log(host, '====popup-host');
         that.host = host;
-        that.changeEleMiaoBian = changeEleMiaoBian || that.changeEleMiaoBian;
-        that.debug = debug || that.debug;
         that.mapInfo = mapInfo || {};
         that.clearTime = clearTime || 1;
-        that.collectInfoFlag = collectInfoFlag || that.collectInfoFlag;
+        that.changeEleMiaoBian = that.unDef(changeEleMiaoBian)
+          ? changeEleMiaoBian
+          : defaultparams.changeEleMiaoBian;
+        that.debug = that.unDef(debug) ? debug : defaultparams.debug;
+        that.collectInfoFlag = that.unDef(collectInfoFlag)
+          ? collectInfoFlag
+          : defaultparams.collectInfoFlag;
+        that.openNewPageFlag = that.unDef(openNewPageFlag)
+          ? openNewPageFlag
+          : defaultparams.openNewPageFlag;
 
         that.noChangeHrefList =
           noChangeHrefList && noChangeHrefList.length
@@ -309,8 +340,10 @@ export default {
         }
       );
     },
-    sendMessage2(message) {
-      chrome.runtime.sendMessage(message, function (response) {});
+    sendMessage2(message, fn = () => {}) {
+      chrome.runtime.sendMessage(message, function (response) {
+        if (typeof fn === 'function') fn(response);
+      });
     }
   },
   watch: {
@@ -318,22 +351,25 @@ export default {
       immediate: true,
       handler(val, oldval) {
         if (!val) return;
-        if (val == oldval) return;
+        if (val === oldval) return;
         let {
           mapInfo,
           videoPlayRate,
           saveAndSend,
           recordErrorList,
-          collectInfoFlag
+          collectInfoFlag,
+          openNewPageFlag
         } = this;
         if (!mapInfo[val]) {
           mapInfo[val] = {};
           mapInfo[val].videoPlayRate = videoPlayRate;
           mapInfo[val].collectInfoFlag = collectInfoFlag;
+          mapInfo[val].openNewPageFlag = openNewPageFlag;
           saveAndSend({ mapInfo });
         } else {
           this.videoPlayRate = mapInfo[val].videoPlayRate;
           this.collectInfoFlag = mapInfo[val].collectInfoFlag;
+          this.openNewPageFlag = mapInfo[val].openNewPageFlag;
         }
         const valIndex = val.indexOf(':');
         if (valIndex !== -1) {

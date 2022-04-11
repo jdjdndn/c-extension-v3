@@ -30,6 +30,7 @@ export const defaultparams = {
   recordErrorList: ["localhost"], // 记录报错列表
   videoPlayRate: 1.5, // 默认播放速度
   collectInfoFlag: false, // 默认不收集信息
+  openNewPageFlag: true, // 默认点击a链接打开新页面
 };
 import "./index.scss";
 
@@ -46,9 +47,7 @@ let target = null,
   YUCHENG_USE_DELAY = 1000,
   contentMenuEventsFlag = false, // 是否contentmenu事件
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
-// BLACK = '_blank',
-// YUCHENG_ALINK = document.createElement('a')
-// YUCHENG_ALINK.target = BLACK
+
 const { log } = console;
 YUCHENG_USE_BOX.classList.add("yucheng-use-box");
 YUCHENG_USE_BOX.style.cssText = `
@@ -118,18 +117,28 @@ export function otherSiteHref(href) {
 
 // shift + space 实现点击鼠标所在位置
 export function mouseClick(configParams = configParamsDefault) {
-  // console.log(configParams, 'common.js------');
+  // console.log(configParams, "common.js------");
+  let { mapInfo, host } = configParams;
+  if (!mapInfo) {
+    mapInfo = configParamsDefault.mapInfo;
+  }
   // 从子孙往上找，直到找到可以点击的dom
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick;
     // 获取元素上的监听事件
-    // if (item.nodeName === 'A' && item.target !== BLACK) {
-    //   // 开一个新窗口
-    //   YUCHENG_ALINK.href = item.href
-    //   YUCHENG_ALINK.click()
-    //   return isClick
-    // } else
-    if (typeof getEventListeners === "function") {
+    if (
+      item.nodeName === "A" &&
+      item.target !== "_blank" &&
+      mapInfo[host].openNewPageFlag
+    ) {
+      let YUCHENG_ALINK = document.createElement("a");
+      YUCHENG_ALINK.target = "_blank";
+      // 开一个新窗口
+      YUCHENG_ALINK.href = item.href;
+      YUCHENG_ALINK.click();
+      YUCHENG_ALINK = null;
+      return isClick;
+    } else if (typeof getEventListeners === "function") {
       const listeners = getEventListeners(item);
       if (listeners && listeners.click) {
         item.click();
@@ -203,7 +212,7 @@ export function mouseClick(configParams = configParamsDefault) {
         targetCssText = e.target.style.cssText;
         e.target.style.cssText += "box-shadow: 0px 0px 1px 1px #ccc;";
       }
-      if (target.nodeName === "IFRAME") {
+      if (target.nodeName === "IFRAME" && target) {
         const targetWin = target.contentWindow;
         if (targetWin && sameOrigin(target.src)) {
           try {
@@ -233,7 +242,7 @@ export function mouseClick(configParams = configParamsDefault) {
   iframes.forEach((it) => {
     it.onload = function() {
       const targetWin = it.contentWindow;
-      if (targetWin && sameOrigin(target.src)) {
+      if (target && targetWin && sameOrigin(target.src)) {
         targetWin.addEventListener("pointermove", pointermove);
       }
     };
@@ -246,10 +255,11 @@ export function mouseClick(configParams = configParamsDefault) {
   window.addEventListener("contextmenu", contextmenu);
 
   function auxclick(e) {
-    setTimeout(() => {
+    const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;
       contentMenuEventsFlag = false;
       console.log(target, "auxclick-target");
+      clearTimeout(auxclickTimer);
       findParentClick(target);
     }, 100);
   }
