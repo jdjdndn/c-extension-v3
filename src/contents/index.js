@@ -34,12 +34,12 @@ chrome.storage.sync.get(null, function(result) {
   if (configParams && configParams.mapInfo && !configParams.mapInfo[host]) {
     configParams.mapInfo[host] = {
       ...configParams.mapInfo[host],
-      videoPlayRate: defaultparams.defaultVideoPlayRate,
+      videoPlayRate: defaultparams.videoPlayRate,
       fanyiFlag: defaultparams.fanyiFlag,
     };
   }
   console.log(configParams, result, "configParams");
-  chrome.storage.sync.set(configParams, function() {});
+  chrome.storage.sync.set({ ...configParams, host }, function() {});
   commonEvents(configParams);
   copyTargetText();
   autoSelect();
@@ -60,7 +60,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     configParams,
     "接收消息",
     (configParams.mapInfo[host] || {}).videoPlayRate ||
-      defaultparams.defaultVideoPlayRate
+      defaultparams.videoPlayRate
   );
   sendResponse({
     host,
@@ -79,12 +79,11 @@ function commonEvents(configParams) {
   // 切换视频播放速度
   videoPlay(
     (configParams.mapInfo[host] || {}).videoPlayRate ||
-      defaultparams.defaultVideoPlayRate
+      defaultparams.videoPlayRate
   );
   // 设置是否翻译
   setFanyi(
-    (configParams.mapInfo[host] || {}).fanyiFlag ||
-      defaultparams.defaultFanyiFlag
+    (configParams.mapInfo[host] || {}).fanyiFlag || defaultparams.fanyiFlag
   );
   // 切换收集a链接
   configParams.mapInfo[host].collectInfoFlag =
@@ -1317,7 +1316,7 @@ function youtube() {
   setStyle(".html5-video-player", "display: block");
   videoPlay(
     (configParams.mapInfo[host] || {}).videoPlayRate ||
-      defaultparams.defaultVideoPlayRate
+      defaultparams.videoPlayRate
   );
   // const video = $("video");
   // if (video) {

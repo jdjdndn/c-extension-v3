@@ -5,11 +5,20 @@
  * @LastEditors: yucheng
  * @Description: ..
  */
+
+export const commonDefault = {
+  videoPlayRate: 1.5, // 默认播放速度
+  collectInfoFlag: false, // 默认不收集信息
+  openNewPageFlag: true, // 默认点击a链接打开新页面
+  fanyiFlag: false, // 默认不翻译
+};
 export const defaultparams = {
-  defaultVideoPlayRate: 1.5,
-  defaultFanyiFlag: false,
+  videoPlayRate: 1.5,
+  fanyiFlag: false,
   configParamsBacket: {}, // 深拷贝所有配置参数
-  mapInfo: {}, // content对象信息
+  mapInfo: {
+    default: commonDefault,
+  }, // content对象信息
   host: "", // location.host
   videoPlayRateList: [
     {
@@ -28,9 +37,6 @@ export const defaultparams = {
   noChangeHrefList: ["iflytek", "zhixue", "localhost", "google"], // 不跳转其他url列表
   debug: false, // 调试模式
   recordErrorList: ["localhost"], // 记录报错列表
-  videoPlayRate: 1.5, // 默认播放速度
-  collectInfoFlag: false, // 默认不收集信息
-  openNewPageFlag: true, // 默认点击a链接打开新页面
 };
 import "./index.scss";
 
@@ -258,8 +264,8 @@ export function mouseClick(configParams = configParamsDefault) {
     const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;
       contentMenuEventsFlag = false;
-      console.log(target, "auxclick-target");
       clearTimeout(auxclickTimer);
+      console.log(target, "auxclick-target");
       findParentClick(target);
     }, 100);
   }
