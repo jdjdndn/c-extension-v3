@@ -7,6 +7,7 @@ import {
   defaultparams,
   // hrefChange,
   otherSiteHref,
+  unDef,
 } from "../modules/common.js";
 import { ajax } from "../modules/ajax.js";
 let performance_now = performance.now(),
@@ -56,13 +57,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ...request,
   };
   commonEvents(configParams);
-  logInfo(
-    request,
-    configParams,
-    "接收消息",
-    (configParams.mapInfo[host] || {}).videoPlayRate ||
-      defaultparams.videoPlayRate
-  );
+  // logInfo(
+  //   request,
+  //   configParams,
+  //   "接收消息",
+  //   (configParams.mapInfo[host] || {}).videoPlayRate ||
+  //     defaultparams.videoPlayRate
+  // );
   sendResponse({
     host,
     str: "我收到了你的情书， popup~",
@@ -80,12 +81,15 @@ function commonEvents(configParams) {
   removeErrListening(configParams);
   // 切换视频播放速度
   videoPlay(
-    (configParams.mapInfo[host] || {}).videoPlayRate ||
-      defaultparams.videoPlayRate
+    unDef((configParams.mapInfo[host] || {}).videoPlayRate)
+      ? defaultparams.videoPlayRate
+      : configParams.mapInfo[host].videoPlayRate
   );
   // 设置是否翻译
   setFanyi(
-    (configParams.mapInfo[host] || {}).fanyiFlag || defaultparams.fanyiFlag
+    unDef((configParams.mapInfo[host] || {}).fanyiFlag)
+      ? defaultparams.fanyiFlag
+      : configParams.mapInfo[host].fanyiFlag
   );
   // 切换收集a链接
   configParams.mapInfo[host].collectInfoFlag =
@@ -1320,8 +1324,9 @@ function csdn() {
 function youtube() {
   setStyle(".html5-video-player", "display: block");
   videoPlay(
-    (configParams.mapInfo[host] || {}).videoPlayRate ||
-      defaultparams.videoPlayRate
+    unDef((configParams.mapInfo[host] || {}).videoPlayRate)
+      ? defaultparams.videoPlayRate
+      : configParams.mapInfo[host].videoPlayRate
   );
   // const video = $("video");
   // if (video) {

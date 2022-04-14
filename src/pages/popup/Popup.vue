@@ -101,7 +101,7 @@
             :value="true"
             v-model="allDataObj.fanyiFlag"
         /></label>
-        <label for="f" @click="changeFanyi()"
+        <label for="f" @click="changeFanyi(false)"
           >关<input
             id="f"
             type="radio"
@@ -120,7 +120,7 @@
             :value="true"
             v-model="allDataObj.collectInfoFlag"
         /></label>
-        <label for="h" @click="collectInfo()"
+        <label for="h" @click="collectInfo(false)"
           >关<input
             id="h"
             type="radio"
@@ -131,7 +131,7 @@
       </div>
       <div class="popup-item">
         9、新页面开链接
-        <label for="i" @click="openNewPage()"
+        <label for="i" @click="openNewPage(true)"
           >开<input
             id="i"
             type="radio"
@@ -148,19 +148,41 @@
             v-model="allDataObj.openNewPageFlag"
         /></label>
       </div>
+      <!-- <div class="popup-item">
+        10、默认auxclick与click不同时触发（切换需刷新）
+        <label for="l" @click="changeAuxclickOnly(true)"
+          >开<input
+            id="l"
+            type="radio"
+            name="k"
+            :value="true"
+            v-model="allDataObj.auxclickOnly"
+        /></label>
+        <label for="k" @click="changeAuxclickOnly(false)"
+          >关<input
+            id="k"
+            type="radio"
+            name="k"
+            :value="false"
+            v-model="allDataObj.auxclickOnly"
+        /></label>
+      </div> -->
     </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
 </template>
 
 <script>
-import { mouseClick, defaultparams, commonDefault } from '../../modules/common';
+import {
+  mouseClick,
+  defaultparams,
+  commonDefault,
+  unDef
+} from '../../modules/common';
 export default {
   data() {
     return {
       msg: 'Welcome!--popup',
-      // ...defaultparams,
-      // ...commonDefault,
       host: '',
       allDataObj: {},
       configParamsBacket: {}
@@ -195,6 +217,9 @@ export default {
     // sendMessage2({}, fn);
   },
   methods: {
+    // changeAuxclickOnly(auxclickOnly = commonDefault.auxclickOnly) {
+    //   this.commonSetRadioParams(auxclickOnly, 'auxclickOnly');
+    // },
     openNewPage(openNewPageFlag = true) {
       const { host, allDataObj, saveAndSend } = this;
       const { mapInfo } = allDataObj;
@@ -204,7 +229,7 @@ export default {
       console.log(mapInfo[host], 'openflag');
       saveAndSend({ mapInfo });
     },
-    collectInfo(collectInfoFlag = false) {
+    collectInfo(collectInfoFlag = commonDefault.collectInfoFlag) {
       const { host, allDataObj, saveAndSend } = this;
       const { mapInfo } = allDataObj;
       if (!mapInfo || !mapInfo[host]) return false;
@@ -213,12 +238,21 @@ export default {
       saveAndSend({ mapInfo });
     },
     // 开启翻译
-    changeFanyi(fanyiFlag = false) {
+    changeFanyi(fanyiFlag = commonDefault.fanyiFlag) {
       const { host, allDataObj, saveAndSend } = this;
       const { mapInfo } = allDataObj;
       if (!mapInfo || !mapInfo[host]) return false;
       allDataObj.fanyiFlag = fanyiFlag;
       mapInfo[host].fanyiFlag = fanyiFlag;
+      saveAndSend({ mapInfo });
+    },
+    // 设置单选框的公共方法
+    commonSetRadioParams(flag, type) {
+      const { host, allDataObj, saveAndSend } = this;
+      const { mapInfo } = allDataObj;
+      if (!mapInfo || !mapInfo[host]) return false;
+      allDataObj[type] = flag;
+      mapInfo[host][type] = flag;
       saveAndSend({ mapInfo });
     },
     start() {
@@ -244,10 +278,6 @@ export default {
       this.start();
       mouseClick(result);
       this.sendMessage2(result);
-    },
-    // 判断是否undefined,null
-    unDef(data) {
-      return data == void 0;
     },
     // 获取storage并设置参数
     getAndSetParams() {
@@ -399,7 +429,7 @@ export default {
       handler(val, oldval) {
         if (!val) return;
         if (val === oldval) return;
-        const { saveAndSend, allDataObj, unDef } = this;
+        const { saveAndSend, allDataObj } = this;
         let { mapInfo, recordErrorList } = allDataObj;
         if (!mapInfo[val]) {
           mapInfo[val] = commonDefault;

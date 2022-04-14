@@ -11,6 +11,7 @@ export const commonDefault = {
   collectInfoFlag: false, // 默认不收集信息
   openNewPageFlag: true, // 默认点击a链接打开新页面
   fanyiFlag: false, // 默认不翻译
+  // auxclickOnly: true, // 默认auxclick与click不同时触发
 };
 export const defaultparams = {
   videoPlayRate: 1.5,
@@ -39,7 +40,7 @@ export const defaultparams = {
   recordErrorList: ["localhost"], // 记录报错列表
 };
 import "./index.scss";
-
+const { getEventListeners } = window;
 const { href, host, origin } = location;
 
 let target = null,
@@ -86,6 +87,11 @@ class Util {
     }
     this.timer = setTimeout(fn, delay);
   }
+}
+
+// 判断是否undefined,null
+export function unDef(data) {
+  return data == void 0;
 }
 
 // noClose 为 false 时，不关闭
@@ -158,16 +164,20 @@ export function mouseClick(configParams = configParamsDefault) {
       // gotoLink(item.href);
       gotoLink(otherSiteHref(item.href).href);
       return isClick;
-    } else if (
-      (parentIsANode = isParentNodeA(target)) &&
-      parentIsANode.target !== "_blank" &&
-      mapInfo[host].openNewPageFlag
-    ) {
+    } else if ((parentIsANode = isParentNodeA(target))) {
+      const otherSiteObj = otherSiteHref(parentIsANode.href);
+      if (otherSiteObj.needChange) {
+        gotoLink(otherSiteObj.href);
+      } else if (
+        parentIsANode.target !== "_blank" &&
+        mapInfo[host].openNewPageFlag
+      ) {
+        gotoLink(otherSiteHref(parentIsANode.href).href);
+      }
       // gotoLink(parentIsANode.href);
-      gotoLink(otherSiteHref(parentIsANode.href).href);
       return isClick;
-    } else if (typeof getEventListeners === "function") {
-      const listeners = getEventListeners(item);
+    } else if (typeof window.getEventListeners === "function") {
+      const listeners = window.getEventListeners(item);
       if (listeners && listeners.click) {
         item.click();
         return isClick;
