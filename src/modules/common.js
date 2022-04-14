@@ -52,6 +52,7 @@ let target = null,
   YUCHENG_USE_BOX = document.createElement("div"),
   YUCHENG_USE_DELAY = 1000,
   contentMenuEventsFlag = false, // 是否contentmenu事件
+  clickEventInvoke = false, //auxclick触发时不触发click
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
 
 const { log } = console;
@@ -121,6 +122,20 @@ export function otherSiteHref(href) {
   };
 }
 
+// 判断父元素是否为a元素,找10次就不找了
+function isParentNodeA(item, max = 0) {
+  if (!item || max >= 5) return null;
+  max++;
+  if (item.nodeName === "A") {
+    return {
+      href: item.href,
+      target: item.target,
+    };
+  } else {
+    return isParentNodeA(item.parentNode, max);
+  }
+}
+
 // shift + space 实现点击鼠标所在位置
 export function mouseClick(configParams = configParamsDefault) {
   // console.log(configParams, "common.js------");
@@ -131,18 +146,25 @@ export function mouseClick(configParams = configParamsDefault) {
   // 从子孙往上找，直到找到可以点击的dom
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick;
+    // 父元素是否a链接
+    let parentIsANode = null;
     // 获取元素上的监听事件
     if (
       item.nodeName === "A" &&
       item.target !== "_blank" &&
       mapInfo[host].openNewPageFlag
     ) {
-      let YUCHENG_ALINK = document.createElement("a");
-      YUCHENG_ALINK.target = "_blank";
-      // 开一个新窗口
-      YUCHENG_ALINK.href = item.href;
-      YUCHENG_ALINK.click();
-      YUCHENG_ALINK = null;
+      console.log("因该触发这里");
+      // gotoLink(item.href);
+      gotoLink(otherSiteHref(item.href).href);
+      return isClick;
+    } else if (
+      (parentIsANode = isParentNodeA(target)) &&
+      parentIsANode.target !== "_blank" &&
+      mapInfo[host].openNewPageFlag
+    ) {
+      // gotoLink(parentIsANode.href);
+      gotoLink(otherSiteHref(parentIsANode.href).href);
       return isClick;
     } else if (typeof getEventListeners === "function") {
       const listeners = getEventListeners(item);
@@ -260,16 +282,29 @@ export function mouseClick(configParams = configParamsDefault) {
   window.removeEventListener("contextmenu", contextmenu);
   window.addEventListener("contextmenu", contextmenu);
 
+  function click(e) {
+    console.log("click触发", clickEventInvoke, new Date().getTime());
+    if (clickEventInvoke) {
+      e.preventDefault();
+    }
+  }
+  window.removeEventListener("click", click);
+  window.addEventListener("click", click);
+
+  // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
+    clickEventInvoke = true;
+    console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;
       contentMenuEventsFlag = false;
       clearTimeout(auxclickTimer);
       console.log(target, "auxclick-target");
       findParentClick(target);
-    }, 100);
+      clickEventInvoke = false;
+      console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
+    }, 200);
   }
-  window.removeEventListener("auxclick", auxclick);
   window.addEventListener("auxclick", auxclick);
 
   function keyup(e) {

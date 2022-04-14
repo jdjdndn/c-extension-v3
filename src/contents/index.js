@@ -17,10 +17,11 @@ let performance_now = performance.now(),
   youtubeFlag = false, // YouTube中文翻译只设置一次
   configParams = {
     mapInfo: {},
-  }; // popup配置参数
+  }, // popup配置参数
+  cached = {}; // 缓存起来
 
 const { location } = window;
-const { href, host, pathname, origin, search } = location;
+const { href, host, pathname, origin, search, protocol } = location;
 const { log, error, dir } = console;
 const vueAroundList = ["router.vuejs.org", "vuex.vuejs.org", "cli.vuejs.org"];
 
@@ -73,7 +74,8 @@ function commonEvents(configParams) {
   // 跳转网址
   replaceHref(configParams);
   // 键盘点击事件
-  mouseClick(configParams);
+  if (!cached["mouseClick"]) mouseClick(configParams);
+  cached["mouseClick"] = mouseClick;
   // 添加/移除错误监听
   removeErrListening(configParams);
   // 切换视频播放速度
@@ -243,15 +245,16 @@ function setFanyi(fanyiFlag) {
       "}, 'google_translate_element');}";
 
     addNewElement(gtehtml, "script", false);
-    addNewElement(
-      "https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js",
-      "script",
-      true
-    );
+    // addNewElement(
+    //   "https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js",
+    //   "script",
+    //   true
+    // );
 
     //   google翻译的网址  //translate.google.com/translate_a/element.js?cb=googleTranslateElementInit
+    // https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js
     addNewElement(
-      "https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js",
+      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit",
       "script",
       true
     );
@@ -630,6 +633,7 @@ function addLinkListBox(linkList = []) {
         header: {
           "Content-Type": "application/json",
         },
+        pageProtocol: protocol,
         data: hrefList,
         success: function(data) {
           console.log("这里是success函数", data);
@@ -689,6 +693,7 @@ const params = {
   origin,
   search,
   host,
+  protocol,
 };
 
 // dom数组

@@ -2,8 +2,10 @@ export function ajax(options) {
   const https = true;
   // 基础请求url
   const baseUrl = https
-    ? "https://chengyu.site:8889/https-api"
-    : "http://localhost:88";
+    ? options.pageProtocol === "https:"
+      ? "https://chengyu.site:8889/https-api"
+      : "http://chengyu.site:89/https-api"
+    : "http://localhost:80/https-api";
   // 存储的是默认值
   var defaults = {
     type: "get",

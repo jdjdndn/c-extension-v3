@@ -344,7 +344,6 @@ export default {
       this.sendMessage(params);
       this.sendMessage2(params);
       this.configParamsBacket = JSON.parse(JSON.stringify(params));
-      // mouseClick(params);
     },
     // 改变配置参数
     changeStorage(params) {
