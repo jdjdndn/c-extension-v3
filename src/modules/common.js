@@ -11,7 +11,7 @@ export const commonDefault = {
   collectInfoFlag: false, // 默认不收集信息
   openNewPageFlag: true, // 默认点击a链接打开新页面
   fanyiFlag: false, // 默认不翻译
-  // auxclickOnly: true, // 默认auxclick与click不同时触发
+  auxclickOnly: false, // 默认auxclick与click不同时触发
 };
 export const defaultparams = {
   videoPlayRate: 1.5,
@@ -155,34 +155,48 @@ export function mouseClick(configParams = configParamsDefault) {
     // 父元素是否a链接
     let parentIsANode = null;
     // 获取元素上的监听事件
+    let otherObj = {};
     if (
       item.nodeName === "A" &&
-      item.target !== "_blank" &&
+      (otherObj = otherSiteHref(item.href)) &&
+      otherObj.needChange
+    ) {
+      console.log(1, otherObj);
+      gotoLink(otherObj.href);
+      return isClick;
+    } else if (
+      item.nodeName === "A" &&
+      // item.target !== "_blank" &&
       mapInfo[host].openNewPageFlag
     ) {
-      console.log("因该触发这里");
-      // gotoLink(item.href);
-      gotoLink(otherSiteHref(item.href).href);
+      console.log(2, otherObj);
+      gotoLink(otherObj.href);
       return isClick;
-    } else if ((parentIsANode = isParentNodeA(target))) {
-      const otherSiteObj = otherSiteHref(parentIsANode.href);
-      if (otherSiteObj.needChange) {
-        gotoLink(otherSiteObj.href);
-      } else if (
-        parentIsANode.target !== "_blank" &&
-        mapInfo[host].openNewPageFlag
-      ) {
-        gotoLink(otherSiteHref(parentIsANode.href).href);
-      }
-      // gotoLink(parentIsANode.href);
+    } else if (
+      (parentIsANode = isParentNodeA(target)) &&
+      (otherObj = otherSiteHref(parentIsANode.href)) &&
+      otherObj.needChange
+    ) {
+      console.log(3, otherObj);
+      gotoLink(otherObj.href);
       return isClick;
-    } else if (typeof window.getEventListeners === "function") {
-      const listeners = window.getEventListeners(item);
+    } else if (
+      parentIsANode &&
+      // parentIsANode.target !== "_blank" &&
+      mapInfo[host].openNewPageFlag
+    ) {
+      console.log(4, otherObj);
+      gotoLink(otherObj.href);
+      return isClick;
+    } else if (typeof getEventListeners === "function") {
+      const listeners = getEventListeners(item);
       if (listeners && listeners.click) {
+        console.log(5);
         item.click();
         return isClick;
       }
     } else if ("click" in item) {
+      console.log(6);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -303,7 +317,7 @@ export function mouseClick(configParams = configParamsDefault) {
 
   // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
-    clickEventInvoke = true;
+    if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
     console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;

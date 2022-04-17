@@ -148,7 +148,7 @@
             v-model="allDataObj.openNewPageFlag"
         /></label>
       </div>
-      <!-- <div class="popup-item">
+      <div class="popup-item">
         10、默认auxclick与click不同时触发（切换需刷新）
         <label for="l" @click="changeAuxclickOnly(true)"
           >开<input
@@ -166,7 +166,7 @@
             :value="false"
             v-model="allDataObj.auxclickOnly"
         /></label>
-      </div> -->
+      </div>
     </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
@@ -217,9 +217,9 @@ export default {
     // sendMessage2({}, fn);
   },
   methods: {
-    // changeAuxclickOnly(auxclickOnly = commonDefault.auxclickOnly) {
-    //   this.commonSetRadioParams(auxclickOnly, 'auxclickOnly');
-    // },
+    changeAuxclickOnly(auxclickOnly = commonDefault.auxclickOnly) {
+      this.commonSetRadioParams(auxclickOnly, 'auxclickOnly');
+    },
     openNewPage(openNewPageFlag = true) {
       const { host, allDataObj, saveAndSend } = this;
       const { mapInfo } = allDataObj;

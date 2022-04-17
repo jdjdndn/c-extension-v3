@@ -807,14 +807,8 @@ const list = {
     rehref: "https://cn.vitejs.dev",
     // callback: vite,
   },
-  "cn.pornhub.com": {
-    callback: pornhub,
-  },
   "www.yyyweb.com": {
     callback: yyyweb,
-  },
-  "yt5.tv": {
-    callback: yt5,
   },
   "360yy.cn": {},
   "www.tiktok.com": {},
@@ -878,6 +872,15 @@ const list = {
   },
   "babeljs.io": {
     rehref: "www.babeljs.cn",
+  },
+  "cn.pornhub.com": {
+    callback: pornhub,
+  },
+  "yt5.tv": {
+    callback: yt5,
+  },
+  "91porny.com": {
+    callback: porny91,
   },
 };
 
@@ -1034,6 +1037,31 @@ function keyUp(e) {
 }
 window.removeEventListener("keydown", keyUp);
 window.addEventListener("keydown", keyUp);
+
+function porny91() {
+  const classList = [
+    "jsv.jsv-g1.mb-0 .container-fluid.mb-3.p-0",
+    "mobile-adv.mobile-adv-bottom",
+  ];
+  const adIdList = [
+    "main .container-fluid.mb-3.p-0",
+    "main .container-fluid.mb-0.p-0",
+  ];
+  removeArrList(classList, ".");
+  removeArrList(adIdList, "#");
+  const videoBox = $("#videoShowPage");
+  videoBox &&
+    [...videoBox.parentNode.children].forEach((it) => {
+      if (it.id !== "videoShowPage") it.remove();
+    });
+  const videoListPage = $("#videoListPage");
+  videoListPage &&
+    [...videoListPage.parentNode.children].forEach((it) => {
+      if (it.id !== "videoListPage") it.remove();
+    });
+  const skipBtn = $(".skip-btn.cursor-p");
+  skipBtn && skipBtn.click();
+}
 
 function douyin() {
   const classList = [
