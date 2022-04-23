@@ -182,7 +182,6 @@ chrome.runtime.onMessage.addListener(function notify(
   sendResponse
 ) {
   console.log(message, configParams, "------message-----background----");
-  colectHref(message.href);
   if (message.linkObj) {
     linkObj = {
       ...linkObj,
@@ -225,15 +224,16 @@ chrome.storage.sync.get(null, function(result) {
   // clearCache(configParams);
 });
 
-function colectHref(href) {
-  hasDeleteHerfList = hasDeleteHerfList.filter((it) => Boolean);
-  const index = hasDeleteHerfList.findIndex((it) => it === href);
-  if (index !== -1) {
-    hasDeleteHerfList.splice(index, 1);
-  }
-  hasDeleteHerfList.unshift(href);
-  console.log("历史记录列表", hasDeleteHerfList);
-}
+// function colectHref() {
+//   chrome.windows.getAll({ populate: true }, function(windowList) {
+//     const thisWindow = windowList
+//       .find((window) => window.focused)
+//       .tabs.find((it) => it.active);
+//     hasDeleteHerfList.push(thisWindow.url);
+//     console.log("windowList", thisWindow);
+//   });
+//   console.log("历史记录列表", hasDeleteHerfList);
+// }
 
 function clearCache(configParams) {
   console.log("清除缓存");
@@ -307,16 +307,3 @@ chrome.runtime.onConnect.addListener(function(port) {
     }
   });
 });
-
-chrome.windows.getAll(
-  {
-    populate: true,
-  },
-  (a) => {
-    windowList = [];
-    a.forEach((it) => {
-      windowList.push(...it.tabs);
-    });
-    console.log(windowList, "windowList");
-  }
-);

@@ -41,7 +41,7 @@ chrome.storage.sync.get(null, function(result) {
     };
   }
   console.log(configParams, result, "configParams");
-  chrome.storage.sync.set({ ...configParams, host }, function() {});
+  // chrome.storage.sync.set({ ...configParams, host }, function() {});
   commonEvents(configParams);
   copyTargetText();
   autoSelect();
@@ -65,7 +65,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   //     defaultparams.videoPlayRate
   // );
   sendResponse({
-    host,
     str: "我收到了你的情书， popup~",
   });
 });
@@ -501,7 +500,7 @@ function throttle(fun, delay = 50) {
 }
 
 // 视频播放
-function videoPlay(rate = 1.5, index = 0) {
+function videoPlay(rate = defaultparams.videoPlayRate, index = 0) {
   logInfo("视频加速");
   if (index > 10) {
     return false;
@@ -628,7 +627,7 @@ function addLinkListBox(linkList = []) {
     // 收集a链接
     if (
       configParams.mapInfo &&
-      configParams.host &&
+      configParams.mapInfo[host] &&
       configParams.mapInfo[host].collectInfoFlag
     ) {
       ajax({
@@ -790,6 +789,7 @@ const list = {
   "juejin.cn": {
     callback: juejin,
     scroll: ".entry-list",
+    once: 0,
   },
   "lodash.com": {
     callback: lodash,
@@ -952,7 +952,7 @@ function main() {
 
       const callback = function(mutationsList, observer) {
         logInfo("回调执行-observer");
-        list[k].callback && list[k].callback(params);
+        list[k].callback && list[k].callback({ ...params, ...list[k] });
       };
       const observer = new MutationObserver(callback);
       observer.observe(document, config);
@@ -1039,13 +1039,16 @@ window.removeEventListener("keydown", keyUp);
 window.addEventListener("keydown", keyUp);
 
 function porny91() {
+  setStyle(".modal-open", "overflow:auto");
   const classList = [
     "jsv.jsv-g1.mb-0 .container-fluid.mb-3.p-0",
     "mobile-adv.mobile-adv-bottom",
+    "modal-backdrop",
   ];
   const adIdList = [
     "main .container-fluid.mb-3.p-0",
     "main .container-fluid.mb-0.p-0",
+    "warningModal",
   ];
   removeArrList(classList, ".");
   removeArrList(adIdList, "#");
@@ -1342,11 +1345,6 @@ function hu4tv() {
 function csdn() {
   const classList = ["passport-login-container"];
   removeArrList(classList, ".");
-
-  // const linkCount = $('#spanCount')
-  // if (!linkCount.classList.contains('active')) {
-  //   linkCount.parentNode.click()
-  // }
 }
 // youtube
 function youtube() {
@@ -1356,71 +1354,6 @@ function youtube() {
       ? defaultparams.videoPlayRate
       : configParams.mapInfo[host].videoPlayRate
   );
-  // const video = $("video");
-  // if (video) {
-  //   // youtubeFlag = true;
-  //   video.addEventListener("canplay", (e) => {
-  //     const zimuShowBtn = $(".ytp-subtitles-button.ytp-button");
-  //     if (zimuShowBtn.ariaPressed !== "true") {
-  //       zimuShowBtn.click();
-  //     }
-  //     // 字幕文本
-  //     const zimuText = $(".captions-text");
-  //     if (zimuText) return false;
-  //     // 打开面板按钮
-  //     const pannel = $(".ytp-button.ytp-settings-button");
-  //     pannel && pannel.click();
-  //     // 左侧  字幕（1）
-  //     const zimuTxt = [...$$(".ytp-menuitem-label")];
-  //     let zimuTxtBtn = null;
-  //     zimuTxt.forEach((t) => {
-  //       if (t.innerText.includes("字幕")) {
-  //         zimuTxtBtn = t;
-  //       }
-  //     });
-  //     // 设置中文
-  //     if (zimuTxtBtn) {
-  //       const parentBox = zimuTxtBtn.parentNode;
-  //       if (
-  //         parentBox
-  //           .querySelector(".ytp-menuitem-content")
-  //           .innerText.includes("中文")
-  //       ) {
-  //         return;
-  //       }
-  //       parentBox.click();
-  //       console.log("当前不是中文字幕");
-  //       const languateBtnList = [...$$(".ytp-menuitem")];
-  //       let needChooseLanguage = false;
-  //       languateBtnList.some((t) => {
-  //         if (t.innerText.includes("中文")) {
-  //           t.click();
-  //           return true;
-  //         } else if (t.innerText.includes("自动翻译")) {
-  //           console.log(t.innerText, "t.innerText");
-  //           t.click();
-  //           needChooseLanguage = true;
-  //           return true;
-  //         } else {
-  //           return false;
-  //         }
-  //       });
-  //       // 自动翻译要多走一步
-  //       if (needChooseLanguage) {
-  //         const languateBtnList2 = [...$$(".ytp-menuitem")];
-  //         languateBtnList2.some((t) => {
-  //           if (t.innerText.includes("中文（简体）")) {
-  //             t.click();
-  //             return true;
-  //           }
-  //           return false;
-  //         });
-  //       }
-  //       $$(".ytp-panel")[0].style.display = "none";
-  //       pannel.click();
-  //     }
-  //   });
-  // }
 }
 
 function mdn({ href, win }) {
@@ -1437,7 +1370,6 @@ function mdn({ href, win }) {
   const lastUrlStr = urlStr.slice(index);
   const noChinese = document.querySelector(".page-content-container>h1");
   if (noChinese && noChinese.innerText.includes("Page not found")) {
-    // if (href.includes(us)) {
     window.history.back();
     return;
   } else {
@@ -1498,7 +1430,8 @@ function zhihu({ href, win }) {
   // })
 }
 
-function juejin() {
+function juejin(payload) {
+  console.log(payload, "payload");
   // setStyle('.article-suspended-panel.article-suspended-panel', 'right: 17rem;margin-right:unset')
   setStyle(".sticky-block-box", "height:100%");
   setStyle(".sticky-block-box .sidebar-block", "height:100%");
@@ -1511,8 +1444,9 @@ function juejin() {
   // const linkList = [...getDomList('.content-wrapper .title-row a'), ...getDomList('.result-list .item .title-row a')]
   // addLinkListBox(linkList, 'juejin-toolbox')
   const a = $(".panel-btn.with-badge");
-  if (a && !a.classList.contains("active")) {
+  if (a && !a.classList.contains("active") && payload.once === 0) {
     a.click();
+    payload.once++;
   }
 }
 // 简书
@@ -1590,15 +1524,6 @@ function github() {
 }
 //  https://product.pconline.com.cn/ class: fixLeftQRcode  id:xuanfu_wapper
 
-// 所有跳转方法
-function tiaozhuan() {
-  // window.addEventListener('click', function (e) {
-  //   // 键盘点击事件触发，就不触发这个。
-  //   if (ifMouseDownNoClick) return
-  //   commonTiaozhuan(e)
-  // })
-}
-
 // 公共跳转方法
 function commonTiaozhuan(e, needGo) {
   logInfo(e, "有href的node元素", e.target);
@@ -1618,11 +1543,6 @@ function commonTiaozhuan(e, needGo) {
   } else if (targetReal.parentNode && targetReal.parentNode.href) {
     href = targetReal.parentNode.href;
   }
-  // const index = href.lastIndexOf('http')
-  // if (index !== -1) {
-  //   newHref = href.slice(index)
-  // }
-  // newHref = hrefChange(href)
   newHref = otherSiteHref(href).href;
   // 判断是否为网址，是网址可以直接跳转
   if (newHref) {
@@ -1691,7 +1611,6 @@ setTimeout(function() {
   }
 }, 0);
 
-// tiaozhuan()
 window.addEventListener("visibilitychange", function(event) {
   if (document.hidden) return;
   sendMessage({
@@ -1706,12 +1625,12 @@ function sendMessage(
     logInfo(response, "response-content");
   }
 ) {
-  object = {
-    ...object,
-    host,
-    href,
-  };
-  chrome.storage.sync.set({ ...configParams, host }, function() {});
+  // object = {
+  //   ...object,
+  //   host,
+  //   href,
+  // };
+  // chrome.storage.sync.set({ ...configParams, host }, function() {});
   try {
     chrome.runtime.sendMessage(object, fn);
   } catch (error) {

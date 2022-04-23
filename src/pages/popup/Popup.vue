@@ -202,7 +202,7 @@ export default {
     const { getAndSetParams, sendMessage } = this;
     // const that = this;
     getAndSetParams();
-    console.log(chrome, 'chrome', defaultparams);
+    // console.log(chrome, 'chrome', defaultparams);
     // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     //   that.host = request.host;
     //   // console.log(request, sender, '接受消息');
@@ -226,7 +226,7 @@ export default {
       if (!mapInfo || !mapInfo[host]) return false;
       allDataObj.openNewPageFlag = openNewPageFlag;
       mapInfo[host].openNewPageFlag = openNewPageFlag;
-      console.log(mapInfo[host], 'openflag');
+      console.log(mapInfo[host], 'openflag', openNewPageFlag);
       saveAndSend({ mapInfo });
     },
     collectInfo(collectInfoFlag = commonDefault.collectInfoFlag) {
@@ -262,7 +262,7 @@ export default {
           .find((window) => window.focused)
           .tabs.find((it) => it.active);
         that.host = new URL(thisWindow.url).host;
-        console.log('windowList', thisWindow, that.host);
+        // console.log('windowList', thisWindow, that.host);
       });
     },
     // 设置content.js中的list列表
@@ -284,35 +284,34 @@ export default {
       let that = this;
       // 获取配置参数
       chrome.storage.sync.get(null, function (result) {
-        that.result = result;
-        console.log('看看获取的参数', result);
+        that.allDataObj = { ...that.allDataObj, ...result };
+        console.log('看看获取的参数', result, that.allDataObj);
         if (!result) return false;
         that.configParamsBacket = JSON.parse(JSON.stringify(result) || '{}');
-        const {
-          noChangeHrefList,
-          recordErrorList,
-          mapInfo,
-          changeEleMiaoBian,
-          debug,
-          clearTime
-        } = that.result;
-        // that.host = host;
-        that.allDataObj.mapInfo = mapInfo || {};
-        that.allDataObj.clearTime = clearTime || 1;
-        that.allDataObj.changeEleMiaoBian = changeEleMiaoBian;
-        that.debug = debug;
+        // const {
+        //   noChangeHrefList,
+        //   recordErrorList,
+        //   mapInfo,
+        //   changeEleMiaoBian,
+        //   debug,
+        //   clearTime
+        // } = result;
+        // that.allDataObj.mapInfo = mapInfo || {};
+        // that.allDataObj.clearTime = clearTime || 1;
+        // that.allDataObj.changeEleMiaoBian = changeEleMiaoBian;
+        // that.debug = debug;
 
-        that.allDataObj.noChangeHrefList =
-          noChangeHrefList && noChangeHrefList.length
-            ? noChangeHrefList
-            : that.noChangeHrefList;
+        // that.allDataObj.noChangeHrefList =
+        //   noChangeHrefList && noChangeHrefList.length
+        //     ? noChangeHrefList
+        //     : that.noChangeHrefList;
 
-        that.allDataObj.recordErrorList =
-          recordErrorList && recordErrorList.length
-            ? recordErrorList
-            : that.recordErrorList;
+        // that.allDataObj.recordErrorList =
+        //   recordErrorList && recordErrorList.length
+        //     ? recordErrorList
+        //     : that.recordErrorList;
 
-        that.afterGetConfigParams(that.result);
+        that.afterGetConfigParams(result);
       });
     },
     recordErrorKeyup(e) {
@@ -377,10 +376,10 @@ export default {
     },
     // 改变配置参数
     changeStorage(params) {
-      for (const k in params) {
-        this.$data[k] = params[k];
-      }
-      console.log(params, this.$data, '==');
+      // for (const k in params) {
+      //   this.$data[k] = params[k];
+      // }
+      // console.log(params, this.$data, '==');
       chrome.storage.sync.set(params, function (result) {});
     },
     // 判断参数是否变化, true未变化， false变化了

@@ -132,8 +132,9 @@ export function otherSiteHref(href) {
 function isParentNodeA(item, max = 0) {
   if (!item || max >= 5) return null;
   max++;
-  if (item.nodeName === "A") {
+  if (item.href) {
     return {
+      tag: item.nodeName,
       href: item.href,
       target: item.target,
     };
@@ -149,6 +150,27 @@ export function mouseClick(configParams = configParamsDefault) {
   if (!mapInfo) {
     mapInfo = configParamsDefault.mapInfo;
   }
+
+  function getDomain(href) {
+    if (!hrefReg.test(href)) {
+      return false;
+    }
+    const urlParams = new URL(href);
+    const { protocol, origin } = urlParams;
+    let defaultHost = 80;
+    if (protocol === "https:") {
+      defaultHost = 443;
+    }
+    return origin + ":" + defaultHost;
+  }
+
+  // 判断是否同源
+  function sameOrigin(src) {
+    if (getDomain(href) && getDomain(src)) {
+      return true;
+    }
+    return false;
+  }
   // 从子孙往上找，直到找到可以点击的dom
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick;
@@ -157,7 +179,7 @@ export function mouseClick(configParams = configParamsDefault) {
     // 获取元素上的监听事件
     let otherObj = {};
     if (
-      item.nodeName === "A" &&
+      item.href &&
       (otherObj = otherSiteHref(item.href)) &&
       otherObj.needChange
     ) {
@@ -165,7 +187,7 @@ export function mouseClick(configParams = configParamsDefault) {
       gotoLink(otherObj.href);
       return isClick;
     } else if (
-      item.nodeName === "A" &&
+      item.href &&
       // item.target !== "_blank" &&
       mapInfo[host].openNewPageFlag
     ) {
@@ -196,7 +218,7 @@ export function mouseClick(configParams = configParamsDefault) {
         return isClick;
       }
     } else if ("click" in item) {
-      console.log(6);
+      console.log(6, parentIsANode, mapInfo[host], host);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -216,42 +238,6 @@ export function mouseClick(configParams = configParamsDefault) {
     a.remove();
   }
 
-  // 从子孙往上找，直到找到可以点击的a链接
-  function findParentAClick(item, index = 0) {
-    if (!item) return;
-    index++;
-    if (index > 10) {
-      return;
-    }
-    if (item.nodeName === "A") {
-      // return gotoLink(hrefChange(item.href))
-      return gotoLink(otherSiteHref(item.href).href);
-    }
-    const parent = item.parentNode;
-    findParentAClick(parent, index);
-  }
-
-  function getDomain(href) {
-    if (!hrefReg.test(href)) {
-      return false;
-    }
-    const urlParams = new URL(href);
-    const { protocol, origin } = urlParams;
-    let defaultHost = 80;
-    if (protocol === "https:") {
-      defaultHost = 443;
-    }
-    return origin + ":" + defaultHost;
-  }
-
-  // 判断是否同源
-  function sameOrigin(src) {
-    if (getDomain(href) && getDomain(src)) {
-      return true;
-    }
-    return false;
-  }
-
   function pointermove(e) {
     moveObj.debounce(() => {
       if (configParams.changeEleMiaoBian) {
@@ -267,6 +253,7 @@ export function mouseClick(configParams = configParamsDefault) {
       if (target.nodeName === "IFRAME" && target) {
         const targetWin = target.contentWindow;
         if (targetWin && sameOrigin(target.src)) {
+          // if (targetWin) {
           try {
             targetWin.addEventListener("pointermove", pointermove);
           } catch (error) {
@@ -285,35 +272,17 @@ export function mouseClick(configParams = configParamsDefault) {
   }
 
   const moveObj = new Util();
-  window.removeEventListener("pointermove", pointermove);
-  window.addEventListener("pointermove", pointermove);
-
-  const iframes = [...document.querySelectorAll("iframe")].filter(
-    (it) => !it.src.startsWith("chrome-extension")
-  );
-  iframes.forEach((it) => {
-    it.onload = function() {
-      const targetWin = it.contentWindow;
-      if (target && targetWin && sameOrigin(target.src)) {
-        targetWin.addEventListener("pointermove", pointermove);
-      }
-    };
-  });
 
   function contextmenu(e) {
     contentMenuEventsFlag = true;
   }
-  window.removeEventListener("contextmenu", contextmenu);
-  window.addEventListener("contextmenu", contextmenu);
 
   function click(e) {
-    console.log("click触发", clickEventInvoke, new Date().getTime());
+    console.log("click触发", e.target, new Date().getTime());
     if (clickEventInvoke) {
       e.preventDefault();
     }
   }
-  window.removeEventListener("click", click);
-  window.addEventListener("click", click);
 
   // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
@@ -324,12 +293,15 @@ export function mouseClick(configParams = configParamsDefault) {
       contentMenuEventsFlag = false;
       clearTimeout(auxclickTimer);
       console.log(target, "auxclick-target");
-      findParentClick(target);
+      findParentClick(e.target);
       clickEventInvoke = false;
-      console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
+      // console.log(
+      //   "auxclick-setTimeout",
+      //   clickEventInvoke,
+      //   new Date().getTime()
+      // );
     }, 200);
   }
-  window.addEventListener("auxclick", auxclick);
 
   function keyup(e) {
     const code = e.keyCode;
@@ -355,12 +327,39 @@ export function mouseClick(configParams = configParamsDefault) {
     }
     // alt + x 点击打开新页面
     if (e.altKey && code === 88 && target) {
-      findParentAClick(target);
+      findParentClick(target);
     }
   }
 
-  window.removeEventListener("keyup", keyup);
-  window.addEventListener("keyup", keyup);
+  function createLinstener(targetWin) {
+    targetWin.removeEventListener("pointermove", pointermove);
+    targetWin.addEventListener("pointermove", pointermove);
+    targetWin.removeEventListener("auxclick", auxclick);
+    targetWin.addEventListener("auxclick", auxclick);
+    targetWin.removeEventListener("contextmenu", contextmenu);
+    targetWin.addEventListener("contextmenu", contextmenu);
+    targetWin.removeEventListener("click", click);
+    targetWin.addEventListener("click", click);
+    targetWin.removeEventListener("keyup", keyup);
+    targetWin.addEventListener("keyup", keyup);
+  }
+
+  createLinstener(window);
+
+  //   .filter(
+  //   (it) => !it.src.startsWith("chrome-extension")
+  // );
+  const iframes = [...document.querySelectorAll("iframe")];
+  iframes.forEach((it) => {
+    // it.onload = function() {
+    const targetWin = it.contentWindow;
+    console.log(targetWin, "targetWin");
+    if (targetWin && sameOrigin(target.src)) {
+      // if (targetWin) {
+      createLinstener(targetWin);
+    }
+    // };
+  });
 
   function logInfo(...msg) {
     if (!configParams.debug) return false;
