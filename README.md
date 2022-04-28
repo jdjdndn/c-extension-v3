@@ -1,33 +1,6 @@
-# Webpack & Vue - Chrome Extension V3
-
-## Test/Run Webpack
-
-```
-npm run watch
-npm run start
-npm run build
-npm run build-zip
-```
-
-## Libraries
-
-* Webpack 4
-* Vue 2
-
-## NPM Package
-
-Required Plugins Version.
-
-```
-npm i copy-webpack-plugin@6
-npm i terser-webpack-plugin@4
-```
-
-## Chrome Service Worker
-
-[chrome://serviceworker-internals/](chrome://serviceworker-internals/)
-
-
-## Copyright and License
-
-Code copyright 2021-2022 ee-projects. Code released under the [MIT license.](http://www.opensource.org/licenses/MIT)
+# 功能
+1、部分英文文档官网自动跳转中文，如mdn,vue.js,vue-router,vue-cli,webpack
+2、支持auxclick点击元素，链接自动新页面打开
+3、视频自动1.5倍速，如b站
+4、部分网站点击其他网站链接会跳到中间页，需要手动点击才跳转三方网站（掘金，知乎），插件会自动跳转三方网站，如不需要自动跳转（登录时），需要添加host进配置
+5、点击内容有链接时直接新页面打开

@@ -8,6 +8,8 @@ import {
   // hrefChange,
   otherSiteHref,
   unDef,
+  getNoOpenDomList,
+  sendReq,
 } from "../modules/common.js";
 import { ajax } from "../modules/ajax.js";
 let performance_now = performance.now(),
@@ -95,6 +97,8 @@ function commonEvents(configParams) {
     configParams.mapInfo &&
     configParams.host &&
     configParams.mapInfo[host].collectInfoFlag;
+
+  getNoOpenDomList((configParams.mapInfo[host] || {}).noOpenLinkList || []);
 }
 
 function addNewElement(innerhtml, node, src) {
@@ -1356,36 +1360,22 @@ function youtube() {
   );
 }
 
-function mdn({ href, win }) {
-  const window = win;
-  const us = "en-US";
+function mdn({ href, pathname, origin }) {
   const zh = "zh-CN";
-  const mdn = `${location.protocol}//${location.host}/`;
-  // 上一次的 lastUrlStr
-  let perUrlStr = "";
-  // https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API
-  const urlStr = href.split(mdn)[1];
-  const index = urlStr.indexOf("/");
-  // const needReplaceStr = urlStr.slice(0, index)
-  const lastUrlStr = urlStr.slice(index);
-  const noChinese = document.querySelector(".page-content-container>h1");
-  if (noChinese && noChinese.innerText.includes("Page not found")) {
-    window.history.back();
-    return;
-  } else {
-    const noChangeLanguageBtn = document.querySelector(".show-desktop");
-    const selectDom = document.getElementById("language-selector");
-    if (selectDom) {
-      const options = selectDom.querySelectorAll("option");
-      const flag = Array.from(options).some((item) => item.value === zh);
-      if (!flag) return;
-    }
-    if (!noChangeLanguageBtn || !noChangeLanguageBtn.innerText) {
-      return;
-    }
-    if (href.includes(zh)) return;
-    perUrlStr = lastUrlStr;
-    location.href = mdn + zh + lastUrlStr;
+  if (!this.once && !href.includes(zh)) {
+    const pathList = pathname.split("/");
+    pathList[1] = zh;
+    const newHref = pathList.join("/");
+    sendReq(
+      newHref,
+      (res) => {
+        location.href = origin + newHref;
+      },
+      (err) => {},
+      () => {
+        this.once = true;
+      }
+    );
   }
 }
 

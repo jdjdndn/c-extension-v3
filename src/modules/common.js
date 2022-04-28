@@ -12,6 +12,7 @@ export const commonDefault = {
   openNewPageFlag: true, // 默认点击a链接打开新页面
   fanyiFlag: false, // 默认不翻译
   auxclickOnly: false, // 默认auxclick与click不同时触发
+  noOpenLinkList: [], // 如果新页面打开链接，这些不会新页面打开链接
 };
 export const defaultparams = {
   videoPlayRate: 1.5,
@@ -54,6 +55,8 @@ let target = null,
   YUCHENG_USE_DELAY = 1000,
   contentMenuEventsFlag = false, // 是否contentmenu事件
   clickEventInvoke = false, //auxclick触发时不触发click
+  noOpenLinkDomList = [], // 不需要跳转的a链接父元素
+  findUrlReg = /(https?|ftp|file):\/\/[-A-Za-z0-9+&@#\/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/,
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
 
 const { log } = console;
@@ -97,6 +100,48 @@ export function unDef(data) {
 // noClose 为 false 时，不关闭
 export function boxInfo(info, noClose = true) {
   return false;
+}
+
+// 根据选择器列表收集dom列表
+export function getNoOpenDomList(noOpenLinkList) {
+  noOpenLinkDomList = noOpenLinkList
+    .map((it) => document.querySelector(it))
+    .filter(Boolean);
+  console.log(noOpenLinkDomList, "noOpenLinkDomList");
+}
+
+// fetch 第一个参数url,第二个参数为配置对象
+// {
+//    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+//     mode: 'cors', // no-cors, *cors, same-origin
+//     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+//     credentials: 'same-origin', // include, *same-origin, omit
+//     headers: {
+//       'Content-Type': 'application/json'
+//       // 'Content-Type': 'application/x-www-form-urlencoded',
+//     },
+//     redirect: 'follow', // manual, *follow, error
+//     referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+//     body: JSON.stringify(data) // body data type must match "Content-Type" header
+// }
+// 判断页面是否存在
+export function sendReq(
+  url,
+  fn = () => {},
+  errFn = () => {},
+  finallyFn = () => {}
+) {
+  fetch(url)
+    .then((res) => {
+      console.log(res, "res==========");
+      if (res.status === 200) {
+        fn(res);
+      } else {
+        errFn(res);
+      }
+    })
+    .catch((err) => errFn(err))
+    .finally(finallyFn);
 }
 
 // 判断网址是否需要跳转
@@ -171,9 +216,36 @@ export function mouseClick(configParams = configParamsDefault) {
     }
     return false;
   }
+
+  function doSth(item) {
+    // if (host === "github.com") {
+    //   const reg = new RegExp(/\((.*?)\)/);
+    //   const matched = item.innerText.match(reg);
+    //   const href = matched && matched[1];
+    //   if (hrefReg.test(href)) gotoLink(href);
+    // }
+    const matched = item.innerText.match(findUrlReg);
+    const href = matched && matched[0];
+    if (hrefReg.test(href)) {
+      gotoLink(href);
+      return true;
+    }
+    return false;
+  }
+
   // 从子孙往上找，直到找到可以点击的dom
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick;
+    if (doSth(item)) return isClick;
+    const openFLag =
+      noOpenLinkDomList.length &&
+      noOpenLinkDomList.some((it) => it.contains(item));
+    // 有不需要新页面打开的直接点击即可
+    if (openFLag && "click" in item) {
+      // 拿不到监听的事件对象就看能否点击，能点击就点击
+      item.click();
+      return isClick;
+    }
     // 父元素是否a链接
     let parentIsANode = null;
     // 获取元素上的监听事件
@@ -186,11 +258,7 @@ export function mouseClick(configParams = configParamsDefault) {
       console.log(1, otherObj);
       gotoLink(otherObj.href);
       return isClick;
-    } else if (
-      item.href &&
-      // item.target !== "_blank" &&
-      mapInfo[host].openNewPageFlag
-    ) {
+    } else if (item.href && mapInfo[host].openNewPageFlag) {
       console.log(2, otherObj);
       gotoLink(otherObj.href);
       return isClick;
@@ -218,7 +286,7 @@ export function mouseClick(configParams = configParamsDefault) {
         return isClick;
       }
     } else if ("click" in item) {
-      console.log(6, parentIsANode, mapInfo[host], host);
+      console.log(6, parentIsANode, mapInfo[host], host, item.innerText);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -230,6 +298,7 @@ export function mouseClick(configParams = configParamsDefault) {
 
   // 跳转方法
   function gotoLink(href) {
+    console.log(href, "gotoLink---href");
     const a = document.createElement("a");
     a.target = "_blank";
     a.rel = "noopener noreferrer nofollow";
@@ -250,24 +319,24 @@ export function mouseClick(configParams = configParamsDefault) {
         targetCssText = e.target.style.cssText;
         e.target.style.cssText += "box-shadow: 0px 0px 1px 1px #ccc;";
       }
-      if (target.nodeName === "IFRAME" && target) {
-        const targetWin = target.contentWindow;
-        if (targetWin && sameOrigin(target.src)) {
-          // if (targetWin) {
-          try {
-            targetWin.addEventListener("pointermove", pointermove);
-          } catch (error) {
-            boxInfo("iframe e");
-          }
-        }
-      }
-      if (
-        !target ||
-        !target.nodeName ||
-        !target.classList ||
-        target.innerText === ""
-      )
-        return false;
+      // if (target.nodeName === "IFRAME" && target) {
+      //   const targetWin = target.contentWindow;
+      //   if (targetWin && sameOrigin(target.src)) {
+      //     // if (targetWin) {
+      //     try {
+      //       targetWin.addEventListener("pointermove", pointermove);
+      //     } catch (error) {
+      //       boxInfo("iframe e");
+      //     }
+      //   }
+      // }
+      // if (
+      //   !target ||
+      //   !target.nodeName ||
+      //   !target.classList ||
+      //   target.innerText === ""
+      // )
+      //   return false;
     });
   }
 
@@ -286,6 +355,7 @@ export function mouseClick(configParams = configParamsDefault) {
 
   // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
+    e.preventDefault();
     if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
     console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
@@ -331,6 +401,11 @@ export function mouseClick(configParams = configParamsDefault) {
     }
   }
 
+  function keydown(e) {
+    const code = e.keyCode;
+    if (e.ctrlKey && code === 83) e.preventDefault();
+  }
+
   function createLinstener(targetWin) {
     targetWin.removeEventListener("pointermove", pointermove);
     targetWin.addEventListener("pointermove", pointermove);
@@ -342,6 +417,8 @@ export function mouseClick(configParams = configParamsDefault) {
     targetWin.addEventListener("click", click);
     targetWin.removeEventListener("keyup", keyup);
     targetWin.addEventListener("keyup", keyup);
+    targetWin.removeEventListener("keydown", keydown);
+    targetWin.addEventListener("keydown", keydown);
   }
 
   createLinstener(window);
@@ -349,17 +426,17 @@ export function mouseClick(configParams = configParamsDefault) {
   //   .filter(
   //   (it) => !it.src.startsWith("chrome-extension")
   // );
-  const iframes = [...document.querySelectorAll("iframe")];
-  iframes.forEach((it) => {
-    // it.onload = function() {
-    const targetWin = it.contentWindow;
-    console.log(targetWin, "targetWin");
-    if (targetWin && sameOrigin(target.src)) {
-      // if (targetWin) {
-      createLinstener(targetWin);
-    }
-    // };
-  });
+  // const iframes = [...document.querySelectorAll("iframe")];
+  // iframes.forEach((it) => {
+  //   // it.onload = function() {
+  //   const targetWin = it.contentWindow;
+  //   console.log(targetWin, "targetWin");
+  //   if (targetWin && sameOrigin(it.src)) {
+  //     // if (targetWin) {
+  //     createLinstener(targetWin);
+  //   }
+  //   // };
+  // });
 
   function logInfo(...msg) {
     if (!configParams.debug) return false;

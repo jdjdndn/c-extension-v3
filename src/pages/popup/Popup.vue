@@ -58,6 +58,8 @@
         :value="allDataObj.noChangeHrefList"
         @blur="noChangeHrefListBlur"
       ></textarea>
+    </div>
+    <div class="popup-item">
       4、记录报错列表(host为ip地址的自动添加)
       <textarea
         name=""
@@ -68,6 +70,8 @@
         @blur="recordErrorBlur"
         @keyup="recordErrorKeyup"
       ></textarea>
+    </div>
+    <div class="popup-item">
       5、视频播放速度
       <!-- <input type="text" :value="videoPlayRate" @blur="videoPlayRateBlur" /> -->
       <select name="select" @change="videoPlayRateChange">
@@ -77,8 +81,10 @@
           :selected="item.videoPlayRate === allDataObj.videoPlayRate"
           v-for="(item, i) in allDataObj.videoPlayRateList"
           :key="i"
-        ></option></select
-      ><br />
+        ></option>
+      </select>
+    </div>
+    <div class="popup-item">
       6、缓存清理（日）
       <select name="select" @change="clearTimeChange">
         <option
@@ -89,84 +95,96 @@
           :key="i"
         ></option>
       </select>
-      <!-- 7、iframe
+    </div>
+    <!-- 7、iframe
       <iframe src="./options.html" frameborder="0"></iframe> -->
-      <div class="popup-item">
-        7、开启翻译
-        <label for="e" @click="changeFanyi(true)"
-          >开<input
-            id="e"
-            type="radio"
-            name="e"
-            :value="true"
-            v-model="allDataObj.fanyiFlag"
-        /></label>
-        <label for="f" @click="changeFanyi(false)"
-          >关<input
-            id="f"
-            type="radio"
-            name="e"
-            :value="false"
-            v-model="allDataObj.fanyiFlag"
-        /></label>
-      </div>
-      <div class="popup-item">
-        8、开启链接收集
-        <label for="g" @click="collectInfo(true)"
-          >开<input
-            id="g"
-            type="radio"
-            name="g"
-            :value="true"
-            v-model="allDataObj.collectInfoFlag"
-        /></label>
-        <label for="h" @click="collectInfo(false)"
-          >关<input
-            id="h"
-            type="radio"
-            name="g"
-            :value="false"
-            v-model="allDataObj.collectInfoFlag"
-        /></label>
-      </div>
-      <div class="popup-item">
-        9、新页面开链接
-        <label for="i" @click="openNewPage(true)"
-          >开<input
-            id="i"
-            type="radio"
-            name="i"
-            :value="true"
-            v-model="allDataObj.openNewPageFlag"
-        /></label>
-        <label for="j" @click="openNewPage(false)"
-          >关<input
-            id="j"
-            type="radio"
-            name="i"
-            :value="false"
-            v-model="allDataObj.openNewPageFlag"
-        /></label>
-      </div>
-      <div class="popup-item">
-        10、默认auxclick与click不同时触发（切换需刷新）
-        <label for="l" @click="changeAuxclickOnly(true)"
-          >开<input
-            id="l"
-            type="radio"
-            name="k"
-            :value="true"
-            v-model="allDataObj.auxclickOnly"
-        /></label>
-        <label for="k" @click="changeAuxclickOnly(false)"
-          >关<input
-            id="k"
-            type="radio"
-            name="k"
-            :value="false"
-            v-model="allDataObj.auxclickOnly"
-        /></label>
-      </div>
+    <div class="popup-item">
+      7、开启翻译
+      <label for="e" @click="changeFanyi(true)"
+        >开<input
+          id="e"
+          type="radio"
+          name="e"
+          :value="true"
+          v-model="allDataObj.fanyiFlag"
+      /></label>
+      <label for="f" @click="changeFanyi(false)"
+        >关<input
+          id="f"
+          type="radio"
+          name="e"
+          :value="false"
+          v-model="allDataObj.fanyiFlag"
+      /></label>
+    </div>
+    <div class="popup-item">
+      8、开启链接收集
+      <label for="g" @click="collectInfo(true)"
+        >开<input
+          id="g"
+          type="radio"
+          name="g"
+          :value="true"
+          v-model="allDataObj.collectInfoFlag"
+      /></label>
+      <label for="h" @click="collectInfo(false)"
+        >关<input
+          id="h"
+          type="radio"
+          name="g"
+          :value="false"
+          v-model="allDataObj.collectInfoFlag"
+      /></label>
+    </div>
+    <div class="popup-item">
+      9、新页面开链接
+      <label for="i" @click="openNewPage(true)"
+        >开<input
+          id="i"
+          type="radio"
+          name="i"
+          :value="true"
+          v-model="allDataObj.openNewPageFlag"
+      /></label>
+      <label for="j" @click="openNewPage(false)"
+        >关<input
+          id="j"
+          type="radio"
+          name="i"
+          :value="false"
+          v-model="allDataObj.openNewPageFlag"
+      /></label>
+    </div>
+    <!-- 不跳转链接列表 -->
+    <div class="popup-item">
+      10、不在新页面打开链接列表（生效需刷新）
+      <textarea
+        name=""
+        id=""
+        cols="50"
+        rows="3"
+        :value="allDataObj.noOpenLinkList"
+        @blur="noOpenLinkListBlur"
+      ></textarea>
+    </div>
+    <div class="popup-item">
+      11、默认auxclick与click不同时触发（切换需刷新）
+      <label for="l" @click="changeAuxclickOnly(true)"
+        >开<input
+          id="l"
+          type="radio"
+          name="k"
+          :value="true"
+          v-model="allDataObj.auxclickOnly"
+      /></label>
+      <label for="k" @click="changeAuxclickOnly(false)"
+        >关<input
+          id="k"
+          type="radio"
+          name="k"
+          :value="false"
+          v-model="allDataObj.auxclickOnly"
+      /></label>
     </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
@@ -199,24 +217,19 @@ export default {
     }
   },
   mounted() {
-    const { getAndSetParams, sendMessage } = this;
-    // const that = this;
+    const { getAndSetParams } = this;
     getAndSetParams();
-    // console.log(chrome, 'chrome', defaultparams);
-    // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    //   that.host = request.host;
-    //   // console.log(request, sender, '接受消息');
-    // });
-    // const fn = (res) => {
-    //   // console.log(res, 'popup-host');
-    //   if (res && res.host) {
-    //     that.host = res.host;
-    //   }
-    // };
-    // sendMessage({}, fn);
-    // sendMessage2({}, fn);
   },
   methods: {
+    // 10
+    noOpenLinkListBlur(e) {
+      const { host, allDataObj, saveAndSend } = this;
+      const { mapInfo } = allDataObj;
+      if (!mapInfo || !mapInfo[host]) return false;
+      const noOpenLinkList = this.replaceComma(e.target.value);
+      mapInfo[host].noOpenLinkList = noOpenLinkList;
+      this.saveAndSend({ mapInfo });
+    },
     changeAuxclickOnly(auxclickOnly = commonDefault.auxclickOnly) {
       this.commonSetRadioParams(auxclickOnly, 'auxclickOnly');
     },
@@ -288,28 +301,6 @@ export default {
         console.log('看看获取的参数', result, that.allDataObj);
         if (!result) return false;
         that.configParamsBacket = JSON.parse(JSON.stringify(result) || '{}');
-        // const {
-        //   noChangeHrefList,
-        //   recordErrorList,
-        //   mapInfo,
-        //   changeEleMiaoBian,
-        //   debug,
-        //   clearTime
-        // } = result;
-        // that.allDataObj.mapInfo = mapInfo || {};
-        // that.allDataObj.clearTime = clearTime || 1;
-        // that.allDataObj.changeEleMiaoBian = changeEleMiaoBian;
-        // that.debug = debug;
-
-        // that.allDataObj.noChangeHrefList =
-        //   noChangeHrefList && noChangeHrefList.length
-        //     ? noChangeHrefList
-        //     : that.noChangeHrefList;
-
-        // that.allDataObj.recordErrorList =
-        //   recordErrorList && recordErrorList.length
-        //     ? recordErrorList
-        //     : that.recordErrorList;
 
         that.afterGetConfigParams(result);
       });
@@ -336,6 +327,7 @@ export default {
       mapInfo[host].videoPlayRate = Number(e.target.value);
       saveAndSend({ mapInfo });
     },
+    // 3
     noChangeHrefListBlur(e) {
       const noChangeHrefList = this.replaceComma(e.target.value);
       this.saveAndSend({ noChangeHrefList });
