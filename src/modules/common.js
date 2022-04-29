@@ -225,8 +225,9 @@ export function mouseClick(configParams = configParamsDefault) {
     //   if (hrefReg.test(href)) gotoLink(href);
     // }
     const matched = item.innerText.match(findUrlReg);
-    const href = matched && matched[0];
-    if (hrefReg.test(href)) {
+    let href = matched && matched[0];
+    // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
+    if ((item.href && (href = item.href)) || hrefReg.test(href)) {
       gotoLink(href);
       return true;
     }

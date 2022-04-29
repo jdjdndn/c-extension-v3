@@ -9,7 +9,7 @@ chrome.bookmarks.getTree((nodeTree) => {
   for (const k in obj) {
     newList.push(obj[k]);
   }
-  console.log(newList, "newList");
+  // console.log(newList, "newList");
 });
 
 // 树转数组
@@ -181,7 +181,7 @@ chrome.runtime.onMessage.addListener(function notify(
   sender,
   sendResponse
 ) {
-  console.log(message, configParams, "------message-----background----");
+  // console.log(message, configParams, "------message-----background----");
   if (message.linkObj) {
     linkObj = {
       ...linkObj,
