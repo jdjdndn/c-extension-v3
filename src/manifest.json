@@ -53,6 +53,7 @@
     "declarativeNetRequestFeedback",
     "webRequest",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "history"
   ]
 }

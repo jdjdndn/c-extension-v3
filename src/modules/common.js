@@ -227,7 +227,7 @@ export function mouseClick(configParams = configParamsDefault) {
     const matched = item.innerText.match(findUrlReg);
     let href = matched && matched[0];
     // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
-    if ((item.href && (href = item.href)) || hrefReg.test(href)) {
+    if ((href && item.href && (href = item.href)) || hrefReg.test(href)) {
       gotoLink(href);
       return true;
     }
@@ -287,7 +287,7 @@ export function mouseClick(configParams = configParamsDefault) {
         return isClick;
       }
     } else if ("click" in item) {
-      console.log(6, parentIsANode, mapInfo[host], host, item.innerText);
+      console.log(6, parentIsANode);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -357,6 +357,7 @@ export function mouseClick(configParams = configParamsDefault) {
   // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
     e.preventDefault();
+    e.stopImmediatePropagation();
     if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
     console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
@@ -376,10 +377,26 @@ export function mouseClick(configParams = configParamsDefault) {
 
   function keyup(e) {
     const code = e.keyCode;
+    const preList = [...document.querySelectorAll("pre")];
     if (e.keyCode === 13) {
       YUCHENG_USE_BOX.style.display = "none";
-    }
-    if (e.ctrlKey && code === 88 && !window.getSelection().toString()) {
+    } else if (e.ctrlKey && e.keyCode === 67) {
+      // ctrl +c 复制图片、文本
+      const text = window.getSelection().toString();
+      if (text) {
+        clipboardWrite(text);
+      } else {
+        if (preList.length) {
+          const pre = preList.find((it) => it.contains(target));
+          if (pre) {
+            clipboardWrite(pre.innerText);
+            return false;
+          }
+        }
+        clipboardWrite(target.innerText);
+      }
+    } else if (e.ctrlKey && code === 88 && !window.getSelection().toString()) {
+      // ctrl + x 点击
       const flag = findParentClick(target);
       if (flag) {
         boxInfo("click s");
@@ -388,7 +405,6 @@ export function mouseClick(configParams = configParamsDefault) {
       }
     } else if (37 == code && e.ctrlKey) {
       // 实现浏览器上一步下一步
-      //处理的部分
       boxInfo("back");
       history.back();
     } else if (39 == code && e.ctrlKey) {
@@ -397,9 +413,9 @@ export function mouseClick(configParams = configParamsDefault) {
       history.go(1);
     }
     // alt + x 点击打开新页面
-    if (e.altKey && code === 88 && target) {
-      findParentClick(target);
-    }
+    // if (e.altKey && code === 88 && target) {
+    //   findParentClick(target);
+    // }
   }
 
   function keydown(e) {
@@ -446,29 +462,28 @@ export function mouseClick(configParams = configParamsDefault) {
   }
 }
 
-// ctrl+c 复制文本
-export function copyTargetText() {
-  const preList = [...document.querySelectorAll("pre")];
-  const keyUp2 = (e) => {
-    if (e.ctrlKey && e.keyCode === 67) {
-      const text = window.getSelection().toString();
-      if (text) {
-        clipboardWrite(text);
-      } else {
-        if (preList.length) {
-          const pre = preList.find((it) => it.contains(target));
-          if (pre) {
-            clipboardWrite(pre.innerText);
-            return false;
-          }
-        }
-        clipboardWrite(target.innerText);
-      }
-    }
-  };
-  window.removeEventListener("keyup", keyUp2);
-  window.addEventListener("keyup", keyUp2);
-}
+// // ctrl+c 复制文本
+// export function copyTargetText() {
+//   const keyUp2 = (e) => {
+//     if (e.ctrlKey && e.keyCode === 67) {
+//       const text = window.getSelection().toString();
+//       if (text) {
+//         clipboardWrite(text);
+//       } else {
+//         if (preList.length) {
+//           const pre = preList.find((it) => it.contains(target));
+//           if (pre) {
+//             clipboardWrite(pre.innerText);
+//             return false;
+//           }
+//         }
+//         clipboardWrite(target.innerText);
+//       }
+//     }
+//   };
+//   window.removeEventListener("keyup", keyUp2);
+//   window.addEventListener("keyup", keyUp2);
+// }
 
 function clipboardWrite(text, needClear = false) {
   if (text) {

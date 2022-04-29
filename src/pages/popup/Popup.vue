@@ -312,6 +312,13 @@ export default {
     },
     recordErrorBlur(e) {
       const recordErrorList = this.replaceComma(e.target.value);
+      // const valIndex = val.indexOf(':');
+      // if (valIndex !== -1) {
+      //   const hostStr = val.slice(0, valIndex);
+      //   if (recordErrorList.includes(hostStr)) return false;
+      //   recordErrorList.push(hostStr);
+      //   saveAndSend({ recordErrorList });
+      // }
       this.saveAndSend({ recordErrorList });
     },
     changeDebug(debugFlag = false) {
@@ -439,14 +446,10 @@ export default {
           }
         }
         console.log(mapInfo[val], allDataObj, 'mapInfo  watcher');
-        saveAndSend({ mapInfo });
-        const valIndex = val.indexOf(':');
-        if (valIndex !== -1) {
-          const hostStr = val.slice(0, valIndex);
-          if (recordErrorList.includes(hostStr)) return false;
-          recordErrorList.push(hostStr);
-          saveAndSend({ recordErrorList });
-        }
+        // if (flag) {
+        //   console.log('mapInfo变化了');
+        //   saveAndSend({ mapInfo });
+        // }
       }
     }
   }

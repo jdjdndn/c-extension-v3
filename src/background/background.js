@@ -270,7 +270,7 @@ function clearCache(configParams) {
   //   callback
   // );
 }
-// TODO
+
 const connections = {};
 
 const cache = {};
@@ -306,4 +306,8 @@ chrome.runtime.onConnect.addListener(function(port) {
       }
     }
   });
+});
+
+chrome.history.onVisited.addListener((res) => {
+  console.log(res, "====");
 });

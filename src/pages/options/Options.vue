@@ -45,11 +45,7 @@
 </template>
 
 <script>
-import {
-  mouseClick,
-  copyTargetText,
-  autoSelect
-} from '../../modules/common.js';
+import { mouseClick, autoSelect } from '../../modules/common.js';
 export default {
   name: 'Options',
   data() {
@@ -74,7 +70,6 @@ export default {
   mounted() {
     window.addEventListener('message', this.message);
     mouseClick();
-    copyTargetText();
     autoSelect();
   },
   methods: {

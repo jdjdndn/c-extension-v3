@@ -1,11 +1,10 @@
 // import '../assets/index.scss'
 import {
   mouseClick,
-  copyTargetText,
+  // copyTargetText,
   autoSelect,
   boxInfo,
   defaultparams,
-  // hrefChange,
   otherSiteHref,
   unDef,
   getNoOpenDomList,
@@ -17,10 +16,8 @@ let performance_now = performance.now(),
   linkObj = {},
   timer = null,
   win = "",
-  youtubeFlag = false, // YouTube中文翻译只设置一次
-  configParams = {
-    mapInfo: {},
-  }, // popup配置参数
+  // youtubeFlag = false, // YouTube中文翻译只设置一次
+  configParams = defaultparams, // popup配置参数
   cached = {}; // 缓存起来
 
 const { location } = window;
@@ -30,24 +27,12 @@ const vueAroundList = ["router.vuejs.org", "vuex.vuejs.org", "cli.vuejs.org"];
 
 // 获取配置参数
 chrome.storage.sync.get(null, function(result) {
-  configParams = {
-    ...configParams,
-    ...result,
-    host,
-  };
-  if (configParams && configParams.mapInfo && !configParams.mapInfo[host]) {
-    configParams.mapInfo[host] = {
-      ...configParams.mapInfo[host],
-      videoPlayRate: defaultparams.videoPlayRate,
-      fanyiFlag: defaultparams.fanyiFlag,
-    };
-  }
-  console.log(configParams, result, "configParams");
-  // chrome.storage.sync.set({ ...configParams, host }, function() {});
+  // 设置默认参数
+  setStorageDefault(result);
+  // 获取storage事件和接受消息处理的公共事件
   commonEvents(configParams);
-  copyTargetText();
+  // copyTargetText();
   autoSelect();
-  logInfo(result, configParams, "storage-get");
 });
 
 console.log(chrome, "chrome");
@@ -73,6 +58,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // 初始化跟修改配置后的公共触发事件
 function commonEvents(configParams) {
+  const { mapInfo } = configParams;
   // 跳转网址
   replaceHref(configParams);
   // 键盘点击事件
@@ -82,23 +68,26 @@ function commonEvents(configParams) {
   removeErrListening(configParams);
   // 切换视频播放速度
   videoPlay(
-    unDef((configParams.mapInfo[host] || {}).videoPlayRate)
-      ? defaultparams.videoPlayRate
-      : configParams.mapInfo[host].videoPlayRate
+    mapInfo[host].videoPlayRate
+    // unDef((configParams.mapInfo[host] || {}).videoPlayRate)
+    //   ? defaultparams.videoPlayRate
+    //   : configParams.mapInfo[host].videoPlayRate
   );
   // 设置是否翻译
   setFanyi(
-    unDef((configParams.mapInfo[host] || {}).fanyiFlag)
-      ? defaultparams.fanyiFlag
-      : configParams.mapInfo[host].fanyiFlag
+    mapInfo[host].fanyiFlag
+    // unDef((configParams.mapInfo[host] || {}).fanyiFlag)
+    //   ? defaultparams.fanyiFlag
+    //   : configParams.mapInfo[host].fanyiFlag
   );
   // 切换收集a链接
-  configParams.mapInfo[host].collectInfoFlag =
-    configParams.mapInfo &&
-    configParams.host &&
-    configParams.mapInfo[host].collectInfoFlag;
+  // configParams.mapInfo[host].collectInfoFlag =
+  //   configParams.mapInfo &&
+  //   configParams.host &&
+  //   configParams.mapInfo[host].collectInfoFlag;
 
-  getNoOpenDomList((configParams.mapInfo[host] || {}).noOpenLinkList || []);
+  // getNoOpenDomList((configParams.mapInfo[host] || {}).noOpenLinkList || []);
+  getNoOpenDomList(mapInfo[host].noOpenLinkList);
 }
 
 function addNewElement(innerhtml, node, src) {
@@ -109,6 +98,32 @@ function addNewElement(innerhtml, node, src) {
     element.innerHTML = innerhtml;
   }
   document.getElementsByTagName("head")[0].appendChild(element);
+}
+
+function setStorageDefault(result) {
+  const mapInfo = { ...configParams.mapInfo, ...result.mapInfo };
+  let flag = false;
+  if (!mapInfo[host]) {
+    mapInfo[host] = mapInfo.default;
+    flag = true;
+  } else {
+    for (const k in mapInfo.default) {
+      if (unDef(mapInfo[host][k])) {
+        flag = true;
+        mapInfo[host][k] = mapInfo.default[k];
+      }
+    }
+  }
+  configParams = {
+    ...configParams,
+    ...result,
+    mapInfo,
+  };
+  console.log(configParams, result, "configParams result");
+  if (flag) {
+    console.log("mapInfo变化了", mapInfo[host], configParams);
+    chrome.storage.sync.set({ mapInfo }, function() {});
+  }
 }
 
 function setFanyi(fanyiFlag) {
@@ -289,7 +304,7 @@ function setFanyi(fanyiFlag) {
 
 function replaceHref(configParams) {
   const needChange = otherSiteHref(href).needChange;
-  const noChange = (configParams.noChangeHrefList || []).some((it) =>
+  const noChange = configParams.noChangeHrefList.some((it) =>
     host.includes(it)
   );
   if (needChange && !noChange) {
@@ -300,7 +315,7 @@ function replaceHref(configParams) {
 
 function removeErrListening(configParams) {
   // 错误监听
-  const needRecord = (configParams.recordErrorList || []).some((it) =>
+  const needRecord = configParams.recordErrorList.some((it) =>
     host.includes(it)
   );
   const script = document.querySelector(".yucheng-error-record");
@@ -504,7 +519,7 @@ function throttle(fun, delay = 50) {
 }
 
 // 视频播放
-function videoPlay(rate = defaultparams.videoPlayRate, index = 0) {
+function videoPlay(rate, index = 0) {
   logInfo("视频加速");
   if (index > 10) {
     return false;

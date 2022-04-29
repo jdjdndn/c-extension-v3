@@ -141,11 +141,11 @@ var options = {
           to: "icons",
           force: true,
         },
-        {
-          from: "src/assets",
-          to: "assets",
-          force: true,
-        },
+        // {
+        //   from: "src/assets",
+        //   to: "assets",
+        //   force: true,
+        // },
         {
           from: "src/modules/error-record.js",
           to: "js",
