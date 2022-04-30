@@ -29,10 +29,12 @@ const vueAroundList = ["router.vuejs.org", "vuex.vuejs.org", "cli.vuejs.org"];
 chrome.storage.sync.get(null, function(result) {
   // 设置默认参数
   setStorageDefault(result);
+  const { mapInfo } = configParams;
   // 获取storage事件和接受消息处理的公共事件
   commonEvents(configParams);
   // copyTargetText();
   autoSelect();
+  main(mapInfo);
 });
 
 console.log(chrome, "chrome");
@@ -698,16 +700,6 @@ function addLinkListBoxPro(linkList = [], boxName = "toolbox", oneLine = true) {
   addLinkListBox([], boxName, linkListStr);
 }
 
-// 跳转方法
-function gotoLink(href) {
-  const a = document.createElement("a");
-  a.target = "_blank";
-  a.rel = "noopener noreferrer nofollow";
-  a.href = href;
-  a.click();
-  a.remove();
-}
-
 const params = {
   href,
   win,
@@ -816,7 +808,7 @@ const list = {
   },
   "webpack.js.org": {
     // callback: webpack,
-    rehref: "https://webpack.docschina.org",
+    // rehref: "https://webpack.docschina.org",
   },
   "vuejs.org": {
     // callback: vue,
@@ -911,7 +903,7 @@ const config = {
 
 clearInterval(timer);
 
-function main() {
+function main(mapInfo) {
   // 获取所有a链接
   const callback = function(mutationsList, observer) {
     addLinkListBox(getDomList("a"));
@@ -971,7 +963,8 @@ function main() {
 
       const callback = function(mutationsList, observer) {
         logInfo("回调执行-observer");
-        list[k].callback && list[k].callback({ ...params, ...list[k] });
+        list[k].callback &&
+          list[k].callback({ ...params, ...list[k], ...mapInfo[host] });
       };
       const observer = new MutationObserver(callback);
       observer.observe(document, config);
@@ -979,7 +972,6 @@ function main() {
     }
   }
 }
-main();
 
 function base64ToBlob(base64Data) {
   let arr = base64Data.split(","),
@@ -1010,52 +1002,6 @@ function getWebUrl(file) {
   }
   return url;
 }
-
-function keyUp(e) {
-  const code = e.keyCode;
-  // ctrl + , 下载所有图片
-  if (e.ctrlKey && code === 188) {
-    let downloadImgList = [],
-      type = null;
-    const imgList = [...$$("img")]
-      .map((it) => it.dataset.src || it.src)
-      .filter(Boolean);
-    imgList.forEach((t) => {
-      let url = null;
-      if (t.startsWith("data")) {
-        let start = t.indexOf("/");
-        let end = t.indexOf(";");
-        if (start !== -1 && end !== -1) {
-          type = t.slice(start + 1, end);
-        }
-        url = getWebUrl(base64ToBlob(t));
-      } else if (t.startsWith("blob")) {
-        url = getWebUrl(t);
-      } else if (t.startsWith("http")) {
-        url = t;
-      }
-      downloadImgList.push(url);
-    });
-    downloadImgList.forEach((t, i) => {
-      const imgDom = document.createElement("a");
-      imgDom.href = t;
-      const date = new Date();
-      imgDom.download =
-        date.toLocaleDateString() +
-        "-" +
-        date.toLocaleTimeString() +
-        "-" +
-        Math.random() +
-        i +
-        "." +
-        type;
-      imgDom.click();
-      imgDom.remove();
-    });
-  }
-}
-window.removeEventListener("keydown", keyUp);
-window.addEventListener("keydown", keyUp);
 
 function porny91() {
   setStyle(".modal-open", "overflow:auto");
@@ -1102,11 +1048,6 @@ function douyin() {
 
 // 007影视
 function hdys007() {
-  // const iframe = $("#player_swf");
-  // if (iframe) {
-  //   // gotoLink(iframe.src)
-  //   console.log(iframe.src, "------");
-  // }
   if (href.includes("/play/")) {
     const btnList = [...$$(".dslist-group-item")];
     function changeItem(e) {
@@ -1216,11 +1157,6 @@ function qidian() {
   ];
   removeArrList(adIdList, "#");
   removeArrList(adClassList, ".");
-  // window.addEventListener('keyup', function (e) {
-  //   if (e.keyCode === 13) {
-  //     proClick('j_chapterNext', {}, 'id')
-  //   }
-  // })
   const linkList = [
     ...getDomList(".wrap .cf .fl li"),
     ...getDomList(".wrap .box-center .fl li"),
@@ -1366,13 +1302,10 @@ function csdn() {
   removeArrList(classList, ".");
 }
 // youtube
-function youtube() {
+function youtube(payload) {
+  console.log(payload, "youtube");
   setStyle(".html5-video-player", "display: block");
-  videoPlay(
-    unDef((configParams.mapInfo[host] || {}).videoPlayRate)
-      ? defaultparams.videoPlayRate
-      : configParams.mapInfo[host].videoPlayRate
-  );
+  videoPlay(payload.videoPlayRate);
 }
 
 function mdn({ href, pathname, origin }) {
@@ -1412,9 +1345,9 @@ function zhihu({ href, win }) {
     ".advert-signpc-label"
   );
   const throlleRemove = throttle(removeArrList, 300);
-  win.addEventListener("scroll", function scroll() {
-    throlleRemove(adClassList, ".");
-  });
+  // win.addEventListener("scroll", function scroll() {
+  //   throlleRemove(adClassList, ".");
+  // });
   // const includesList = ['web', 'js', 'javascript', 'node', 'npm', 'github', 'jquery', 'css', 'html', '音视频', '前端', 'vue', 'react', 'nginx', 'webpack', 'http', 'websocket', 'ts', 'typescript', 'chrome', 'linux', 'iframe', 'electron', 'es6', 'es7', 'es8', 'es9', 'es10', 'es11', 'es12', 'async', 'await']
   // const root = document.querySelector('#root')
   // let linkList = Array.from(root.querySelectorAll('a'))
@@ -1529,53 +1462,11 @@ function github() {
 }
 //  https://product.pconline.com.cn/ class: fixLeftQRcode  id:xuanfu_wapper
 
-// 公共跳转方法
-function commonTiaozhuan(e, needGo) {
-  logInfo(e, "有href的node元素", e.target);
-  let href = "",
-    newHref = "",
-    targetReal = null,
-    eventType = null;
-  // a链接也有target属性，但是他的target是个字符串，点击事件的target是个元素
-  if (e && e.target && e.target.nodeName) {
-    targetReal = e.target;
-    eventType = true;
-  } else {
-    targetReal = e;
-  }
-  if (targetReal.href) {
-    href = targetReal.href;
-  } else if (targetReal.parentNode && targetReal.parentNode.href) {
-    href = targetReal.parentNode.href;
-  }
-  newHref = otherSiteHref(href).href;
-  // 判断是否为网址，是网址可以直接跳转
-  if (newHref) {
-    const hrefStr = decodeURIComponent(newHref);
-    eventType && e.preventDefault();
-    gotoLink(hrefStr);
-  }
-  // 点击事件里不需要多次一举，键盘事件的点击需要
-  if (needGo) {
-    gotoLink(decodeURIComponent(newHref));
-  }
-}
-
 const vueFlag = vueAroundList.some((it) => host === it);
 if (vueFlag && !href.includes("/zh/")) {
   let s = location.origin + "/zh/" + location.pathname;
   location.href = s;
 }
-
-// 去除copy之后的尾巴
-document.addEventListener("copy", function(e) {
-  e.preventDefault();
-  const selection = window.getSelection().toString();
-  e.clipboardData.setData("text/plain", selection);
-});
-
-// 页面离开事件
-// window.addEventListener('beforeunload', function (event) {})
 
 setTimeout(function() {
   let performance_end = performance.now();
@@ -1616,13 +1507,13 @@ setTimeout(function() {
   }
 }, 0);
 
-window.addEventListener("visibilitychange", function(event) {
-  if (document.hidden) return;
-  sendMessage({
-    liListStr,
-    linkObj,
-  });
-});
+// window.addEventListener("visibilitychange", function(event) {
+//   if (document.hidden) return;
+//   sendMessage({
+//     liListStr,
+//     linkObj,
+//   });
+// });
 
 function sendMessage(
   object = {},
@@ -1630,37 +1521,9 @@ function sendMessage(
     logInfo(response, "response-content");
   }
 ) {
-  // object = {
-  //   ...object,
-  //   host,
-  //   href,
-  // };
-  // chrome.storage.sync.set({ ...configParams, host }, function() {});
   try {
     chrome.runtime.sendMessage(object, fn);
   } catch (error) {
     logInfo("发送消息错误", error);
   }
 }
-
-window.addEventListener("blur", (e) => {
-  boxInfo("no focus", false);
-});
-
-window.addEventListener("focus", (e) => {
-  boxInfo("has focus");
-});
-
-// var xhr = new XMLHttpRequest();
-// xhr.onreadystatechange = function() {
-//   if (xhr.readyState == 4) {
-//     if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
-//       console.log(xhr.responseText);
-//     }
-//   }
-// };
-// xhr.onerror = function() {
-//   console.log("%c请求失败", "color:red;font-size:30px");
-// };
-// xhr.open("post", "http://localhost:88/image1", true);
-// xhr.send(null);

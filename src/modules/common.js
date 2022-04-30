@@ -189,9 +189,9 @@ function isParentNodeA(item, max = 0) {
 }
 
 // shift + space 实现点击鼠标所在位置
-export function mouseClick(configParams = configParamsDefault) {
-  // console.log(configParams, "common.js------");
-  let { mapInfo, host } = configParams;
+export function mouseClick(configParams) {
+  console.log(configParams, "common.js------");
+  let { mapInfo } = configParams;
   if (!mapInfo) {
     mapInfo = configParamsDefault.mapInfo;
   }
@@ -224,10 +224,11 @@ export function mouseClick(configParams = configParamsDefault) {
     //   const href = matched && matched[1];
     //   if (hrefReg.test(href)) gotoLink(href);
     // }
-    const matched = item.innerText.match(findUrlReg);
+    const matched = item.innerText && item.innerText.match(findUrlReg);
     let href = matched && matched[0];
     // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
     if ((href && item.href && (href = item.href)) || hrefReg.test(href)) {
+      console.log(7);
       gotoLink(href);
       return true;
     }
@@ -243,6 +244,7 @@ export function mouseClick(configParams = configParamsDefault) {
       noOpenLinkDomList.some((it) => it.contains(item));
     // 有不需要新页面打开的直接点击即可
     if (openFLag && "click" in item) {
+      console.log(8);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -279,14 +281,16 @@ export function mouseClick(configParams = configParamsDefault) {
       console.log(4, otherObj);
       gotoLink(otherObj.href);
       return isClick;
-    } else if (typeof getEventListeners === "function") {
-      const listeners = getEventListeners(item);
-      if (listeners && listeners.click) {
-        console.log(5);
-        item.click();
-        return isClick;
-      }
-    } else if ("click" in item) {
+    }
+    // else if (typeof getEventListeners === "function") {
+    //   const listeners = getEventListeners(item);
+    //   console.log(5);
+    //   if (listeners && listeners.click) {
+    //     item.click();
+    //     return isClick;
+    //   }
+    // }
+    else if ("click" in item) {
       console.log(6, parentIsANode);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
@@ -364,7 +368,7 @@ export function mouseClick(configParams = configParamsDefault) {
       if (contentMenuEventsFlag) return;
       contentMenuEventsFlag = false;
       clearTimeout(auxclickTimer);
-      console.log(target, "auxclick-target");
+      console.log("auxclick-target");
       findParentClick(e.target);
       clickEventInvoke = false;
       // console.log(
@@ -403,14 +407,51 @@ export function mouseClick(configParams = configParamsDefault) {
       } else {
         boxInfo("click e");
       }
-    } else if (37 == code && e.ctrlKey) {
+    } else if (37 === code && e.ctrlKey) {
       // 实现浏览器上一步下一步
-      boxInfo("back");
       history.back();
-    } else if (39 == code && e.ctrlKey) {
+    } else if (39 === code && e.ctrlKey) {
       //处理的部分
-      boxInfo("forward");
       history.go(1);
+    } else if (e.ctrlKey && code === 188) {
+      // ctrl + , 下载所有图片
+      let downloadImgList = [],
+        type = null;
+      const imgList = [...$$("img")]
+        .map((it) => it.dataset.src || it.src)
+        .filter(Boolean);
+      imgList.forEach((t) => {
+        let url = null;
+        if (t.startsWith("data")) {
+          let start = t.indexOf("/");
+          let end = t.indexOf(";");
+          if (start !== -1 && end !== -1) {
+            type = t.slice(start + 1, end);
+          }
+          url = getWebUrl(base64ToBlob(t));
+        } else if (t.startsWith("blob")) {
+          url = getWebUrl(t);
+        } else if (t.startsWith("http")) {
+          url = t;
+        }
+        downloadImgList.push(url);
+      });
+      downloadImgList.forEach((t, i) => {
+        const imgDom = document.createElement("a");
+        imgDom.href = t;
+        const date = new Date();
+        imgDom.download =
+          date.toLocaleDateString() +
+          "-" +
+          date.toLocaleTimeString() +
+          "-" +
+          Math.random() +
+          i +
+          "." +
+          type;
+        imgDom.click();
+        imgDom.remove();
+      });
     }
     // alt + x 点击打开新页面
     // if (e.altKey && code === 88 && target) {
@@ -422,6 +463,16 @@ export function mouseClick(configParams = configParamsDefault) {
     const code = e.keyCode;
     if (e.ctrlKey && code === 83) e.preventDefault();
   }
+
+  // 去除copy之后的尾巴
+  document.addEventListener("copy", function(e) {
+    e.preventDefault();
+    const selection = window.getSelection().toString();
+    e.clipboardData.setData("text/plain", selection);
+  });
+
+  // 页面离开事件
+  // window.addEventListener('beforeunload', function (event) {})
 
   function createLinstener(targetWin) {
     targetWin.removeEventListener("pointermove", pointermove);
