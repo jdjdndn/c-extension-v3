@@ -75,8 +75,8 @@ let kIndex,
   maxRecordIndex = 200,
   configParams = {}, // 配置参数对象
   requestIndex = 0, // 请求条数
-  hasDeleteHerfList = [], // 进入过的网址记录
   windowList = [], // window列表
+  historyObj = {}, // 历史记录收集
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
 
 function handlerRequest(details) {
@@ -224,51 +224,37 @@ chrome.storage.sync.get(null, function(result) {
   // clearCache(configParams);
 });
 
-// function colectHref() {
-//   chrome.windows.getAll({ populate: true }, function(windowList) {
-//     const thisWindow = windowList
-//       .find((window) => window.focused)
-//       .tabs.find((it) => it.active);
-//     hasDeleteHerfList.push(thisWindow.url);
-//     console.log("windowList", thisWindow);
-//   });
-//   console.log("历史记录列表", hasDeleteHerfList);
-// }
-
 function clearCache(configParams) {
-  console.log("清除缓存");
   const callback = function() {
-    log(
+    console.log(
       "Do something clever here once data has been removed",
       configParams.clearTime
     );
   };
   if (!configParams.clearTime) return false;
-  return false;
-  // const millisecondsPerWeek =
-  //   1000 * 60 * 60 * 24 * (configParams.clearTime || 1);
-  // const oneWeekAgo = new Date().getTime() - millisecondsPerWeek;
-  // chrome.browsingData.remove(
-  //   {
-  //     since: oneWeekAgo,
-  //   },
-  //   {
-  //     appcache: true,
-  //     cache: true,
-  //     cacheStorage: true,
-  //     cookies: true,
-  //     downloads: true,
-  //     fileSystems: true,
-  //     formData: true,
-  //     history: true,
-  //     indexedDB: true,
-  //     localStorage: true,
-  //     passwords: true,
-  //     serviceWorkers: true,
-  //     webSQL: true,
-  //   },
-  //   callback
-  // );
+  const millisecondsPerWeek = 1000 * 60 * 60 * 24 * configParams.clearTime;
+  const oneWeekAgo = new Date().getTime() - millisecondsPerWeek;
+  chrome.browsingData.remove(
+    {
+      since: oneWeekAgo,
+    },
+    {
+      appcache: true,
+      cache: true,
+      cacheStorage: true,
+      cookies: true,
+      downloads: true,
+      fileSystems: true,
+      formData: true,
+      history: true,
+      indexedDB: true,
+      localStorage: true,
+      passwords: true,
+      serviceWorkers: true,
+      webSQL: true,
+    },
+    callback
+  );
 }
 
 const connections = {};
@@ -277,20 +263,20 @@ const cache = {};
 
 chrome.runtime.onConnect.addListener(function(port) {
   const extensionListener = function(message, sender, sendResponse) {
-    if (message.name === "init") {
-      console.log("init");
+    if (message.name === "from -> devtools") {
+      console.log("from -> devtools", message);
     } else {
       requestIndex++;
       console.log(message, requestIndex);
     }
     const tabId = message.tabId;
     connections[tabId] = port;
-    if (cache[tabId] && cache[tabId].length) {
-      for (let i = 0; i < cache[tabId].length; i++) {
-        const req = cache[tabId][i];
-        port.postMessage(req);
-      }
-    }
+    // if (cache[tabId] && cache[tabId].length) {
+    //   for (let i = 0; i < cache[tabId].length; i++) {
+    //     const req = cache[tabId][i];
+    //     port.postMessage(req);
+    //   }
+    // }
     return;
   };
 
@@ -308,6 +294,23 @@ chrome.runtime.onConnect.addListener(function(port) {
   });
 });
 
-chrome.history.onVisited.addListener((res) => {
-  console.log(res, "====");
-});
+// chrome.history.onVisited.addListener((res) => {
+//   const { lastVisitTime, visitCount, url } = res;
+//   console.log(lastVisitTime, visitCount, url, "lastVisitTime, visitCount, url");
+//   chrome.windows.getAll({ populate: true }, function(windowList) {
+//     const thisWindow = windowList
+//       .find((window) => window.focused)
+//       .tabs.find((it) => it.active);
+//     console.log("windowList", thisWindow);
+//   });
+// });
+
+// chrome.history.deleteAll(() => {
+//   console.log("all");
+// });
+
+async function getCurrentTab() {
+  let queryOptions = { active: true, currentWindow: true };
+  let [tab] = await chrome.tabs.query(queryOptions);
+  return tab;
+}

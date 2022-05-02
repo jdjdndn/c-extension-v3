@@ -40,6 +40,15 @@
       ]
     }
   ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "1",
+        "enabled": true,
+        "path": "rules/juejin.json"
+      }
+    ]
+  },
   "permissions": [
     "contextMenus",
     "tabs",

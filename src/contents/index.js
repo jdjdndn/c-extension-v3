@@ -46,13 +46,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ...request,
   };
   commonEvents(configParams);
-  // logInfo(
-  //   request,
-  //   configParams,
-  //   "接收消息",
-  //   (configParams.mapInfo[host] || {}).videoPlayRate ||
-  //     defaultparams.videoPlayRate
-  // );
   sendResponse({
     str: "我收到了你的情书， popup~",
   });
@@ -305,13 +298,13 @@ function setFanyi(fanyiFlag) {
 }
 
 function replaceHref(configParams) {
-  const needChange = otherSiteHref(href).needChange;
+  const otherObj = otherSiteHref(href);
+  const needChange = otherObj.needChange;
   const noChange = configParams.noChangeHrefList.some((it) =>
     host.includes(it)
   );
   if (needChange && !noChange) {
-    // location.replace(hrefChange(href))
-    location.replace(otherSiteHref(href).href);
+    location.replace(otherObj.href);
   }
 }
 
@@ -529,17 +522,16 @@ function videoPlay(rate, index = 0) {
   index++;
   const video = $("video");
   if (video) {
-    const realRate = Number(rate) === rate ? rate : 1.5;
-    if (video.playbackRate !== realRate) {
+    if (video.playbackRate !== rate) {
       video.autoplay = true;
-      video.playbackRate = realRate;
+      video.playbackRate = rate;
     } else if (!video.paused) {
       video.play();
       return;
     }
   } else {
     setTimeout(() => {
-      videoPlay();
+      videoPlay(rate, index);
     }, 500);
   }
 }
@@ -904,15 +896,15 @@ const config = {
 clearInterval(timer);
 
 function main(mapInfo) {
-  // 获取所有a链接
-  const callback = function(mutationsList, observer) {
-    addLinkListBox(getDomList("a"));
-  };
-  const observerGetLinks = new MutationObserver(callback);
-  observerGetLinks.observe(document, config);
+  // // 获取所有a链接
+  // const callback1 = function(mutationsList, observer) {
+  //   addLinkListBox(getDomList("a"));
+  // };
+  // const observerGetLinks = new MutationObserver(callback1);
+  // observerGetLinks.observe(document, config);
   for (const k in list) {
     // logInfo(host, k, "看看走的是哪一个");
-
+    list[k].once = 0;
     if (host === k) {
       // 英文调中文网站
       if (list[k].rehref) {
@@ -963,8 +955,12 @@ function main(mapInfo) {
 
       const callback = function(mutationsList, observer) {
         logInfo("回调执行-observer");
+        addLinkListBox(getDomList("a"));
         list[k].callback &&
-          list[k].callback({ ...params, ...list[k], ...mapInfo[host] });
+          list[k].callback(
+            { ...params, ...list[k], ...mapInfo[host] },
+            list[k]
+          );
       };
       const observer = new MutationObserver(callback);
       observer.observe(document, config);
@@ -1232,7 +1228,8 @@ function baidujingyan() {
   );
 }
 // 哔哩哔哩
-function bilibili() {
+function bilibili(payload) {
+  videoPlay(payload.videoPlayRate);
   // removeAllFunc("[id*=Ad], [class*=activity]");
   // removeAllFunc(
   //   "[id*=ad-], [id*=ad-], [class*=-ad], [class*=ad-], [id*=Ad], [id*=recommand]"
@@ -1240,16 +1237,16 @@ function bilibili() {
   removeFunc(".extension");
   removeFunc("#bili_live>a");
   removeAllFunc(".banner-card.b-wrap");
-  if ($$(".bilibili-player-video-btn-speed-name").innerHTML === "1.5x") return;
-  proClick("倍速");
-  proClick(
-    "bilibili-player-video-btn-speed-menu-list",
-    {
-      all: true,
-      i: 1,
-    },
-    "class"
-  );
+  // if ($$(".bilibili-player-video-btn-speed-name").innerHTML === "1.5x") return;
+  // proClick("倍速");
+  // proClick(
+  //   "bilibili-player-video-btn-speed-menu-list",
+  //   {
+  //     all: true,
+  //     i: 1,
+  //   },
+  //   "class"
+  // );
   const linkList = [
     ...getDomList("#app .video-card-reco .info-box"),
     ...getDomList(".b-wrap .zone-list-box .video-card-common", ".card-pic"),
