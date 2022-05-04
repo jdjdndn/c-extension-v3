@@ -3,12 +3,13 @@ import {
   mouseClick,
   // copyTargetText,
   autoSelect,
-  boxInfo,
-  defaultparams,
+  // boxInfo,
+  paramsDefault,
   otherSiteHref,
   unDef,
   getNoOpenDomList,
   sendReq,
+  // createLinstener,
 } from "../modules/common.js";
 import { ajax } from "../modules/ajax.js";
 let performance_now = performance.now(),
@@ -17,7 +18,7 @@ let performance_now = performance.now(),
   timer = null,
   win = "",
   // youtubeFlag = false, // YouTube中文翻译只设置一次
-  configParams = defaultparams, // popup配置参数
+  configParams = paramsDefault, // popup配置参数
   cached = {}; // 缓存起来
 
 const { location } = window;
@@ -57,7 +58,10 @@ function commonEvents(configParams) {
   // 跳转网址
   replaceHref(configParams);
   // 键盘点击事件
-  if (!cached["mouseClick"]) mouseClick(configParams);
+  if (!cached["mouseClick"]) {
+    mouseClick({ ...configParams, host }, window);
+    // ifraemsListener({ ...configParams, host });
+  }
   cached["mouseClick"] = mouseClick;
   // 添加/移除错误监听
   removeErrListening(configParams);
@@ -85,6 +89,19 @@ function commonEvents(configParams) {
   getNoOpenDomList(mapInfo[host].noOpenLinkList);
 }
 
+function ifraemsListener(params) {
+  const frames = window.frames;
+  const framesLength = frames.length;
+  for (let i = 0; i < framesLength; i++) {
+    const frameWindow = frames[i];
+    try {
+      mouseClick(params, frameWindow.contentWindow);
+    } catch (error) {
+      console.error("iframe事件加载失败：" + i);
+    }
+  }
+}
+
 function addNewElement(innerhtml, node, src) {
   const element = document.createElement(node);
   if (src) {
@@ -95,6 +112,7 @@ function addNewElement(innerhtml, node, src) {
   document.getElementsByTagName("head")[0].appendChild(element);
 }
 
+// 设置 mapInfo 默认参数
 function setStorageDefault(result) {
   const mapInfo = { ...configParams.mapInfo, ...result.mapInfo };
   let flag = false;
@@ -885,6 +903,9 @@ const list = {
   "91porny.com": {
     callback: porny91,
   },
+  "www.imooc.com": {
+    callback: muke,
+  },
 };
 
 // mutationObsever配置
@@ -999,6 +1020,14 @@ function getWebUrl(file) {
   return url;
 }
 
+function muke() {
+  const classList = [
+    "wechat-box.js-wechat-box",
+    "maskcode-block.js-maskcode-block",
+  ];
+  removeArrList(classList, ".");
+}
+
 function porny91() {
   setStyle(".modal-open", "overflow:auto");
   const classList = [
@@ -1028,18 +1057,18 @@ function porny91() {
 }
 
 function douyin() {
-  const classList = [
-    "login-guide-container",
-    "mPWahmAI.screen-mask.login-mask-enter-done",
-    "recommend-comment-login.recommend-comment-login-mask",
-  ];
-  removeArrList(classList, ".");
-  const adIdList = ["captcha_container"];
-  removeArrList(adIdList, "#");
-  const widnowBox = $(".windows-os");
-  if (widnowBox && widnowBox.children.length === 3) {
-    widnowBox.children[0].remove();
-  }
+  // const classList = [
+  //   "login-guide-container",
+  //   "mPWahmAI.screen-mask.login-mask-enter-done",
+  //   "recommend-comment-login.recommend-comment-login-mask",
+  // ];
+  // removeArrList(classList, ".");
+  // const adIdList = ["captcha_container"];
+  // removeArrList(adIdList, "#");
+  // const widnowBox = $(".windows-os");
+  // if (widnowBox && widnowBox.children.length === 3) {
+  //   widnowBox.children[0].remove();
+  // }
 }
 
 // 007影视

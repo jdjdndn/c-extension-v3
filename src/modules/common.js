@@ -5,7 +5,7 @@
  * @LastEditors: yucheng
  * @Description: ..
  */
-
+// mapInfo的所有参数
 export const commonDefault = {
   videoPlayRate: 1.5, // 默认播放速度
   collectInfoFlag: false, // 默认不收集信息
@@ -14,14 +14,22 @@ export const commonDefault = {
   auxclickOnly: false, // 默认auxclick与click不同时触发
   noOpenLinkList: [], // 如果新页面打开链接，这些不会新页面打开链接
 };
-export const defaultparams = {
-  videoPlayRate: 1.5,
-  fanyiFlag: false,
-  configParamsBacket: {}, // 深拷贝所有配置参数
+// 只包含默认参数
+export const paramsDefault = {
   mapInfo: {
     default: commonDefault,
   }, // content对象信息
-  host: "", // location.host
+  clearTime: 1,
+  changeEleMiaoBian: false, // 是否开启移入元素加样式
+  noChangeHrefList: ["iflytek", "zhixue", "localhost", "google"], // 不跳转其他url列表
+  debug: false, // 调试模式
+  recordErrorList: ["localhost"], // 记录报错列表
+};
+// 包含默认参数以及其他参数
+export const defaultparams = {
+  fanyiFlag: false,
+  videoPlayRate: 1.5,
+  configParamsBacket: {}, // 深拷贝所有配置参数
   videoPlayRateList: [
     {
       videoPlayRate: 1,
@@ -34,15 +42,11 @@ export const defaultparams = {
     },
   ], // 视频播放速度列表
   clearTimeList: [1, 3, 7, 30], // 清理缓存事件列表
-  clearTime: 1,
-  changeEleMiaoBian: false, // 是否开启移入元素加样式
-  noChangeHrefList: ["iflytek", "zhixue", "localhost", "google"], // 不跳转其他url列表
-  debug: false, // 调试模式
-  recordErrorList: ["localhost"], // 记录报错列表
+  ...paramsDefault,
 };
 import "./index.scss";
 const { getEventListeners } = window;
-const { href, host, origin } = location;
+// const { href, host, origin } = location;
 
 let target = null,
   timer = null,
@@ -56,8 +60,8 @@ let target = null,
   contentMenuEventsFlag = false, // 是否contentmenu事件
   clickEventInvoke = false, //auxclick触发时不触发click
   noOpenLinkDomList = [], // 不需要跳转的a链接父元素
-  findUrlReg = /(https?|ftp|file):\/\/[-A-Za-z0-9+&@#\/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/,
-  hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
+  findUrlReg = /(https?|ftp|file):\/\/[-A-Za-z0-9+&@#\/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/, // 文本中找url
+  hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/; // 判断是否是url
 
 const { log } = console;
 YUCHENG_USE_BOX.classList.add("yucheng-use-box");
@@ -159,6 +163,12 @@ export function otherSiteHref(href) {
           protocol,
           remain: str.slice(index),
         });
+        if (splitArr.length > 1) {
+          return {
+            needChange: splitArr.length > 1,
+            href: splitArr.length > 1 ? splitArr[1].remain : href,
+          };
+        }
       }
       str = str.slice(index + protocol.length);
     }
@@ -189,41 +199,15 @@ function isParentNodeA(item, max = 0) {
 }
 
 // shift + space 实现点击鼠标所在位置
-export function mouseClick(configParams) {
+export function mouseClick(configParams, targetWin) {
   console.log(configParams, "common.js------");
-  let { mapInfo } = configParams;
+  let { mapInfo, host } = configParams;
+  if (!host) console.log("没有host");
   if (!mapInfo) {
     mapInfo = configParamsDefault.mapInfo;
   }
 
-  function getDomain(href) {
-    if (!hrefReg.test(href)) {
-      return false;
-    }
-    const urlParams = new URL(href);
-    const { protocol, origin } = urlParams;
-    let defaultHost = 80;
-    if (protocol === "https:") {
-      defaultHost = 443;
-    }
-    return origin + ":" + defaultHost;
-  }
-
-  // 判断是否同源
-  function sameOrigin(src) {
-    if (getDomain(href) && getDomain(src)) {
-      return true;
-    }
-    return false;
-  }
-
   function doSth(item) {
-    // if (host === "github.com") {
-    //   const reg = new RegExp(/\((.*?)\)/);
-    //   const matched = item.innerText.match(reg);
-    //   const href = matched && matched[1];
-    //   if (hrefReg.test(href)) gotoLink(href);
-    // }
     const matched = item.innerText && item.innerText.match(findUrlReg);
     let href = matched && matched[0];
     // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
@@ -281,16 +265,7 @@ export function mouseClick(configParams) {
       console.log(4, otherObj);
       gotoLink(otherObj.href);
       return isClick;
-    }
-    // else if (typeof getEventListeners === "function") {
-    //   const listeners = getEventListeners(item);
-    //   console.log(5);
-    //   if (listeners && listeners.click) {
-    //     item.click();
-    //     return isClick;
-    //   }
-    // }
-    else if ("click" in item) {
+    } else if ("click" in item) {
       console.log(6, parentIsANode);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
@@ -303,6 +278,7 @@ export function mouseClick(configParams) {
 
   // 跳转方法
   function gotoLink(href) {
+    if (!hrefReg.test(href)) return console.error("非正常url");
     console.log(href, "gotoLink---href");
     const a = document.createElement("a");
     a.target = "_blank";
@@ -324,24 +300,6 @@ export function mouseClick(configParams) {
         targetCssText = e.target.style.cssText;
         e.target.style.cssText += "box-shadow: 0px 0px 1px 1px #ccc;";
       }
-      // if (target.nodeName === "IFRAME" && target) {
-      //   const targetWin = target.contentWindow;
-      //   if (targetWin && sameOrigin(target.src)) {
-      //     // if (targetWin) {
-      //     try {
-      //       targetWin.addEventListener("pointermove", pointermove);
-      //     } catch (error) {
-      //       boxInfo("iframe e");
-      //     }
-      //   }
-      // }
-      // if (
-      //   !target ||
-      //   !target.nodeName ||
-      //   !target.classList ||
-      //   target.innerText === ""
-      // )
-      //   return false;
     });
   }
 
@@ -361,7 +319,6 @@ export function mouseClick(configParams) {
   // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
     e.preventDefault();
-    e.stopImmediatePropagation();
     if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
     console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
@@ -371,11 +328,6 @@ export function mouseClick(configParams) {
       console.log("auxclick-target");
       findParentClick(e.target);
       clickEventInvoke = false;
-      // console.log(
-      //   "auxclick-setTimeout",
-      //   clickEventInvoke,
-      //   new Date().getTime()
-      // );
     }, 200);
   }
 
@@ -489,22 +441,7 @@ export function mouseClick(configParams) {
     targetWin.addEventListener("keydown", keydown);
   }
 
-  createLinstener(window);
-
-  //   .filter(
-  //   (it) => !it.src.startsWith("chrome-extension")
-  // );
-  // const iframes = [...document.querySelectorAll("iframe")];
-  // iframes.forEach((it) => {
-  //   // it.onload = function() {
-  //   const targetWin = it.contentWindow;
-  //   console.log(targetWin, "targetWin");
-  //   if (targetWin && sameOrigin(it.src)) {
-  //     // if (targetWin) {
-  //     createLinstener(targetWin);
-  //   }
-  //   // };
-  // });
+  createLinstener(targetWin);
 
   function logInfo(...msg) {
     if (!configParams.debug) return false;
@@ -593,7 +530,7 @@ function copyImg() {
   };
 
   img.onerror = () => {
-    boxInfo("cors e");
+    console.log("cors e");
   };
 }
 
@@ -607,10 +544,10 @@ function canvasCopy(canvas, need = false) {
     ];
     navigator.clipboard.write(data).then(
       () => {
-        boxInfo("copy s");
+        console.log("copy s");
       },
       () => {
-        boxInfo("copy e");
+        console.log("copy e");
       }
     );
   });

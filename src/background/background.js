@@ -213,6 +213,7 @@ chrome.runtime.onMessage.addListener(function notify(
   } else {
     console.log("sender.tab not defined.");
   }
+  sendResponse({ title: "什么也不返回" });
   return true;
 });
 
@@ -277,6 +278,7 @@ chrome.runtime.onConnect.addListener(function(port) {
     //     port.postMessage(req);
     //   }
     // }
+    sendResponse({ title: "什么也不返回" });
     return;
   };
 

@@ -195,6 +195,7 @@ import {
   mouseClick,
   defaultparams,
   commonDefault,
+  paramsDefault,
   unDef
 } from '../../modules/common';
 export default {
@@ -203,10 +204,12 @@ export default {
       msg: 'Welcome!--popup',
       host: '',
       allDataObj: {},
-      configParamsBacket: {}
+      configParamsBacket: {},
+      paramsDefaultKeys: [] // 过滤的key,只有这里存在的key，才会被收进storage存储
     };
   },
   created() {
+    this.paramsDefaultKeys = Object.keys(paramsDefault);
     const newCommonDefault = JSON.parse(JSON.stringify(commonDefault));
     const newDefaultParams = JSON.parse(JSON.stringify(defaultparams));
     for (const k in newCommonDefault) {
@@ -268,13 +271,14 @@ export default {
       mapInfo[host][type] = flag;
       saveAndSend({ mapInfo });
     },
-    start() {
+    start(result) {
       const that = this;
       chrome.windows.getAll({ populate: true }, function (windowList) {
         const thisWindow = windowList
           .find((window) => window.focused)
           .tabs.find((it) => it.active);
         that.host = new URL(thisWindow.url).host;
+        mouseClick({ ...result, host: that.host }, window);
         // console.log('windowList', thisWindow, that.host);
       });
     },
@@ -288,8 +292,7 @@ export default {
     },
     // 获取配置参数之后做点事情
     afterGetConfigParams(result) {
-      this.start();
-      mouseClick(result);
+      this.start(result);
       this.sendMessage2(result);
     },
     // 获取storage并设置参数
@@ -367,7 +370,7 @@ export default {
     },
     // 保存参数并且发消息
     saveAndSend(payload) {
-      const params = { ...this.result, ...payload };
+      const params = { ...this.allDataObj, ...payload };
       this.changeStorage(params);
       this.sendMessage(params);
       this.sendMessage2(params);
@@ -375,11 +378,14 @@ export default {
     },
     // 改变配置参数
     changeStorage(params) {
-      // for (const k in params) {
-      //   this.$data[k] = params[k];
-      // }
-      // console.log(params, this.$data, '==');
-      chrome.storage.sync.set(params, function (result) {});
+      const newParams = {};
+      const { paramsDefaultKeys } = this;
+      for (const k in params) {
+        if (paramsDefaultKeys.includes(k)) {
+          newParams[k] = params[k];
+        }
+      }
+      chrome.storage.sync.set(newParams, function (result) {});
     },
     // 判断参数是否变化, true未变化， false变化了
     isChange(name) {
