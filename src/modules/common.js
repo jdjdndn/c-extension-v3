@@ -148,8 +148,13 @@ export function sendReq(
     .finally(finallyFn);
 }
 
+// 当前链接与网页host不一致时或者 `https://link.juejin.cn?target=https%3A%2F%2Fgithub.com%2FPanJiaChen%2Fvue-element-admin` 直接跳转
+function getNeedChange(arr, href, host) {
+  return arr.length > 1 || (arr.length === 1 && new URL(href).host === host);
+}
+
 // 判断网址是否需要跳转
-export function otherSiteHref(href) {
+export function otherSiteHref(href, host) {
   let splitArr = [],
     newStr = decodeURIComponent(href);
   const protocolList = ["https://", "http://"];
@@ -165,7 +170,7 @@ export function otherSiteHref(href) {
         });
         if (splitArr.length > 1) {
           return {
-            needChange: splitArr.length > 1,
+            needChange: getNeedChange(splitArr, href, host),
             href: splitArr.length > 1 ? splitArr[1].remain : href,
           };
         }
@@ -178,7 +183,7 @@ export function otherSiteHref(href) {
   //   href: 'http://www.baidu.com'
   // }
   return {
-    needChange: splitArr.length > 1,
+    needChange: getNeedChange(splitArr, href, host),
     href: splitArr.length > 1 ? splitArr[1].remain : href,
   };
 }
