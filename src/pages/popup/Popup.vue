@@ -196,7 +196,8 @@ import {
   defaultparams,
   commonDefault,
   paramsDefault,
-  unDef
+  unDef,
+  chalk
 } from '../../modules/common';
 export default {
   data() {
@@ -242,7 +243,7 @@ export default {
       if (!mapInfo || !mapInfo[host]) return false;
       allDataObj.openNewPageFlag = openNewPageFlag;
       mapInfo[host].openNewPageFlag = openNewPageFlag;
-      console.log(mapInfo[host], 'openflag', openNewPageFlag);
+      chalk(mapInfo[host], 'openflag', openNewPageFlag);
       saveAndSend({ mapInfo });
     },
     collectInfo(collectInfoFlag = commonDefault.collectInfoFlag) {
@@ -279,7 +280,7 @@ export default {
           .tabs.find((it) => it.active);
         that.host = new URL(thisWindow.url).host;
         mouseClick({ ...result, host: that.host }, window);
-        // console.log('windowList', thisWindow, that.host);
+        // chalk('windowList', thisWindow, that.host);
       });
     },
     // 设置content.js中的list列表
@@ -301,7 +302,7 @@ export default {
       // 获取配置参数
       chrome.storage.sync.get(null, function (result) {
         that.allDataObj = { ...that.allDataObj, ...result };
-        console.log('看看获取的参数', result, that.allDataObj);
+        chalk('看看获取的参数', result, that.allDataObj);
         if (!result) return false;
         that.configParamsBacket = JSON.parse(JSON.stringify(result) || '{}');
 
@@ -407,7 +408,7 @@ export default {
     noChangeLog(msg) {
       const { debug } = this;
       if (!debug) return false;
-      console.log(msg + '一致，不修改');
+      chalk(msg + '一致，不修改');
     },
     // 发送消息
     sendMessage(message, fn = () => {}) {
@@ -442,7 +443,7 @@ export default {
             if (unDef(mapInfo[val][k])) {
               mapInfo[val][k] = commonDefault[k];
             }
-            // console.log(
+            // chalk(
             //   k,
             //   commonDefault[k],
             //   mapInfo[val][k],
@@ -451,7 +452,7 @@ export default {
             allDataObj[k] = mapInfo[val][k];
           }
         }
-        console.log(mapInfo[val], allDataObj, 'mapInfo  watcher');
+        chalk(mapInfo[val], allDataObj, 'mapInfo  watcher');
         // if (flag) {
         //   console.log('mapInfo变化了');
         //   saveAndSend({ mapInfo });

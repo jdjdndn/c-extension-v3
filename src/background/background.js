@@ -1,5 +1,7 @@
+import { chalk } from "../modules/common";
+
 chrome.bookmarks.getTree((nodeTree) => {
-  console.log(nodeTree, "nodeTree");
+  chalk(nodeTree, "nodeTree");
   const list = treeToList(nodeTree);
   const obj = {};
   list.forEach((item) => {
@@ -9,7 +11,7 @@ chrome.bookmarks.getTree((nodeTree) => {
   for (const k in obj) {
     newList.push(obj[k]);
   }
-  // console.log(newList, "newList");
+  // chalk(newList, "newList");
 });
 
 // 树转数组
@@ -46,7 +48,7 @@ function treeToList(tree, list = [], index = 0) {
 // popup.GetMessageFromBackground("给我的兄弟popup点东西~")
 // ​
 // function GetMessageFromPopup(data){
-//     console.log("popup给我的东西~",data)
+//     chalk("popup给我的东西~",data)
 // }
 
 // 拦截请求
@@ -80,7 +82,7 @@ let kIndex,
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
 
 function handlerRequest(details) {
-  // console.log(details, 'details');
+  // chalk(details, 'details');
   ((details.requestBody || {}).raw || []).forEach((raw) => {
     const blob = new Blob([raw.bytes], {
       type: "application/json",
@@ -100,7 +102,7 @@ function handlerRequest(details) {
       if (requestList.length > maxRecordIndex) {
         requestList = requestList.slice(maxRecordIndex);
       }
-      // console.log(data, '这里', JSON.parse(data));
+      // chalk(data, '这里', JSON.parse(data));
       if (requestObj[details.url]) {
         requestObj[details.url].push(JSON.parse(data));
       } else {
@@ -108,7 +110,7 @@ function handlerRequest(details) {
       }
     });
   });
-  console.log(requestObj, requestList, "请求参数对象");
+  chalk(requestObj, requestList, "请求参数对象");
   // 如果找到了一个要拦截的参数，记录位置，下次从找到的位置接着找
   for (const k in blockUrlList) {
     kIndex = k;
@@ -123,7 +125,7 @@ function handlerRequest(details) {
       }
       sliceArr = blockUrlList[k].adList.slice(num);
       const index = sliceArr.findIndex((it) => details.url.includes(it));
-      // console.log(sliceArr, index, 'index')
+      // chalk(sliceArr, index, 'index')
       if (index !== -1) {
         num = index;
         return {
@@ -168,7 +170,7 @@ chrome.contextMenus.create({
   title: "使用谷歌搜索：%s", // %s表示选中的文字
   contexts: ["selection"], // 只有当选中文字时才会出现此右键菜单
   onclick: function(params) {
-    console.log(params, "params");
+    chalk(params, "params");
     // 注意不能使用location.href，因为location是属于background的window对象
     chrome.tabs.create({
       url: "https://www.google.com/search?q=" + encodeURI(params.selectionText),
@@ -181,7 +183,7 @@ chrome.runtime.onMessage.addListener(function notify(
   sender,
   sendResponse
 ) {
-  // console.log(message, configParams, "------message-----background----");
+  // chalk(message, configParams, "------message-----background----");
   if (message.linkObj) {
     linkObj = {
       ...linkObj,
@@ -211,7 +213,7 @@ chrome.runtime.onMessage.addListener(function notify(
       cache[tabId].push(message);
     }
   } else {
-    console.log("sender.tab not defined.");
+    chalk("sender.tab not defined.");
   }
   sendResponse({ title: "什么也不返回" });
   return true;
@@ -219,7 +221,7 @@ chrome.runtime.onMessage.addListener(function notify(
 
 // 获取配置
 chrome.storage.sync.get(null, function(result) {
-  console.log(result, "result");
+  chalk(result, "result");
   configParams = result;
   // 清理缓存
   // clearCache(configParams);
@@ -227,7 +229,7 @@ chrome.storage.sync.get(null, function(result) {
 
 function clearCache(configParams) {
   const callback = function() {
-    console.log(
+    chalk(
       "Do something clever here once data has been removed",
       configParams.clearTime
     );
@@ -265,10 +267,10 @@ const cache = {};
 chrome.runtime.onConnect.addListener(function(port) {
   const extensionListener = function(message, sender, sendResponse) {
     if (message.name === "from -> devtools") {
-      console.log("from -> devtools", message);
+      chalk("from -> devtools", message);
     } else {
       requestIndex++;
-      console.log(message, requestIndex);
+      chalk(message, requestIndex);
     }
     const tabId = message.tabId;
     connections[tabId] = port;
@@ -278,7 +280,7 @@ chrome.runtime.onConnect.addListener(function(port) {
     //     port.postMessage(req);
     //   }
     // }
-    sendResponse({ title: "什么也不返回" });
+    // sendResponse({ title: "什么也不返回" });
     return;
   };
 
@@ -298,17 +300,17 @@ chrome.runtime.onConnect.addListener(function(port) {
 
 // chrome.history.onVisited.addListener((res) => {
 //   const { lastVisitTime, visitCount, url } = res;
-//   console.log(lastVisitTime, visitCount, url, "lastVisitTime, visitCount, url");
+//   chalk(lastVisitTime, visitCount, url, "lastVisitTime, visitCount, url");
 //   chrome.windows.getAll({ populate: true }, function(windowList) {
 //     const thisWindow = windowList
 //       .find((window) => window.focused)
 //       .tabs.find((it) => it.active);
-//     console.log("windowList", thisWindow);
+//     chalk("windowList", thisWindow);
 //   });
 // });
 
 // chrome.history.deleteAll(() => {
-//   console.log("all");
+//   chalk("all");
 // });
 
 async function getCurrentTab() {

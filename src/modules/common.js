@@ -18,10 +18,126 @@ export const commonDefault = {
 export const paramsDefault = {
   mapInfo: {
     default: commonDefault,
+    "91porny.com": {
+      auxclickOnly: true,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: [],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "cloud.tencent.com": {
+      auxclickOnly: false,
+      collectInfoFlag: true,
+      fanyiFlag: false,
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "cn.pornhub.com": {
+      auxclickOnly: true,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: [".pagination3"],
+      openNewPageFlag: true,
+      videoPlayRate: 2,
+    },
+    "coding.imooc.com": {
+      auxclickOnly: false,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: [".comp-tab-t.js-comp-tab"],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    default: {
+      auxclickOnly: false,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: [],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "developer.chrome.com": {
+      auxclickOnly: false,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: ["navigation-tree"],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "github.com": {
+      auxclickOnly: true,
+      collectInfoFlag: true,
+      fanyiFlag: false,
+      noOpenLinkList: [
+        ".octotree-sidebar.octotree-github-sidebar.ui-resizable",
+      ],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "juejin.cn": {
+      auxclickOnly: false,
+      collectInfoFlag: true,
+      fanyiFlag: false,
+      noOpenLinkList: [".list-nav"],
+      openNewPageFlag: false,
+      videoPlayRate: 1.5,
+    },
+    "segmentfault.com": {
+      auxclickOnly: false,
+      collectInfoFlag: true,
+      fanyiFlag: false,
+      noOpenLinkList: [],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "sleazyfork.org": {
+      auxclickOnly: false,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: [".pagination"],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "www.007hdys.com": {
+      auxclickOnly: false,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: [".pagination", ".collapse.navbar-collapse"],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "www.google.com": {
+      auxclickOnly: false,
+      collectInfoFlag: false,
+      fanyiFlag: false,
+      noOpenLinkList: ["#xjs"],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
+    "www.jianshu.com": {
+      auxclickOnly: false,
+      collectInfoFlag: true,
+      fanyiFlag: false,
+      noOpenLinkList: [],
+      openNewPageFlag: true,
+      videoPlayRate: 1.5,
+    },
   }, // content对象信息
   clearTime: 1,
   changeEleMiaoBian: false, // 是否开启移入元素加样式
-  noChangeHrefList: ["iflytek", "zhixue", "localhost", "google"], // 不跳转其他url列表
+  noChangeHrefList: [
+    "iflytek",
+    "zhixue",
+    "localhost",
+    "google",
+    "cloud.tencent.com",
+    "account.aliyun.com",
+    "www.hgmanhua.top",
+    "auth.huaweicloud.com",
+    "pay.qq.com.open.weixin.qq.com",
+    "passport.weibo.com",
+  ], // 不跳转其他url列表
   debug: false, // 调试模式
   recordErrorList: ["localhost"], // 记录报错列表
 };
@@ -33,6 +149,9 @@ export const defaultparams = {
   videoPlayRateList: [
     {
       videoPlayRate: 1,
+    },
+    {
+      videoPlayRate: 1.25,
     },
     {
       videoPlayRate: 1.5,
@@ -111,7 +230,7 @@ export function getNoOpenDomList(noOpenLinkList) {
   noOpenLinkDomList = noOpenLinkList
     .map((it) => document.querySelector(it))
     .filter(Boolean);
-  console.log(noOpenLinkDomList, "noOpenLinkDomList");
+  chalk(noOpenLinkDomList, "noOpenLinkDomList");
 }
 
 // fetch 第一个参数url,第二个参数为配置对象
@@ -137,7 +256,7 @@ export function sendReq(
 ) {
   fetch(url)
     .then((res) => {
-      console.log(res, "res==========");
+      chalk(res, "res==========");
       if (res.status === 200) {
         fn(res);
       } else {
@@ -148,9 +267,51 @@ export function sendReq(
     .finally(finallyFn);
 }
 
+// 获取随机颜色
+function getRandomColor() {
+  return (
+    "#" + ("00000" + ((Math.random() * 0x1000000) << 0).toString(16)).substr(-6)
+  );
+}
+// 设置控制台打印颜色
+function realChalk(element) {
+  const time = new Date().toLocaleString() + "    ";
+  if (typeof element === "object") {
+    console.log(`%c%s`, `color:${getRandomColor()};`, time, element);
+  } else {
+    console.log(
+      `%c${time}%c${element + ""}`,
+      `color:${getRandomColor()};`,
+      `color:${getRandomColor()};`
+    );
+  }
+}
+// 随机长度字符串
+function randomString(e = 6) {
+  var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
+    a = t.length,
+    n = "";
+  for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
+  return n;
+}
+// 设置控制台打印颜色
+export function chalk(...args) {
+  if (args.length > 1) {
+    const str = randomString();
+    console.group(str);
+    for (let index = 0; index < args.length; index++) {
+      realChalk(args[index]);
+    }
+    console.groupEnd(str);
+  } else {
+    realChalk(args[0]);
+  }
+}
+
 // 当前链接与网页host不一致时或者 `https://link.juejin.cn?target=https%3A%2F%2Fgithub.com%2FPanJiaChen%2Fvue-element-admin` 直接跳转
 function getNeedChange(arr, href, host) {
-  return arr.length > 1 || (arr.length === 1 && new URL(href).host === host);
+  if (!host) return arr.length > 1;
+  return arr.length > 1 || (arr.length === 1 && new URL(href).host !== host);
 }
 
 // 判断网址是否需要跳转
@@ -205,9 +366,9 @@ function isParentNodeA(item, max = 0) {
 
 // shift + space 实现点击鼠标所在位置
 export function mouseClick(configParams, targetWin) {
-  console.log(configParams, "common.js------");
+  chalk(configParams, "common.js------");
   let { mapInfo, host } = configParams;
-  if (!host) console.log("没有host");
+  if (!host) chalk("没有host");
   if (!mapInfo) {
     mapInfo = configParamsDefault.mapInfo;
   }
@@ -217,7 +378,7 @@ export function mouseClick(configParams, targetWin) {
     let href = matched && matched[0];
     // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
     if ((href && item.href && (href = item.href)) || hrefReg.test(href)) {
-      console.log(7);
+      chalk(7);
       gotoLink(href);
       return true;
     }
@@ -233,7 +394,7 @@ export function mouseClick(configParams, targetWin) {
       noOpenLinkDomList.some((it) => it.contains(item));
     // 有不需要新页面打开的直接点击即可
     if (openFLag && "click" in item) {
-      console.log(8);
+      chalk(8);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -244,34 +405,41 @@ export function mouseClick(configParams, targetWin) {
     let otherObj = {};
     if (
       item.href &&
-      (otherObj = otherSiteHref(item.href)) &&
-      otherObj.needChange
+      (otherObj = otherSiteHref(item.href, host)) &&
+      otherObj.needChange &&
+      hrefReg.test(item.href)
     ) {
-      console.log(1, otherObj);
+      chalk(1, otherObj);
       gotoLink(otherObj.href);
       return isClick;
-    } else if (item.href && mapInfo[host].openNewPageFlag) {
-      console.log(2, otherObj);
+    } else if (
+      item.href &&
+      mapInfo[host].openNewPageFlag &&
+      hrefReg.test(item.href)
+    ) {
+      chalk(2, otherObj);
       gotoLink(otherObj.href);
       return isClick;
     } else if (
       (parentIsANode = isParentNodeA(target)) &&
-      (otherObj = otherSiteHref(parentIsANode.href)) &&
-      otherObj.needChange
+      (otherObj = otherSiteHref(parentIsANode.href, host)) &&
+      otherObj.needChange &&
+      hrefReg.test(parentIsANode.href)
     ) {
-      console.log(3, otherObj);
+      chalk(3, otherObj);
       gotoLink(otherObj.href);
       return isClick;
     } else if (
       parentIsANode &&
       // parentIsANode.target !== "_blank" &&
-      mapInfo[host].openNewPageFlag
+      mapInfo[host].openNewPageFlag &&
+      hrefReg.test(parentIsANode.href)
     ) {
-      console.log(4, otherObj);
+      chalk(4, otherObj);
       gotoLink(otherObj.href);
       return isClick;
     } else if ("click" in item) {
-      console.log(6, parentIsANode);
+      chalk(6, parentIsANode, otherObj);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -284,7 +452,7 @@ export function mouseClick(configParams, targetWin) {
   // 跳转方法
   function gotoLink(href) {
     if (!hrefReg.test(href)) return console.error("非正常url");
-    console.log(href, "gotoLink---href");
+    chalk(href, "gotoLink---href");
     const a = document.createElement("a");
     a.target = "_blank";
     a.rel = "noopener noreferrer nofollow";
@@ -315,7 +483,7 @@ export function mouseClick(configParams, targetWin) {
   }
 
   function click(e) {
-    console.log("click触发", e.target, new Date().getTime());
+    chalk("click触发", e.target, new Date().getTime());
     if (clickEventInvoke) {
       e.preventDefault();
     }
@@ -325,12 +493,12 @@ export function mouseClick(configParams, targetWin) {
   function auxclick(e) {
     e.preventDefault();
     if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
-    console.log("auxclick触发了", clickEventInvoke, new Date().getTime());
+    chalk("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;
       contentMenuEventsFlag = false;
       clearTimeout(auxclickTimer);
-      console.log("auxclick-target");
+      chalk("auxclick-target");
       findParentClick(e.target);
       clickEventInvoke = false;
     }, 200);
@@ -535,7 +703,7 @@ function copyImg() {
   };
 
   img.onerror = () => {
-    console.log("cors e");
+    chalk("cors e");
   };
 }
 
@@ -549,10 +717,10 @@ function canvasCopy(canvas, need = false) {
     ];
     navigator.clipboard.write(data).then(
       () => {
-        console.log("copy s");
+        chalk("copy s");
       },
       () => {
-        console.log("copy e");
+        chalk("copy e");
       }
     );
   });

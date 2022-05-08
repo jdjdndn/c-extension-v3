@@ -9,6 +9,7 @@ import {
   unDef,
   getNoOpenDomList,
   sendReq,
+  chalk,
   // createLinstener,
 } from "../modules/common.js";
 import { ajax } from "../modules/ajax.js";
@@ -38,7 +39,7 @@ chrome.storage.sync.get(null, function(result) {
   main(mapInfo);
 });
 
-console.log(chrome, "chrome");
+chalk(chrome, "chrome");
 
 // 接收配置消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -132,9 +133,9 @@ function setStorageDefault(result) {
     ...result,
     mapInfo,
   };
-  console.log(configParams, result, "configParams result");
+  chalk(configParams, result, "configParams result");
   if (flag) {
-    console.log("mapInfo变化了", mapInfo[host], configParams);
+    chalk("mapInfo变化了", mapInfo[host], configParams);
     chrome.storage.sync.set({ mapInfo }, function() {});
   }
 }
@@ -316,7 +317,7 @@ function setFanyi(fanyiFlag) {
 }
 
 function replaceHref(configParams) {
-  const otherObj = otherSiteHref(href);
+  const otherObj = otherSiteHref(href, host);
   const needChange = otherObj.needChange;
   const noChange = configParams.noChangeHrefList.some((it) =>
     host.includes(it)
@@ -670,7 +671,7 @@ function addLinkListBox(linkList = []) {
         pageProtocol: protocol,
         data: hrefList,
         success: function(data) {
-          console.log("这里是success函数", data);
+          chalk("这里是success函数", data);
         },
       });
     }
@@ -1105,7 +1106,7 @@ function biquge520() {
   // const contentDom = $('.box_con')
   // if (contentDom) {
   //   const newContentDom = contentDom.cloneNode(true)
-  //   // console.log(newContentDom.innerText, '--');
+  //   // chalk(newContentDom.innerText, '--');
   //   document.body.appendChild(newContentDom)
   // }
   // const classList = ['box_con']
@@ -1329,7 +1330,7 @@ function csdn() {
 }
 // youtube
 function youtube(payload) {
-  console.log(payload, "youtube");
+  chalk(payload, "youtube");
   setStyle(".html5-video-player", "display: block");
   videoPlay(payload.videoPlayRate);
 }
@@ -1387,15 +1388,15 @@ function zhihu({ href, win }) {
   //   const text = it.innerText
   //   includesList.forEach(t => {
   //     if (!text.includes(t.toLocaleLowerCase())) {
-  //       console.log(text, '---text');
+  //       chalk(text, '---text');
   //       it && it.remove()
   //     }
   //   })
   // })
 }
 
-function juejin(payload) {
-  console.log(payload, "payload");
+function juejin(payload, juejinObj) {
+  chalk(payload, "payload");
   // setStyle('.article-suspended-panel.article-suspended-panel', 'right: 17rem;margin-right:unset')
   setStyle(".sticky-block-box", "height:100%");
   setStyle(".sticky-block-box .sidebar-block", "height:100%");
@@ -1410,7 +1411,7 @@ function juejin(payload) {
   const a = $(".panel-btn.with-badge");
   if (a && !a.classList.contains("active") && payload.once === 0) {
     a.click();
-    payload.once++;
+    juejinObj.once++;
   }
 }
 // 简书
