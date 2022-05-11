@@ -164,7 +164,6 @@ export const defaultparams = {
   ...paramsDefault,
 };
 import "./index.scss";
-const { getEventListeners } = window;
 // const { href, host, origin } = location;
 
 let target = null,
@@ -288,7 +287,7 @@ function realChalk(element) {
 }
 // 随机长度字符串
 function randomString(e = 6) {
-  var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
+  var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz",
     a = t.length,
     n = "";
   for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));

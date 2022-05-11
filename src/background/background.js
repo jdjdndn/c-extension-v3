@@ -81,90 +81,90 @@ let kIndex,
   historyObj = {}, // 历史记录收集
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
 
-function handlerRequest(details) {
-  // chalk(details, 'details');
-  ((details.requestBody || {}).raw || []).forEach((raw) => {
-    const blob = new Blob([raw.bytes], {
-      type: "application/json",
-    });
-    blob.text().then((data) => {
-      try {
-        requestList.unshift({
-          url: details.url,
-          data: JSON.parse(data || "{}"),
-        });
-      } catch (error) {
-        requestList.unshift({
-          url: details.url,
-          data,
-        });
-      }
-      if (requestList.length > maxRecordIndex) {
-        requestList = requestList.slice(maxRecordIndex);
-      }
-      // chalk(data, '这里', JSON.parse(data));
-      if (requestObj[details.url]) {
-        requestObj[details.url].push(JSON.parse(data));
-      } else {
-        requestObj[details.url] = [];
-      }
-    });
-  });
-  chalk(requestObj, requestList, "请求参数对象");
-  // 如果找到了一个要拦截的参数，记录位置，下次从找到的位置接着找
-  for (const k in blockUrlList) {
-    kIndex = k;
-    if (details.initiator && details.initiator.includes(k)) {
-      const len = blockUrlList[k].adList;
-      let num = blockUrlList[k].num;
-      if (num >= len - 1) {
-        // 结束
-        sliceArr = blockUrlList[k].adList;
-        kIndex = 0;
-        return (blockUrlList[k].num = 0);
-      }
-      sliceArr = blockUrlList[k].adList.slice(num);
-      const index = sliceArr.findIndex((it) => details.url.includes(it));
-      // chalk(sliceArr, index, 'index')
-      if (index !== -1) {
-        num = index;
-        return {
-          cancel: true,
-        };
-      } else {
-        // 结束或者没找到的时候重置索引
-        sliceArr = blockUrlList[k].adList;
-        kIndex = 0;
-        blockUrlList[k].num = 0;
-      }
-    }
-  }
-  // 注意 proxy 和 block 需要你自己定义
-  /**
-   * 代理转发
-   */
-  // if (proxy) {
-  //   return {
-  //     redirectUrl: details.url.replace(proxy.origin, proxy.target),
-  //   }
-  // }
-  /**
-   * 请求拦截
-   * */
-  // if (block) {
-  // return { cancel: true }
-  // }
-}
+// function handlerRequest(details) {
+//   // chalk(details, 'details');
+//   ((details.requestBody || {}).raw || []).forEach((raw) => {
+//     const blob = new Blob([raw.bytes], {
+//       type: "application/json",
+//     });
+//     blob.text().then((data) => {
+//       try {
+//         requestList.unshift({
+//           url: details.url,
+//           data: JSON.parse(data || "{}"),
+//         });
+//       } catch (error) {
+//         requestList.unshift({
+//           url: details.url,
+//           data,
+//         });
+//       }
+//       if (requestList.length > maxRecordIndex) {
+//         requestList = requestList.slice(maxRecordIndex);
+//       }
+//       // chalk(data, '这里', JSON.parse(data));
+//       if (requestObj[details.url]) {
+//         requestObj[details.url].push(JSON.parse(data));
+//       } else {
+//         requestObj[details.url] = [];
+//       }
+//     });
+//   });
+//   chalk(requestObj, requestList, "请求参数对象");
+//   // 如果找到了一个要拦截的参数，记录位置，下次从找到的位置接着找
+//   for (const k in blockUrlList) {
+//     kIndex = k;
+//     if (details.initiator && details.initiator.includes(k)) {
+//       const len = blockUrlList[k].adList;
+//       let num = blockUrlList[k].num;
+//       if (num >= len - 1) {
+//         // 结束
+//         sliceArr = blockUrlList[k].adList;
+//         kIndex = 0;
+//         return (blockUrlList[k].num = 0);
+//       }
+//       sliceArr = blockUrlList[k].adList.slice(num);
+//       const index = sliceArr.findIndex((it) => details.url.includes(it));
+//       // chalk(sliceArr, index, 'index')
+//       if (index !== -1) {
+//         num = index;
+//         return {
+//           cancel: true,
+//         };
+//       } else {
+//         // 结束或者没找到的时候重置索引
+//         sliceArr = blockUrlList[k].adList;
+//         kIndex = 0;
+//         blockUrlList[k].num = 0;
+//       }
+//     }
+//   }
+//   // 注意 proxy 和 block 需要你自己定义
+//   /**
+//    * 代理转发
+//    */
+//   // if (proxy) {
+//   //   return {
+//   //     redirectUrl: details.url.replace(proxy.origin, proxy.target),
+//   //   }
+//   // }
+//   /**
+//    * 请求拦截
+//    * */
+//   // if (block) {
+//   // return { cancel: true }
+//   // }
+// }
 
 // 拦截请求
-chrome.webRequest.onBeforeRequest.addListener(
-  handlerRequest,
-  {
-    urls: ["<all_urls>"],
-  },
-  // 定义获取哪些权限
-  ["blocking", "requestBody", "extraHeaders"]
-);
+// chrome.webRequest.onBeforeRequest.addListener(
+//   handlerRequest,
+//   {
+//     urls: ["<all_urls>"],
+//   },
+//   // 定义获取哪些权限
+//   ["blocking", "requestBody", "extraHeaders"]
+// );
 
 chrome.contextMenus.create({
   title: "使用谷歌搜索：%s", // %s表示选中的文字
