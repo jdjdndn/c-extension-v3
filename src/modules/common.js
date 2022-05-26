@@ -296,12 +296,14 @@ function randomString(e = 6) {
 // 设置控制台打印颜色
 export function chalk(...args) {
   if (args.length > 1) {
-    const str = randomString();
-    console.group(str);
+    const str = args.find((it) => typeof it === "string") || randomString();
+    console.groupCollapsed(str);
     for (let index = 0; index < args.length; index++) {
       realChalk(args[index]);
     }
-    console.groupEnd(str);
+    try {
+      console.groupEnd(str);
+    } catch (error) {}
   } else {
     realChalk(args[0]);
   }

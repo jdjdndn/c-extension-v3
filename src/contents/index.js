@@ -1258,7 +1258,7 @@ function baidujingyan() {
   );
 }
 // 哔哩哔哩
-function bilibili(payload) {
+function bilibili(payload, origin) {
   videoPlay(payload.videoPlayRate);
   // removeAllFunc("[id*=Ad], [class*=activity]");
   // removeAllFunc(
@@ -1267,22 +1267,33 @@ function bilibili(payload) {
   removeFunc(".extension");
   removeFunc("#bili_live>a");
   removeAllFunc(".banner-card.b-wrap");
-  // if ($$(".bilibili-player-video-btn-speed-name").innerHTML === "1.5x") return;
-  // proClick("倍速");
-  // proClick(
-  //   "bilibili-player-video-btn-speed-menu-list",
-  //   {
-  //     all: true,
-  //     i: 1,
-  //   },
-  //   "class"
-  // );
   const linkList = [
     ...getDomList("#app .video-card-reco .info-box"),
     ...getDomList(".b-wrap .zone-list-box .video-card-common", ".card-pic"),
     ...getDomList(".video-list .video-item>a"),
   ];
   addLinkListBoxPro(linkList, "bilibili-toolbox");
+  // 跳过连播按钮
+  const btn = $(".bilibili-player-electric-panel-jump");
+  btn && btn.click();
+
+  let speedBtn = $(".bilibili-player-video-btn-speed-name");
+  if (
+    origin.once ||
+    (speedBtn && speedBtn.innerHTML === payload.videoPlayRate + "x")
+  )
+    return;
+
+  proClick("倍速");
+  proClick(
+    "bilibili-player-video-btn-speed-menu-list",
+    {
+      all: true,
+      i: 1,
+    },
+    "class"
+  );
+  origin.once++;
 }
 // it屋
 function it1352() {
