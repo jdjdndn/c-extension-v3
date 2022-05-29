@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-04-04 15:40:59
+ * @LastEditTime: 2022-05-28 09:59:44
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -165,7 +165,6 @@ export const defaultparams = {
 };
 import "./index.scss";
 // const { href, host, origin } = location;
-
 let target = null,
   timer = null,
   targetCssText = null,

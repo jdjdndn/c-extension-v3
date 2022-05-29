@@ -14,6 +14,7 @@ var options = {
     options: path.join(__dirname, "src", "pages", "options", "options.js"),
     popup: path.join(__dirname, "src", "pages", "popup", "popup.js"),
     devtools: path.join(__dirname, "src", "pages", "devtools", "devtools.js"),
+    newtab: path.join(__dirname, "src", "pages", "newtab", "newtab.js"),
     "service-worker": path.join(
       __dirname,
       "src",
@@ -106,6 +107,18 @@ var options = {
       template: path.resolve(__dirname, "src", "pages", "popup", "popup.html"),
       filename: "popup.html",
       chunks: ["popup"],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(
+        __dirname,
+        "src",
+        "pages",
+        "newtab",
+        "newtab.html"
+      ),
+      filename: "newtab.html",
+      chunks: ["newtab"],
       cache: false,
     }),
     new HtmlWebpackPlugin({

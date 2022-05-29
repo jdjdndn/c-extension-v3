@@ -1,37 +1,18 @@
 {
-  "manifest_version": 3,
-  "name": "v3",
-  "description": "Chrome Extension V3",
-  "options_page": "options.html",
+  "action": {
+    "default_icon": "icons/icon-34.png",
+    "default_popup": "popup.html"
+  },
   "background": {
     "service_worker": "service-worker.js"
   },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icons/icon-34.png"
-  },
-  "icons": {
-    "128": "icons/icon-128.png"
+  "chrome_url_overrides": {
+    "newtab": "./newtab.html"
   },
   "content_scripts": [
     {
-      "matches": [
-        "http://*/*",
-        "https://*/*",
-        "<all_urls>"
-      ],
       "js": [
         "contentScript.js"
-      ]
-    }
-  ],
-  "devtools_page": "devtools.html",
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "assets/*",
-        "js/*",
-        "options.html"
       ],
       "matches": [
         "http://*/*",
@@ -43,12 +24,20 @@
   "declarative_net_request": {
     "rule_resources": [
       {
-        "id": "1",
         "enabled": true,
+        "id": "1",
         "path": "rules/juejin.json"
       }
     ]
   },
+  "description": "Chrome Extension V3",
+  "devtools_page": "devtools.html",
+  "icons": {
+    "128": "icons/icon-128.png"
+  },
+  "manifest_version": 3,
+  "name": "v3",
+  "options_page": "options.html",
   "permissions": [
     "contextMenus",
     "tabs",
@@ -63,5 +52,19 @@
     "webRequest",
     "webRequest",
     "history"
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*",
+        "<all_urls>"
+      ],
+      "resources": [
+        "assets/*",
+        "js/*",
+        "options.html"
+      ]
+    }
   ]
 }

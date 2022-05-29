@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { mouseClick, autoSelect } from '../../modules/common.js';
+// import { mouseClick, autoSelect } from '../../modules/common.js';
 export default {
   name: 'Options',
   data() {
@@ -69,8 +69,10 @@ export default {
   },
   mounted() {
     window.addEventListener('message', this.message);
-    mouseClick();
-    autoSelect();
+    // autoSelect();
+    // chrome.storage.sync.get(null, function (result) {
+    //   mouseClick(result, window);
+    // });
   },
   methods: {
     // 修改原输入框参数
