@@ -1,18 +1,17 @@
 // import '../assets/index.scss'
+import { ajax } from "../modules/ajax.js";
 import {
-  mouseClick,
   // copyTargetText,
   autoSelect,
+  chalk,
+  getNoOpenDomList,
+  mouseClick,
+  otherSiteHref,
   // boxInfo,
   paramsDefault,
-  otherSiteHref,
-  unDef,
-  getNoOpenDomList,
   sendReq,
-  chalk,
-  // createLinstener,
+  unDef,
 } from "../modules/common.js";
-import { ajax } from "../modules/ajax.js";
 let performance_now = performance.now(),
   liListStr = "", // 链接列表字符串
   linkObj = {},
@@ -786,7 +785,7 @@ const list = {
   "www.xbiquge.la": {
     callback: biquge,
   },
-  "www.4hu.tv": {
+  "4hu.tv": {
     callback: hu4tv,
   },
   "www.csdn.net": {
@@ -819,7 +818,7 @@ const list = {
   },
   "webpack.js.org": {
     // callback: webpack,
-    // rehref: "https://webpack.docschina.org",
+    rehref: "https://webpack.docschina.org",
   },
   "vuejs.org": {
     // callback: vue,
@@ -906,6 +905,9 @@ const list = {
   },
   "www.imooc.com": {
     callback: muke,
+  },
+  "axios-http.com": {
+    callback: axios,
   },
 };
 
@@ -1019,6 +1021,13 @@ function getWebUrl(file) {
     url = window.webkitURL.createObjectURL(file);
   }
   return url;
+}
+
+function axios() {
+  if (pathname === "/") rerturn;
+  if (!href.includes("/zh/")) {
+    location.href = origin + "/zh/" + pathname;
+  }
 }
 
 function muke() {

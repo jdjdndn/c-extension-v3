@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-05-28 09:59:44
+ * @LastEditTime: 2022-05-31 22:32:23
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -317,6 +317,7 @@ function getNeedChange(arr, href, host) {
 // 判断网址是否需要跳转
 export function otherSiteHref(href, host) {
   let splitArr = [],
+    needChange = false,
     newStr = decodeURIComponent(href);
   const protocolList = ["https://", "http://"];
   protocolList.forEach((protocol) => {
@@ -329,9 +330,11 @@ export function otherSiteHref(href, host) {
           protocol,
           remain: str.slice(index),
         });
+        needChange = getNeedChange(splitArr, href, host);
         if (splitArr.length > 1) {
+          splitArr = splitArr.sort((a, b) => a.index - b.index);
           return {
-            needChange: getNeedChange(splitArr, href, host),
+            needChange,
             href: splitArr.length > 1 ? splitArr[1].remain : href,
           };
         }
@@ -344,7 +347,8 @@ export function otherSiteHref(href, host) {
   //   href: 'http://www.baidu.com'
   // }
   return {
-    needChange: getNeedChange(splitArr, href, host),
+    // needChange: getNeedChange(splitArr, href, host),
+    needChange,
     href: splitArr.length > 1 ? splitArr[1].remain : href,
   };
 }
@@ -385,20 +389,52 @@ export function mouseClick(configParams, targetWin) {
     return false;
   }
 
+  function newPageOpen(item) {
+    if (!item) return;
+    if (doSth(item)) return;
+    let parentIsANode = null;
+    // 获取元素上的监听事件
+    let otherObj = {};
+    if (
+      item.href &&
+      (otherObj = otherSiteHref(item.href, host)) &&
+      hrefReg.test(item.href)
+    ) {
+      chalk(8, otherObj);
+      gotoLink(otherObj.href);
+      return;
+    } else if (
+      (parentIsANode = isParentNodeA(item)) &&
+      (otherObj = otherSiteHref(parentIsANode.href, host)) &&
+      hrefReg.test(parentIsANode.href)
+    ) {
+      chalk(9, otherObj);
+      gotoLink(otherObj.href);
+      return;
+    } else if ("click" in item) {
+      chalk(10, parentIsANode, otherObj);
+      // 拿不到监听的事件对象就看能否点击，能点击就点击
+      item.click();
+      return;
+    }
+    const parent = item.parentNode;
+    newPageOpen(parent);
+    return;
+  }
   // 从子孙往上找，直到找到可以点击的dom
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick;
     if (doSth(item)) return isClick;
-    const openFLag =
-      noOpenLinkDomList.length &&
-      noOpenLinkDomList.some((it) => it.contains(item));
-    // 有不需要新页面打开的直接点击即可
-    if (openFLag && "click" in item) {
-      chalk(8);
-      // 拿不到监听的事件对象就看能否点击，能点击就点击
-      item.click();
-      return isClick;
-    }
+    // const openFLag =
+    //   noOpenLinkDomList.length &&
+    //   noOpenLinkDomList.some((it) => it.contains(item));
+    // // 有不需要新页面打开的直接点击即可
+    // if (openFLag && "click" in item) {
+    //   chalk(8);
+    //   // 拿不到监听的事件对象就看能否点击，能点击就点击
+    //   item.click();
+    //   return isClick;
+    // }
     // 父元素是否a链接
     let parentIsANode = null;
     // 获取元素上的监听事件
@@ -412,15 +448,17 @@ export function mouseClick(configParams, targetWin) {
       chalk(1, otherObj);
       gotoLink(otherObj.href);
       return isClick;
-    } else if (
-      item.href &&
-      mapInfo[host].openNewPageFlag &&
-      hrefReg.test(item.href)
-    ) {
-      chalk(2, otherObj);
-      gotoLink(otherObj.href);
-      return isClick;
-    } else if (
+    }
+    // else if (
+    //   item.href &&
+    //   mapInfo[host].openNewPageFlag &&
+    //   hrefReg.test(item.href)
+    // ) {
+    //   chalk(2, otherObj);
+    //   gotoLink(otherObj.href);
+    //   return isClick;
+    // }
+    else if (
       (parentIsANode = isParentNodeA(target)) &&
       (otherObj = otherSiteHref(parentIsANode.href, host)) &&
       otherObj.needChange &&
@@ -429,16 +467,18 @@ export function mouseClick(configParams, targetWin) {
       chalk(3, otherObj);
       gotoLink(otherObj.href);
       return isClick;
-    } else if (
-      parentIsANode &&
-      // parentIsANode.target !== "_blank" &&
-      mapInfo[host].openNewPageFlag &&
-      hrefReg.test(parentIsANode.href)
-    ) {
-      chalk(4, otherObj);
-      gotoLink(otherObj.href);
-      return isClick;
-    } else if ("click" in item) {
+    }
+    // else if (
+    //   parentIsANode &&
+    //   // parentIsANode.target !== "_blank" &&
+    //   mapInfo[host].openNewPageFlag &&
+    //   hrefReg.test(parentIsANode.href)
+    // ) {
+    //   chalk(4, otherObj);
+    //   gotoLink(otherObj.href);
+    //   return isClick;
+    // }
+    else if ("click" in item) {
       chalk(6, parentIsANode, otherObj);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
@@ -499,7 +539,7 @@ export function mouseClick(configParams, targetWin) {
       contentMenuEventsFlag = false;
       clearTimeout(auxclickTimer);
       chalk("auxclick-target");
-      findParentClick(e.target);
+      newPageOpen(e.target);
       clickEventInvoke = false;
     }, 200);
   }
@@ -532,6 +572,9 @@ export function mouseClick(configParams, targetWin) {
       } else {
         boxInfo("click e");
       }
+    } else if (e.altKey && code === 88) {
+      // alt + x 点击
+      newPageOpen(target);
     } else if (37 === code && e.ctrlKey) {
       // 实现浏览器上一步下一步
       history.back();

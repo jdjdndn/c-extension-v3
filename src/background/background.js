@@ -78,7 +78,10 @@ let kIndex,
   configParams = {}, // 配置参数对象
   requestIndex = 0, // 请求条数
   windowList = [], // window列表
-  historyObj = {}, // 历史记录收集
+  historyObj = {
+    history: [], // 历史记录
+    like: [], // 喜欢记录
+  }, // 历史记录收集
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
 
 // function handlerRequest(details) {
@@ -298,16 +301,23 @@ chrome.runtime.onConnect.addListener(function(port) {
   });
 });
 
-// chrome.history.onVisited.addListener((res) => {
-//   const { lastVisitTime, visitCount, url } = res;
-//   chalk(lastVisitTime, visitCount, url, "lastVisitTime, visitCount, url");
-//   chrome.windows.getAll({ populate: true }, function(windowList) {
-//     const thisWindow = windowList
-//       .find((window) => window.focused)
-//       .tabs.find((it) => it.active);
-//     chalk("windowList", thisWindow);
-//   });
-// });
+chrome.history.onVisited.addListener((res) => {
+  const { lastVisitTime, visitCount, url, title } = res;
+  chalk(lastVisitTime, visitCount, url, "lastVisitTime, visitCount, url", res);
+  const { history } = historyObj;
+  const findIndex = history.findIndex((it) => it.url === url);
+  if (findIndex !== -1) {
+    const historyItem = history[findIndex];
+    let count = historyItem.count || 0;
+    count++;
+    history.splice(findIndex, 1, { url, count, lastVisitTime, title });
+  } else {
+    history.push({ url, count, lastVisitTime, title });
+  }
+  chrome.storage.local.set({ historyObj }, function() {
+    console.log("Value is set to " + value);
+  });
+});
 
 // chrome.history.deleteAll(() => {
 //   chalk("all");
