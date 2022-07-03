@@ -1,7 +1,7 @@
 import { chalk } from "../modules/common";
 
 chrome.bookmarks.getTree((nodeTree) => {
-  chalk(nodeTree, "nodeTree");
+  // chalk(nodeTree, "nodeTree");
   const list = treeToList(nodeTree);
   const obj = {};
   list.forEach((item) => {
@@ -172,8 +172,8 @@ let kIndex,
 chrome.contextMenus.create({
   title: "使用谷歌搜索：%s", // %s表示选中的文字
   contexts: ["selection"], // 只有当选中文字时才会出现此右键菜单
-  onclick: function(params) {
-    chalk(params, "params");
+  onclick: function (params) {
+    // chalk(params, "params");
     // 注意不能使用location.href，因为location是属于background的window对象
     chrome.tabs.create({
       url: "https://www.google.com/search?q=" + encodeURI(params.selectionText),
@@ -223,15 +223,15 @@ chrome.runtime.onMessage.addListener(function notify(
 });
 
 // 获取配置
-chrome.storage.sync.get(null, function(result) {
-  chalk(result, "result");
+chrome.storage.sync.get(null, function (result) {
+  // chalk(result, "result");
   configParams = result;
   // 清理缓存
   // clearCache(configParams);
 });
 
 function clearCache(configParams) {
-  const callback = function() {
+  const callback = function () {
     chalk(
       "Do something clever here once data has been removed",
       configParams.clearTime
@@ -267,13 +267,13 @@ const connections = {};
 
 const cache = {};
 
-chrome.runtime.onConnect.addListener(function(port) {
-  const extensionListener = function(message, sender, sendResponse) {
+chrome.runtime.onConnect.addListener(function (port) {
+  const extensionListener = function (message, sender, sendResponse) {
     if (message.name === "from -> devtools") {
-      chalk("from -> devtools", message);
+      // chalk("from -> devtools", message);
     } else {
       requestIndex++;
-      chalk(message, requestIndex);
+      // chalk(message, requestIndex);
     }
     const tabId = message.tabId;
     connections[tabId] = port;
@@ -289,7 +289,7 @@ chrome.runtime.onConnect.addListener(function(port) {
 
   port.onMessage.addListener(extensionListener);
 
-  port.onDisconnect.addListener(function(port) {
+  port.onDisconnect.addListener(function (port) {
     port.onMessage.removeListener(extensionListener);
     const tabs = Object.keys(connections);
     for (let i = 0, len = tabs.length; i < len; i++) {
@@ -303,7 +303,7 @@ chrome.runtime.onConnect.addListener(function(port) {
 
 chrome.history.onVisited.addListener((res) => {
   const { lastVisitTime, visitCount, url, title } = res;
-  chalk(lastVisitTime, visitCount, url, "lastVisitTime, visitCount, url", res);
+  // chalk(lastVisitTime, visitCount, url, "lastVisitTime, visitCount, url", res);
   const { history } = historyObj;
   const findIndex = history.findIndex((it) => it.url === url);
   if (findIndex !== -1) {
@@ -314,7 +314,7 @@ chrome.history.onVisited.addListener((res) => {
   } else {
     history.push({ url, count, lastVisitTime, title });
   }
-  chrome.storage.local.set({ historyObj }, function() {
+  chrome.storage.local.set({ historyObj }, function () {
     console.log("Value is set to " + value);
   });
 });

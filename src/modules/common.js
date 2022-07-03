@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-05-31 22:32:23
+ * @LastEditTime: 2022-07-03 19:39:38
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -199,7 +199,7 @@ document.body.appendChild(YUCHENG_USE_BOX);
 
 // 工具类
 class Util {
-  constructor() {
+  constructor () {
     this.timer = null;
   }
   debounce(fn, delay = 16) {
@@ -228,7 +228,7 @@ export function getNoOpenDomList(noOpenLinkList) {
   noOpenLinkDomList = noOpenLinkList
     .map((it) => document.querySelector(it))
     .filter(Boolean);
-  chalk(noOpenLinkDomList, "noOpenLinkDomList");
+  // chalk(noOpenLinkDomList, "noOpenLinkDomList");
 }
 
 // fetch 第一个参数url,第二个参数为配置对象
@@ -248,9 +248,9 @@ export function getNoOpenDomList(noOpenLinkList) {
 // 判断页面是否存在
 export function sendReq(
   url,
-  fn = () => {},
-  errFn = () => {},
-  finallyFn = () => {}
+  fn = () => { },
+  errFn = () => { },
+  finallyFn = () => { }
 ) {
   fetch(url)
     .then((res) => {
@@ -302,7 +302,7 @@ export function chalk(...args) {
     }
     try {
       console.groupEnd(str);
-    } catch (error) {}
+    } catch (error) { }
   } else {
     realChalk(args[0]);
   }
@@ -370,7 +370,7 @@ function isParentNodeA(item, max = 0) {
 
 // shift + space 实现点击鼠标所在位置
 export function mouseClick(configParams, targetWin) {
-  chalk(configParams, "common.js------");
+  // chalk(configParams, "common.js------");
   let { mapInfo, host } = configParams;
   if (!host) chalk("没有host");
   if (!mapInfo) {
@@ -382,7 +382,7 @@ export function mouseClick(configParams, targetWin) {
     let href = matched && matched[0];
     // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
     if ((href && item.href && (href = item.href)) || hrefReg.test(href)) {
-      chalk(7);
+      // chalk(7);
       gotoLink(href);
       return true;
     }
@@ -400,7 +400,7 @@ export function mouseClick(configParams, targetWin) {
       (otherObj = otherSiteHref(item.href, host)) &&
       hrefReg.test(item.href)
     ) {
-      chalk(8, otherObj);
+      // chalk(8, otherObj);
       gotoLink(otherObj.href);
       return;
     } else if (
@@ -408,11 +408,11 @@ export function mouseClick(configParams, targetWin) {
       (otherObj = otherSiteHref(parentIsANode.href, host)) &&
       hrefReg.test(parentIsANode.href)
     ) {
-      chalk(9, otherObj);
+      // chalk(9, otherObj);
       gotoLink(otherObj.href);
       return;
     } else if ("click" in item) {
-      chalk(10, parentIsANode, otherObj);
+      // chalk(10, parentIsANode, otherObj);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return;
@@ -445,7 +445,7 @@ export function mouseClick(configParams, targetWin) {
       otherObj.needChange &&
       hrefReg.test(item.href)
     ) {
-      chalk(1, otherObj);
+      // chalk(1, otherObj);
       gotoLink(otherObj.href);
       return isClick;
     }
@@ -464,7 +464,7 @@ export function mouseClick(configParams, targetWin) {
       otherObj.needChange &&
       hrefReg.test(parentIsANode.href)
     ) {
-      chalk(3, otherObj);
+      // chalk(3, otherObj);
       gotoLink(otherObj.href);
       return isClick;
     }
@@ -479,7 +479,7 @@ export function mouseClick(configParams, targetWin) {
     //   return isClick;
     // }
     else if ("click" in item) {
-      chalk(6, parentIsANode, otherObj);
+      // chalk(6, parentIsANode, otherObj, item);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
       return isClick;
@@ -492,7 +492,7 @@ export function mouseClick(configParams, targetWin) {
   // 跳转方法
   function gotoLink(href) {
     if (!hrefReg.test(href)) return console.error("非正常url");
-    chalk(href, "gotoLink---href");
+    // chalk(href, "gotoLink---href");
     const a = document.createElement("a");
     a.target = "_blank";
     a.rel = "noopener noreferrer nofollow";
@@ -509,6 +509,9 @@ export function mouseClick(configParams, targetWin) {
         }
       }
       target = e.target;
+      if (target.href || target.src) {
+        clipboardWrite(target.href);
+      }
       if (configParams.changeEleMiaoBian) {
         targetCssText = e.target.style.cssText;
         e.target.style.cssText += "box-shadow: 0px 0px 1px 1px #ccc;";
@@ -523,7 +526,7 @@ export function mouseClick(configParams, targetWin) {
   }
 
   function click(e) {
-    chalk("click触发", e.target, new Date().getTime());
+    // chalk("click触发", e.target, new Date().getTime());
     if (clickEventInvoke) {
       e.preventDefault();
     }
@@ -533,12 +536,12 @@ export function mouseClick(configParams, targetWin) {
   function auxclick(e) {
     e.preventDefault();
     if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
-    chalk("auxclick触发了", clickEventInvoke, new Date().getTime());
+    // chalk("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;
       contentMenuEventsFlag = false;
       clearTimeout(auxclickTimer);
-      chalk("auxclick-target");
+      // chalk("auxclick-target");
       newPageOpen(e.target);
       clickEventInvoke = false;
     }, 200);
@@ -566,12 +569,7 @@ export function mouseClick(configParams, targetWin) {
       }
     } else if (e.ctrlKey && code === 88 && !window.getSelection().toString()) {
       // ctrl + x 点击
-      const flag = findParentClick(target);
-      if (flag) {
-        boxInfo("click s");
-      } else {
-        boxInfo("click e");
-      }
+      findParentClick(target);
     } else if (e.altKey && code === 88) {
       // alt + x 点击
       newPageOpen(target);
@@ -633,7 +631,7 @@ export function mouseClick(configParams, targetWin) {
   }
 
   // 去除copy之后的尾巴
-  document.addEventListener("copy", function(e) {
+  document.addEventListener("copy", function (e) {
     e.preventDefault();
     const selection = window.getSelection().toString();
     e.clipboardData.setData("text/plain", selection);
@@ -693,14 +691,14 @@ function clipboardWrite(text, needClear = false) {
   if (text) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(
-        function() {
+        function () {
           /* clipboard successfully set */
           boxInfo("copy s");
           if (needClear) {
             window.getSelection().removeAllRanges();
           }
         },
-        function(err) {
+        function (err) {
           /* clipboard write failed */
           boxInfo("copy e");
           if (needClear) {
@@ -774,9 +772,9 @@ const selectObj = new Util();
 export function autoSelect() {
   document &&
     document.addEventListener("selectionchange", (e) => {
-      selectObj.debounce(() => {
-        if (!window.getSelection().toString()) return false;
-        clipboardWrite(window.getSelection().toString(), true);
-      }, 1000);
+      // selectObj.debounce(() => {
+      //   if (!window.getSelection().toString()) return false;
+      //   clipboardWrite(window.getSelection().toString(), true);
+      // }, 1000);
     });
 }

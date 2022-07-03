@@ -4,13 +4,12 @@ import {
   // copyTargetText,
   autoSelect,
   chalk,
-  getNoOpenDomList,
   mouseClick,
   otherSiteHref,
   // boxInfo,
   paramsDefault,
   sendReq,
-  unDef,
+  unDef
 } from "../modules/common.js";
 let performance_now = performance.now(),
   liListStr = "", // 链接列表字符串
@@ -27,7 +26,7 @@ const { log, error, dir } = console;
 const vueAroundList = ["router.vuejs.org", "vuex.vuejs.org", "cli.vuejs.org"];
 
 // 获取配置参数
-chrome.storage.sync.get(null, function(result) {
+chrome.storage.sync.get(null, function (result) {
   // 设置默认参数
   setStorageDefault(result);
   const { mapInfo } = configParams;
@@ -86,7 +85,7 @@ function commonEvents(configParams) {
   //   configParams.mapInfo[host].collectInfoFlag;
 
   // getNoOpenDomList((configParams.mapInfo[host] || {}).noOpenLinkList || []);
-  getNoOpenDomList(mapInfo[host].noOpenLinkList);
+  // getNoOpenDomList(mapInfo[host].noOpenLinkList);
 }
 
 function ifraemsListener(params) {
@@ -132,10 +131,10 @@ function setStorageDefault(result) {
     ...result,
     mapInfo,
   };
-  chalk(configParams, result, "configParams result");
+  // chalk(configParams, result, "configParams result");
   if (flag) {
-    chalk("mapInfo变化了", mapInfo[host], configParams);
-    chrome.storage.sync.set({ mapInfo }, function() {});
+    // chalk("mapInfo变化了", mapInfo[host], configParams);
+    chrome.storage.sync.set({ mapInfo }, function () { });
   }
 }
 
@@ -318,12 +317,21 @@ function setFanyi(fanyiFlag) {
 function replaceHref(configParams) {
   const otherObj = otherSiteHref(href, host);
   const needChange = otherObj.needChange;
+  // 如果前一次的url是当前url的第二个http开头的网址，不跳。即上一次http://www.baidu.com，这一次 http://www.ciji.com?http://www.baidu.com,这样不跳
+  if (configParams.lastLocationHerf === otherObj.href) return
   const noChange = configParams.noChangeHrefList.some((it) =>
     host.includes(it)
   );
   if (needChange && !noChange) {
     location.replace(otherObj.href);
   }
+  chalk('configParams--changeHref', configParams.lastLocationHerf, location.href)
+  // chrome.storage.sync.clear()
+  chrome.storage.sync.set({ ...configParams, lastLocationHerf: href }, function () {
+    chrome.storage.sync.get(null, function (result) {
+      console.log(result, '这设置好了');
+    });
+  });
 }
 
 function removeErrListening(configParams) {
@@ -515,12 +523,12 @@ function setStyle(str, css) {
 function throttle(fun, delay = 50) {
   let last;
   let deferTimer;
-  return function(...args) {
+  return function (...args) {
     const that = this;
     const now = +new Date();
     if (last && now < last + delay) {
       clearTimeout(deferTimer);
-      deferTimer = setTimeout(function() {
+      deferTimer = setTimeout(function () {
         last = now;
         fun.apply(that, args);
       }, delay);
@@ -641,11 +649,9 @@ function addLinkListBox(linkList = []) {
       text: item.innerText,
       host,
     });
-    liListStr += `<li title='${
-      item.innerText
-    }'><a href='${item.toString()}' rel="noopener noreferrer" target="_blank">${
-      item.innerText
-    }</a></li>\n`;
+    liListStr += `<li title='${item.innerText
+      }'><a href='${item.toString()}' rel="noopener noreferrer" target="_blank">${item.innerText
+      }</a></li>\n`;
   });
   hrefList = linkFilter(hrefList);
   if (!liListStr) return;
@@ -669,7 +675,7 @@ function addLinkListBox(linkList = []) {
         },
         pageProtocol: protocol,
         data: hrefList,
-        success: function(data) {
+        success: function (data) {
           chalk("这里是success函数", data);
         },
       });
@@ -687,21 +693,17 @@ function addLinkListBoxPro(linkList = [], boxName = "toolbox", oneLine = true) {
     if (oneLine) {
       // 一个li标签多个a
       itemList.forEach((it) => {
-        aLinkStr += `<a title='${
-          it.innerText
-        }' href='${it.toString()}' rel="noopener noreferrer" target="_blank">${
-          it.innerText
-        }</a>`;
+        aLinkStr += `<a title='${it.innerText
+          }' href='${it.toString()}' rel="noopener noreferrer" target="_blank">${it.innerText
+          }</a>`;
       });
       linkListStr += `<li>${aLinkStr}</li>\n`;
     } else {
       // 一个li标签里面一个a标签
       itemList.forEach((it) => {
-        aLinkStr += `<li title='${
-          it.innerText
-        }'><a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${
-          it.innerText
-        }</a></li>\n`;
+        aLinkStr += `<li title='${it.innerText
+          }'><a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${it.innerText
+          }</a></li>\n`;
       });
       linkListStr += aLinkStr;
     }
@@ -977,7 +979,7 @@ function main(mapInfo) {
         window.addEventListener("keydown", loadData);
       }
 
-      const callback = function(mutationsList, observer) {
+      const callback = function (mutationsList, observer) {
         logInfo("回调执行-observer");
         addLinkListBox(getDomList("a"));
         list[k].callback &&
@@ -1364,9 +1366,10 @@ function mdn({ href, pathname, origin }) {
     sendReq(
       newHref,
       (res) => {
-        location.href = origin + newHref;
+        const newUrl = origin + newHref;
+        location.href = newUrl;
       },
-      (err) => {},
+      (err) => { },
       () => {
         this.once = true;
       }
@@ -1498,9 +1501,8 @@ function github() {
     const itemList = Array.from(item.querySelectorAll("a"));
     if (itemList.length <= 0) return;
     itemList.forEach((it) => {
-      aLinkStr += `<a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${
-        it.innerText
-      }</a>`;
+      aLinkStr += `<a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${it.innerText
+        }</a>`;
     });
     linkListStr += `<li>${aLinkStr}</li>\n`;
     aLinkStr = "";
@@ -1515,13 +1517,13 @@ if (vueFlag && !href.includes("/zh/")) {
   location.href = s;
 }
 
-setTimeout(function() {
+setTimeout(function () {
   let performance_end = performance.now();
   const time = performance_end - performance_now;
   logInfo("加载时间" + "===>" + time);
 }, 0);
 
-setTimeout(function() {
+setTimeout(function () {
   return false;
 
   function removeAd(e) {
@@ -1550,7 +1552,7 @@ setTimeout(function() {
       log(domStrList, "domStrList");
       const dom = document.querySelector(domStr);
       dom.remove();
-    } catch (error) {}
+    } catch (error) { }
   }
 }, 0);
 
@@ -1564,7 +1566,7 @@ setTimeout(function() {
 
 function sendMessage(
   object = {},
-  fn = function(response) {
+  fn = function (response) {
     logInfo(response, "response-content");
   }
 ) {

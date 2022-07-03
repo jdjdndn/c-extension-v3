@@ -1,7 +1,7 @@
 <!--
  * @Author: yucheng
  * @Date: 2021-08-31 08:23:13
- * @LastEditTime: 2022-04-03 14:02:11
+ * @LastEditTime: 2022-07-02 17:15:56
  * @LastEditors: yucheng
  * @Description: ...
 -->
@@ -302,7 +302,7 @@ export default {
       // 获取配置参数
       chrome.storage.sync.get(null, function (result) {
         that.allDataObj = { ...that.allDataObj, ...result };
-        chalk('看看获取的参数', result, that.allDataObj);
+        // chalk('看看获取的参数', result, that.allDataObj);
         if (!result) return false;
         that.configParamsBacket = JSON.parse(JSON.stringify(result) || '{}');
 
