@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-03 19:39:38
+ * @LastEditTime: 2022-07-06 23:29:54
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -314,6 +314,18 @@ function getNeedChange(arr, href, host) {
   return arr.length > 1 || (arr.length === 1 && new URL(href).host !== host);
 }
 
+// 跳转方法
+function gotoLink(href) {
+  if (!hrefReg.test(href)) return console.error("非正常url");
+  // chalk(href, "gotoLink---href");
+  const a = document.createElement("a");
+  a.target = "_blank";
+  a.rel = "noopener noreferrer nofollow";
+  a.href = href;
+  a.click();
+  a.remove();
+}
+
 // 判断网址是否需要跳转
 export function otherSiteHref(href, host) {
   let splitArr = [],
@@ -331,8 +343,12 @@ export function otherSiteHref(href, host) {
           remain: str.slice(index),
         });
         needChange = getNeedChange(splitArr, href, host);
+        splitArr = splitArr.sort((a, b) => a.index - b.index);
+        // 直接跳转
+        if (needChange) {
+          gotoLink(splitArr.length > 1 ? splitArr[1].remain : href)
+        }
         if (splitArr.length > 1) {
-          splitArr = splitArr.sort((a, b) => a.index - b.index);
           return {
             needChange,
             href: splitArr.length > 1 ? splitArr[1].remain : href,
@@ -395,32 +411,59 @@ export function mouseClick(configParams, targetWin) {
     let parentIsANode = null;
     // 获取元素上的监听事件
     let otherObj = {};
-    if (
-      item.href &&
-      (otherObj = otherSiteHref(item.href, host)) &&
-      hrefReg.test(item.href)
-    ) {
-      // chalk(8, otherObj);
-      gotoLink(otherObj.href);
-      return;
-    } else if (
-      (parentIsANode = isParentNodeA(item)) &&
-      (otherObj = otherSiteHref(parentIsANode.href, host)) &&
-      hrefReg.test(parentIsANode.href)
-    ) {
-      // chalk(9, otherObj);
-      gotoLink(otherObj.href);
-      return;
-    } else if ("click" in item) {
-      // chalk(10, parentIsANode, otherObj);
-      // 拿不到监听的事件对象就看能否点击，能点击就点击
-      item.click();
-      return;
+    if (item.href) {
+      otherObj = otherSiteHref(item.href, host)
+    }
+    if (!otherObj.needChange) {
+      parentIsANode = isParentNodeA(item)
+      otherObj = otherSiteHref(parentIsANode.href, host)
+    }
+    if (!otherObj.needChange && otherObj.href) {
+      return sendReq(otherObj.href, res => {
+        res.text().then(text => {
+          if (text.includes('video')) {
+            gotoLink(otherObj.href)
+          }
+        })
+      }, err => {
+        if ("click" in item) {
+          return item.click()
+        }
+        const parent = item.parentNode;
+        return newPageOpen(parent);
+      })
+    }
+    if (!otherObj.needChange && "click" in item) {
+      return item.click()
     }
     const parent = item.parentNode;
     newPageOpen(parent);
     return;
   }
+
+  // if (
+  //   item.href &&
+  //   (otherObj = otherSiteHref(item.href, host)) &&
+  //   hrefReg.test(item.href)
+  // ) {
+  //   // chalk(8, otherObj);
+  //   // gotoLink(otherObj.href);
+  //   return;
+  // } else if (
+  //   (parentIsANode = isParentNodeA(item)) &&
+  //   (otherObj = otherSiteHref(parentIsANode.href, host)) &&
+  //   hrefReg.test(parentIsANode.href)
+  // ) {
+  //   // chalk(9, otherObj);
+  //   // gotoLink(otherObj.href);
+  //   return;
+  // } else if ("click" in item) {
+  //   // chalk(10, parentIsANode, otherObj);
+  //   // 拿不到监听的事件对象就看能否点击，能点击就点击
+  //   item.click();
+  //   return;
+  // }
+
   // 从子孙往上找，直到找到可以点击的dom
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick;
@@ -446,7 +489,7 @@ export function mouseClick(configParams, targetWin) {
       hrefReg.test(item.href)
     ) {
       // chalk(1, otherObj);
-      gotoLink(otherObj.href);
+      // gotoLink(otherObj.href);
       return isClick;
     }
     // else if (
@@ -465,7 +508,7 @@ export function mouseClick(configParams, targetWin) {
       hrefReg.test(parentIsANode.href)
     ) {
       // chalk(3, otherObj);
-      gotoLink(otherObj.href);
+      // gotoLink(otherObj.href);
       return isClick;
     }
     // else if (
@@ -487,18 +530,6 @@ export function mouseClick(configParams, targetWin) {
     const parent = item.parentNode;
     findParentClick(parent, isClick);
     return !isClick;
-  }
-
-  // 跳转方法
-  function gotoLink(href) {
-    if (!hrefReg.test(href)) return console.error("非正常url");
-    // chalk(href, "gotoLink---href");
-    const a = document.createElement("a");
-    a.target = "_blank";
-    a.rel = "noopener noreferrer nofollow";
-    a.href = href;
-    a.click();
-    a.remove();
   }
 
   function pointermove(e) {
@@ -569,10 +600,10 @@ export function mouseClick(configParams, targetWin) {
       }
     } else if (e.ctrlKey && code === 88 && !window.getSelection().toString()) {
       // ctrl + x 点击
-      findParentClick(target);
+      newPageOpen(target);
     } else if (e.altKey && code === 88) {
       // alt + x 点击
-      newPageOpen(target);
+      findParentClick(target);
     } else if (37 === code && e.ctrlKey) {
       // 实现浏览器上一步下一步
       history.back();
