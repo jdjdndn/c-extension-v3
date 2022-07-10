@@ -169,6 +169,21 @@ var options = {
           to: "js",
           force: true,
         },
+        {
+          from: "src/modules/googleTranslate.js",
+          to: "js",
+          force: true,
+        },
+        {
+          from: "src/modules/setTranslate.js",
+          to: "js",
+          force: true,
+        },
+         {
+          from: "src/modules/gugefanyijs.js",
+          to: "js",
+          force: true,
+        }
       ],
     }),
   ],

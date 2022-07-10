@@ -24,6 +24,8 @@ const { location } = window;
 const { href, host, pathname, origin, search, protocol } = location;
 const { log, error, dir } = console;
 const vueAroundList = ["router.vuejs.org", "vuex.vuejs.org", "cli.vuejs.org"];
+// dom元素id
+let nodeIdNum = 0
 
 // 获取配置参数
 chrome.storage.sync.get(null, function (result) {
@@ -101,14 +103,19 @@ function ifraemsListener(params) {
   }
 }
 
-function addNewElement(innerhtml, node, src) {
+// link href
+// script src
+function addNewElement( node, src) {
   const element = document.createElement(node);
-  if (src) {
-    element.src = innerhtml;
+  element.id = 'yucheng-'+node +'-' + nodeIdNum++
+  if (!src) return
+  if (node === 'link') {
+    element.href = chrome.runtime.getURL(src);
   } else {
-    element.innerHTML = innerhtml;
+    element.src = chrome.runtime.getURL(src);
   }
-  document.getElementsByTagName("head")[0].appendChild(element);
+  console.log(element.id,element.src,'element')
+  document.head.appendChild(element);
 }
 
 // 设置 mapInfo 默认参数
@@ -138,164 +145,46 @@ function setStorageDefault(result) {
   }
 }
 
+// 判断是否中文网页
+function isChinesePage() { 
+  const lang = document.documentElement.lang
+  // 获取网页的标题
+  const pageTitle = document.title
+  // 获取网页使用的主要语言
+  const mainLang = document.characterSet.toLowerCase()
+  return lang.substring(0, 2) === 'zh' || mainLang.substring(0, 2) === 'gb' || /[\u4E00-\u9FFF]/.test(pageTitle)
+}
+
 function setFanyi(fanyiFlag) {
   // 谷歌翻译
   // 不翻译的列表
-  const fanYiList = [
-    "stackoverflow.com",
-    "www.npmjs.com",
-    "developer.chrome.com",
-  ];
-  const fanyiFlag1 = fanYiList.some((item) => host === item);
+  // const fanYiList = [
+  //   "stackoverflow.com",
+  //   "www.npmjs.com",
+  //   "developer.chrome.com",
+  // ];
+  // const fanyiFlag1 = fanYiList.some((item) => host === item);
 
-  if (fanyiFlag || fanyiFlag1) {
-    // 隐藏顶部栏
-    const { head } = document;
-    const style = document.createElement("style");
-    const text = [
-      // 翻译按钮样式设置
-      "#google_translate_element {",
-      "  position: fixed;",
-      "  width: 80px;", // 按钮宽度(仅PC端生效)
-      "  left: 0px;", // 左侧边距离设置；如果要靠右设置，left改成right即可
-      "  bottom: 25px;", // 距离底部高度
-      "  height: 22px;", // 按钮高度
-      "  border: 2px solid #0000;", // 边框线设置
-      "  border-radius: 5px;", // 边界半径设置
-      "  z-index: 10000000;",
-      "  overflow: hidden;",
-      "  box-shadow: 1px 1px 3px 0 #0000;", // 外边框阴影设置
-      "  opacity: 0.4;", // 初始透明度设置
-      "  transform: translateX(-75%);", // 按钮隐藏百分比设置(仅PC端生效)
-      "  transition: all 0.3s;",
-      "}",
-      "#google_translate_element:hover {",
-      "  opacity: 1;", // 透明度设置
-      "  transform: translateX(0);",
-      "}",
-      "#google_translate_element .goog-te-gadget-simple {",
-      "  width: 100%;",
-      "}",
-      ".goog-te-banner-frame.skiptranslate {",
-      "  display: none",
-      "}",
-      "html,body{",
-      "  top: 0!important",
-      "}",
-      // 原文按钮样式设置
-      ".recoverPage {",
-      "  width: 45px;", // 按钮宽度(仅PC端生效)
-      "  background-color: #F0F8FF;", // 背景色设置
-      "  position: fixed;",
-      "  left: -5px;", // 左侧边距离设置；如果要靠右设置，left改成right即可
-      "  z-index: 10000000;",
-      "  bottom: 50px;", // 距离底部高度
-      "  user-select: none;",
-      "  text-align: center;",
-      "  border: 1px solid #a8a8a8;", // 边框线设置
-      "  font-size: small;",
-      "  line-height: 25px;", // 按钮高度设置(仅PC端生效)
-      "  border-radius: 15px;", // 边界半径设置
-      "  box-shadow: 1px 1px 3px 0 #C0C0C0;", // 外边框阴影设置
-      "  opacity: 0.4;", // 初始透明度设置
-      "  transform: translateX(-70%);", // 按钮隐藏百分比设置(仅PC端生效)
-      "  transition: all 0.3s;",
-      "  }",
-      ".recoverPage:hover {",
-      "  opacity: 1;", // 透明度设置
-      "  transform: translateX(0);",
-      "  }",
-      ".recoverPage:active {",
-      "  box-shadow: 1px 1px 3px 0 #888 inset;",
-      "  }",
-
-      /* ----移动端UI适配设置（PC端不生效）-----------------------------------------*/
-      " @media handheld, only screen and (max-width: 768px) {",
-      // 翻译按钮样式设置
-      " #google_translate_element {",
-      "  width: 104px;", // 按钮宽度
-      "  }",
-      "  #google_translate_element .goog-te-combo {",
-      "  margin: 0;",
-      "  padding-top: 2px;",
-      "  border: none;",
-      "  }",
-      // 原文按钮样式设置
-      " .recoverPage {",
-      "  width: 34px;", // 按钮宽度
-      "  line-height: 24px;", // 按钮高度设置
-      "  transform: translateX(-40%);", // 按钮隐藏百分比设置
-      "  transform: translateX(1);", // 隐藏功能开关，0为关闭；1为打开
-      "  }",
-      "  }",
-    ].join("\n");
-    const style_text = document.createTextNode(text);
-    style.appendChild(style_text);
-    head.appendChild(style);
-
-    // 恢复原网页按钮设置
-    const initScript = document.createElement("script");
-    const initText = document.createTextNode(
-      [
-        // 清除图片的请求，加快访问速度
-        "  img = [].slice.call(document.querySelectorAll('#goog-gt-tt img,#google_translate_element img'));",
-        "  img.forEach(function(v, i){",
-        "   v.src = '';",
-        "  });",
-
-        "  const recoverPage = document.createElement('div')",
-        "  recoverPage.setAttribute('class', 'notranslate recoverPage')",
-        "  recoverPage.innerText = '原文'",
-        "  document.body.appendChild(recoverPage)",
-        "  recoverPage.onclick = (() => {",
-        "  const phoneRecoverIframe = document.getElementById(':1.container')",
-        "  const PCRecoverIframe = document.getElementById(':2.container')",
-        "    if (phoneRecoverIframe) {",
-        "      const recoverDocument = phoneRecoverIframe.contentWindow.document",
-        "      recoverDocument.getElementById(':1.restore').click()",
-        " } else if (PCRecoverIframe) {",
-        "      const recoverDocument = PCRecoverIframe.contentWindow.document",
-        "      recoverDocument.getElementById(':2.restore').click()",
-        "    }",
-        "  })",
-      ].join("\n")
-    );
-    initScript.appendChild(initText);
-    head.appendChild(initScript);
-
-    // 翻译按钮设置
-    const google_translate_element = document.createElement("div");
-    google_translate_element.id = "google_translate_element";
-    document.documentElement.appendChild(google_translate_element);
-
-    const gtehtml =
-      "function googleTranslateElementInit() {" +
-      "new google.translate.TranslateElement({" +
-      "autoDisplay: true," +
-      "layout: google.translate.TranslateElement.InlineLayout.SIMPLE," +
-      "multilanguagePage: true," +
-      "pageLanguage: 'auto'," +
-      "includedLanguages: 'zh-CN,zh-TW,en,ja,ru'" +
-      "}, 'google_translate_element');}";
-
-    addNewElement(gtehtml, "script", false);
-    // addNewElement(
-    //   "https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js",
-    //   "script",
-    //   true
-    // );
-
+  if ((fanyiFlag) && !isChinesePage()) {
     //   google翻译的网址  //translate.google.com/translate_a/element.js?cb=googleTranslateElementInit
     // https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js
-    addNewElement(
-      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit",
-      "script",
-      true
-    );
+    // 参考地址： https://greasyfork.org/zh-CN/scripts/398746-%E7%BD%91%E9%A1%B5%E7%BF%BB%E8%AF%91/code
+
+    const a = document.createElement('div')
+    a.id = 'yucheng-translate'
+    a.innerHTML = `
+    <div id="google_translate_element"></div>
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({pageLanguage: 'zh-CN', includedLanguages: 'zh-CN,zh-TW,en,ja,ru', layout: /mobile/i.test(navigator.userAgent) ? 0 : 2, 'google_translate_element');
+      }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript"></script>
+    `
+    document.body.appendChild(a)
 
     // 翻译按钮
-    (function ziDongFanYi() {
-      const d = $("#google_translate_element");
+    const d = $("#google_translate_element");
       if (d) {
         // 选择语言的弹出盒子
         const iframe = $(".goog-te-menu-frame.skiptranslate");
@@ -310,7 +199,6 @@ function setFanyi(fanyiFlag) {
           }
         });
       }
-    })();
   }
 }
 
@@ -373,6 +261,16 @@ function errListening() {
   script.src = chrome.runtime.getURL("js/error-record.js");
   document.head.appendChild(script);
 }
+
+// 代码块不要被翻译
+['pre', 'code','.prism-code','a.type','.example-wrap','#handbook-content h2, .handbook-toc, #sidebar','.octotree-tree-view','.github-repo-size-div'].forEach(str => {
+  const domList = $$(str)
+  domList.forEach(dom => {
+    if (!dom.classList.contains('notranslate')) {
+      dom.classList.add('notranslate')
+    }
+  })
+})
 
 function logInfo(...msg) {
   if (!configParams.debug) return false;
@@ -1555,14 +1453,6 @@ setTimeout(function () {
     } catch (error) { }
   }
 }, 0);
-
-// window.addEventListener("visibilitychange", function(event) {
-//   if (document.hidden) return;
-//   sendMessage({
-//     liListStr,
-//     linkObj,
-//   });
-// });
 
 function sendMessage(
   object = {},

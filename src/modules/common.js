@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-06 23:29:54
+ * @LastEditTime: 2022-07-09 12:19:30
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -345,10 +345,11 @@ export function otherSiteHref(href, host) {
         needChange = getNeedChange(splitArr, href, host);
         splitArr = splitArr.sort((a, b) => a.index - b.index);
         // 直接跳转
+        // if (needChange) {
+        //   gotoLink(splitArr.length > 1 ? splitArr[1].remain : href)
+        // }
+        // splitArr.length > 1
         if (needChange) {
-          gotoLink(splitArr.length > 1 ? splitArr[1].remain : href)
-        }
-        if (splitArr.length > 1) {
           return {
             needChange,
             href: splitArr.length > 1 ? splitArr[1].remain : href,
@@ -411,34 +412,23 @@ export function mouseClick(configParams, targetWin) {
     let parentIsANode = null;
     // 获取元素上的监听事件
     let otherObj = {};
-    if (item.href) {
-      otherObj = otherSiteHref(item.href, host)
-    }
-    if (!otherObj.needChange) {
-      parentIsANode = isParentNodeA(item)
+
+    parentIsANode = isParentNodeA(item)
+    if (parentIsANode && parentIsANode.href) {
       otherObj = otherSiteHref(parentIsANode.href, host)
+      if (otherObj.needChange) {
+        return gotoLink(otherObj.href)
+      }
     }
-    if (!otherObj.needChange && otherObj.href) {
-      return sendReq(otherObj.href, res => {
-        res.text().then(text => {
-          if (text.includes('video')) {
-            gotoLink(otherObj.href)
-          }
-        })
-      }, err => {
-        if ("click" in item) {
-          return item.click()
-        }
-        const parent = item.parentNode;
-        return newPageOpen(parent);
-      })
+    if (otherObj.href) {
+      return gotoLink(otherObj.href)
     }
-    if (!otherObj.needChange && "click" in item) {
-      return item.click()
+    if ("click" in item) {
+      item.click()
     }
-    const parent = item.parentNode;
-    newPageOpen(parent);
-    return;
+    // const parent = item.parentNode;
+    // newPageOpen(parent);
+    // return;
   }
 
   // if (

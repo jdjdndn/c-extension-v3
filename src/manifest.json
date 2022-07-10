@@ -32,6 +32,9 @@
   },
   "description": "Chrome Extension V3",
   "devtools_page": "devtools.html",
+  "host_permissions": [
+    "https://translate.google.com/"
+  ],
   "icons": {
     "128": "icons/icon-128.png"
   },
@@ -63,6 +66,7 @@
       "resources": [
         "assets/*",
         "js/*",
+        "css/*",
         "options.html"
       ]
     }

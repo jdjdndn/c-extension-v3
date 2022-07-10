@@ -187,6 +187,10 @@ chrome.runtime.onMessage.addListener(function notify(
   sendResponse
 ) {
   // chalk(message, configParams, "------message-----background----");
+  if (message.type === 'get-google-translate-script') {
+    fetch('//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit')
+    console.log('fetch succsesee');
+  }
   if (message.linkObj) {
     linkObj = {
       ...linkObj,
@@ -328,3 +332,8 @@ async function getCurrentTab() {
   let [tab] = await chrome.tabs.query(queryOptions);
   return tab;
 }
+
+
+chrome.extension.sendRequest({ title: 'getData', api: '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit' }, (resData) => {
+  console.log(resData)
+})
