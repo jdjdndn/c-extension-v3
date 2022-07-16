@@ -26,7 +26,22 @@
       {
         "enabled": true,
         "id": "1",
+        "path": "rules/bilibili.json"
+      },
+      {
+        "enabled": true,
+        "id": "2",
         "path": "rules/juejin.json"
+      },
+      {
+        "enabled": true,
+        "id": "3",
+        "path": "rules/qidain.json"
+      },
+      {
+        "enabled": true,
+        "id": "4",
+        "path": "rules/porny91.json"
       }
     ]
   },

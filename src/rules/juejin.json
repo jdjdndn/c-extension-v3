@@ -9,20 +9,7 @@
       "urlFilter": "/advert/query_adverts",
       "resourceTypes": [
         "xmlhttprequest",
-        "image",
-        "main_frame",
-        "sub_frame",
-        "stylesheet",
-        "script",
-        "font",
-        "object",
-        "ping",
-        "csp_report",
-        "media",
-        "websocket",
-        "webtransport",
-        "webbundle",
-        "other"
+        "image"
       ]
     }
   },
@@ -76,34 +63,6 @@
     },
     "condition": {
       "urlFilter": "img01.sogoucdn.com",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image"
-      ]
-    }
-  },
-  {
-    "id": 6,
-    "priority": 6,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "qidian.com/webgame/game",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image"
-      ]
-    }
-  },
-  {
-    "id": 7,
-    "priority": 7,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "qidian.com/upload/gamesy",
       "resourceTypes": [
         "xmlhttprequest",
         "image"

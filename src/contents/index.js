@@ -206,7 +206,7 @@ function replaceHref(configParams) {
   const otherObj = otherSiteHref(href, host);
   const needChange = otherObj.needChange;
   // 如果前一次的url是当前url的第二个http开头的网址，不跳。即上一次http://www.baidu.com，这一次 http://www.ciji.com?http://www.baidu.com,这样不跳
-  if (configParams.lastLocationHerf === otherObj.href) return
+  // if (configParams.lastLocationHerf === otherObj.href) return
   const noChange = configParams.noChangeHrefList.some((it) =>
     host.includes(it)
   );
@@ -215,11 +215,11 @@ function replaceHref(configParams) {
   }
   chalk('configParams--changeHref', configParams.lastLocationHerf, location.href)
   // chrome.storage.sync.clear()
-  chrome.storage.sync.set({ ...configParams, lastLocationHerf: href }, function () {
-    chrome.storage.sync.get(null, function (result) {
-      console.log(result, '这设置好了');
-    });
-  });
+  // chrome.storage.sync.set({ ...configParams, lastLocationHerf: href }, function () {
+  //   chrome.storage.sync.get(null, function (result) {
+  //     console.log(result, '这设置好了');
+  //   });
+  // });
 }
 
 function removeErrListening(configParams) {
@@ -264,13 +264,32 @@ function errListening() {
 
 // 代码块不要被翻译
 ['pre', 'code','.prism-code','a.type','.example-wrap','#handbook-content h2, .handbook-toc, #sidebar','.octotree-tree-view','.github-repo-size-div'].forEach(str => {
+  noTranslateFn(str)
+})
+
+function noTranslateFn(str) {
   const domList = $$(str)
   domList.forEach(dom => {
     if (!dom.classList.contains('notranslate')) {
       dom.classList.add('notranslate')
     }
   })
-})
+}
+function setNoTranslate(obj) {
+  for (const k in obj) {
+    if (k === host) {
+      obj[k].forEach(str => {
+        noTranslateFn(str)
+      })
+    }
+  }
+}
+
+// 不用翻译列表
+const noTranslateList = {
+  'github.com': ['.f4.text-normal','.Details-content--hidden-not-important.js-navigation-container.js-active-navigation-container.d-md-block']
+}
+setNoTranslate(noTranslateList)
 
 function logInfo(...msg) {
   if (!configParams.debug) return false;

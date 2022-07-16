@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "Webpack 4 & Vue 2 (.vue) - Chrome Extension V3",
   "scripts": {
-    "watch": "node utils/dev.js",
-    "dev": "cross-env https=false node utils/webserver.js",
-    "devs": "cross-env https=true node utils/webserver.js",
-    "build": "node utils/build.js",
-    "build-zip": "npm run build && node utils/build-zip.js"
+    "watch": "npm run run-sctipt && node utils/dev.js",
+    "dev": "npm run run-sctipt && cross-env https=false node utils/webserver.js",
+    "devs": "npm run run-sctipt && cross-env https=true node utils/webserver.js",
+    "build": "npm run run-sctipt && node utils/build.js",
+    "build-zip": "npm run build && node utils/build-zip.js",
+    "run-sctipt": "node script/generateBolckUrl.js"
   },
   "keywords": [
     "chrome",

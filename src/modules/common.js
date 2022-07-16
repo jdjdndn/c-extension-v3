@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-09 12:19:30
+ * @LastEditTime: 2022-07-14 19:07:08
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -177,6 +177,7 @@ let target = null,
   contentMenuEventsFlag = false, // 是否contentmenu事件
   clickEventInvoke = false, //auxclick触发时不触发click
   noOpenLinkDomList = [], // 不需要跳转的a链接父元素
+  auxclicked = false, // auxclick事件触发了
   findUrlReg = /(https?|ftp|file):\/\/[-A-Za-z0-9+&@#\/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/, // 文本中找url
   hrefReg = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/; // 判断是否是url
 
@@ -344,17 +345,12 @@ export function otherSiteHref(href, host) {
         });
         needChange = getNeedChange(splitArr, href, host);
         splitArr = splitArr.sort((a, b) => a.index - b.index);
-        // 直接跳转
         // if (needChange) {
-        //   gotoLink(splitArr.length > 1 ? splitArr[1].remain : href)
+        //   return {
+        //     needChange,
+        //     href: splitArr.length > 1 ? splitArr[1].remain : href,
+        //   };
         // }
-        // splitArr.length > 1
-        if (needChange) {
-          return {
-            needChange,
-            href: splitArr.length > 1 ? splitArr[1].remain : href,
-          };
-        }
       }
       str = str.slice(index + protocol.length);
     }
@@ -426,48 +422,12 @@ export function mouseClick(configParams, targetWin) {
     if ("click" in item) {
       item.click()
     }
-    // const parent = item.parentNode;
-    // newPageOpen(parent);
-    // return;
   }
-
-  // if (
-  //   item.href &&
-  //   (otherObj = otherSiteHref(item.href, host)) &&
-  //   hrefReg.test(item.href)
-  // ) {
-  //   // chalk(8, otherObj);
-  //   // gotoLink(otherObj.href);
-  //   return;
-  // } else if (
-  //   (parentIsANode = isParentNodeA(item)) &&
-  //   (otherObj = otherSiteHref(parentIsANode.href, host)) &&
-  //   hrefReg.test(parentIsANode.href)
-  // ) {
-  //   // chalk(9, otherObj);
-  //   // gotoLink(otherObj.href);
-  //   return;
-  // } else if ("click" in item) {
-  //   // chalk(10, parentIsANode, otherObj);
-  //   // 拿不到监听的事件对象就看能否点击，能点击就点击
-  //   item.click();
-  //   return;
-  // }
 
   // 从子孙往上找，直到找到可以点击的dom
   function findParentClick(item, isClick = true) {
     if (!item) return !isClick;
     if (doSth(item)) return isClick;
-    // const openFLag =
-    //   noOpenLinkDomList.length &&
-    //   noOpenLinkDomList.some((it) => it.contains(item));
-    // // 有不需要新页面打开的直接点击即可
-    // if (openFLag && "click" in item) {
-    //   chalk(8);
-    //   // 拿不到监听的事件对象就看能否点击，能点击就点击
-    //   item.click();
-    //   return isClick;
-    // }
     // 父元素是否a链接
     let parentIsANode = null;
     // 获取元素上的监听事件
@@ -482,15 +442,6 @@ export function mouseClick(configParams, targetWin) {
       // gotoLink(otherObj.href);
       return isClick;
     }
-    // else if (
-    //   item.href &&
-    //   mapInfo[host].openNewPageFlag &&
-    //   hrefReg.test(item.href)
-    // ) {
-    //   chalk(2, otherObj);
-    //   gotoLink(otherObj.href);
-    //   return isClick;
-    // }
     else if (
       (parentIsANode = isParentNodeA(target)) &&
       (otherObj = otherSiteHref(parentIsANode.href, host)) &&
@@ -501,16 +452,6 @@ export function mouseClick(configParams, targetWin) {
       // gotoLink(otherObj.href);
       return isClick;
     }
-    // else if (
-    //   parentIsANode &&
-    //   // parentIsANode.target !== "_blank" &&
-    //   mapInfo[host].openNewPageFlag &&
-    //   hrefReg.test(parentIsANode.href)
-    // ) {
-    //   chalk(4, otherObj);
-    //   gotoLink(otherObj.href);
-    //   return isClick;
-    // }
     else if ("click" in item) {
       // chalk(6, parentIsANode, otherObj, item);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
@@ -551,12 +492,17 @@ export function mouseClick(configParams, targetWin) {
     if (clickEventInvoke) {
       e.preventDefault();
     }
+    // 这个事件 在auxclick和click中只触发一次
+    if (!auxclicked) {
+      doSth(e.target)
+    }
   }
 
   // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
     e.preventDefault();
     if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
+    auxclicked = true
     // chalk("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;
@@ -565,6 +511,7 @@ export function mouseClick(configParams, targetWin) {
       // chalk("auxclick-target");
       newPageOpen(e.target);
       clickEventInvoke = false;
+      auxclicked = false
     }, 200);
   }
 
