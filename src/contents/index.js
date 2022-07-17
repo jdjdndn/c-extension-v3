@@ -1166,6 +1166,12 @@ function baidu() {
     Array.from(content_right.children)
       .filter((el) => el.tagName !== "TABLE")
       .forEach((el) => el.remove());
+  [...$$('#content_left')].forEach((el) => {
+    [...el.children].forEach((el) => {
+      console.log(el, el.className);
+      if (!el.className) { el.remove() }
+    });
+  });
 }
 // 百度文库
 function wenku() {

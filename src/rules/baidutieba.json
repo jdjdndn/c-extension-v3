@@ -6,7 +6,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "qidian.com/webgame/game",
+      "urlFilter": "gss3.bdstatic.com",
       "resourceTypes": [
         "xmlhttprequest",
         "image"
@@ -20,7 +20,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "qidian.com/upload/gamesy",
+      "urlFilter": "gss0.bdstatic.com",
       "resourceTypes": [
         "xmlhttprequest",
         "image"
@@ -34,7 +34,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "bossaudioandcomic-1252317822.image.myqcloud.com/activity/document",
+      "urlFilter": "tb2.bdstatic.com/tb",
       "resourceTypes": [
         "xmlhttprequest",
         "image"
@@ -48,7 +48,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "bossaudioandcomic-1252317822.image.myqcloud.com",
+      "urlFilter": "tb1.bdstatic.com/tb",
       "resourceTypes": [
         "xmlhttprequest",
         "image"
@@ -62,7 +62,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "bookcover.yuewen.com",
+      "urlFilter": "tb3.bdstatic.com",
       "resourceTypes": [
         "xmlhttprequest",
         "image"
@@ -76,35 +76,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "qidian.gtimg.com",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image"
-      ]
-    }
-  },
-  {
-    "id": 7,
-    "priority": 7,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "cpgame.qd.game.qidian.com",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image"
-      ]
-    }
-  },
-  {
-    "id": 8,
-    "priority": 8,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "imgservices-1252317822.image.myqcloud.com",
+      "urlFilter": "tieba-ares.cdn.bcebos.com",
       "resourceTypes": [
         "xmlhttprequest",
         "image"
