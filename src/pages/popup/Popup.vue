@@ -1,7 +1,7 @@
 <!--
  * @Author: yucheng
  * @Date: 2021-08-31 08:23:13
- * @LastEditTime: 2022-07-02 17:15:56
+ * @LastEditTime: 2022-07-17 11:55:18
  * @LastEditors: yucheng
  * @Description: ...
 -->
@@ -186,6 +186,20 @@
           v-model="allDataObj.auxclickOnly"
       /></label>
     </div>
+    <div class="popup-item">
+      12、收集所有a链接
+      开<input
+          type="radio"
+          :value="true"
+          @click="changeOpenLinkBox(true)"
+          v-model="allDataObj.openLinkBox"
+      />关<input
+          type="radio"
+          :value="false"
+          @click="changeOpenLinkBox(false)"
+          v-model="allDataObj.openLinkBox"
+      />
+    </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>
 </template>
@@ -225,6 +239,10 @@ export default {
     getAndSetParams();
   },
   methods: {
+    // 12
+    changeOpenLinkBox(openLinkBox = commonDefault.openLinkBox) {
+      this.commonSetRadioParams(openLinkBox, 'openLinkBox');
+    },
     // 10
     noOpenLinkListBlur(e) {
       const { host, allDataObj, saveAndSend } = this;
@@ -300,7 +318,7 @@ export default {
     getAndSetParams() {
       let that = this;
       // 获取配置参数
-      chrome.storage.sync.get(null, function (result) {
+      chrome.storage.local.get(null, function (result) {
         that.allDataObj = { ...that.allDataObj, ...result };
         // chalk('看看获取的参数', result, that.allDataObj);
         if (!result) return false;
@@ -386,7 +404,7 @@ export default {
           newParams[k] = params[k];
         }
       }
-      chrome.storage.sync.set(newParams, function (result) {});
+      chrome.storage.local.set(newParams, function (result) {});
     },
     // 判断参数是否变化, true未变化， false变化了
     isChange(name) {

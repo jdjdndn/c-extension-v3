@@ -124,5 +124,33 @@
         "image"
       ]
     }
+  },
+  {
+    "id": 10,
+    "priority": 10,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "bob5858.com",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image"
+      ]
+    }
+  },
+  {
+    "id": 11,
+    "priority": 11,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "dimg04.c-ctrip.com",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image"
+      ]
+    }
   }
 ]

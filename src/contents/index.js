@@ -1,16 +1,16 @@
-// import '../assets/index.scss'
 import { ajax } from "../modules/ajax.js";
 import {
   // copyTargetText,
   autoSelect,
-  chalk,
-  mouseClick,
+  chalk, commonDefault, mouseClick,
   otherSiteHref,
   // boxInfo,
   paramsDefault,
   sendReq,
   unDef
 } from "../modules/common.js";
+import '../modules/index.scss';
+import { openLinkBoxFn } from './linkBox/index';
 let performance_now = performance.now(),
   liListStr = "", // 链接列表字符串
   linkObj = {},
@@ -28,7 +28,7 @@ const vueAroundList = ["router.vuejs.org", "vuex.vuejs.org", "cli.vuejs.org"];
 let nodeIdNum = 0
 
 // 获取配置参数
-chrome.storage.sync.get(null, function (result) {
+chrome.storage.local.get(null, function (result) {
   // 设置默认参数
   setStorageDefault(result);
   const { mapInfo } = configParams;
@@ -37,6 +37,9 @@ chrome.storage.sync.get(null, function (result) {
   // copyTargetText();
   autoSelect();
   main(mapInfo);
+  if (mapInfo[host].openLinkBox) {
+    openLinkBoxFn(configParams)
+ }
 });
 
 chalk(chrome, "chrome");
@@ -66,6 +69,7 @@ function commonEvents(configParams) {
   cached["mouseClick"] = mouseClick;
   // 添加/移除错误监听
   removeErrListening(configParams);
+  console.log(mapInfo[host],'mapInfo[host]');
   // 切换视频播放速度
   videoPlay(
     mapInfo[host].videoPlayRate
@@ -103,6 +107,7 @@ function ifraemsListener(params) {
   }
 }
 
+// addNewElement('link', 'css/service-worker.css')
 // link href
 // script src
 function addNewElement( node, src) {
@@ -111,6 +116,7 @@ function addNewElement( node, src) {
   if (!src) return
   if (node === 'link') {
     element.href = chrome.runtime.getURL(src);
+    console.log(chrome.runtime.getURL(src),'chrome.runtime.getURL(src)');
   } else {
     element.src = chrome.runtime.getURL(src);
   }
@@ -123,13 +129,13 @@ function setStorageDefault(result) {
   const mapInfo = { ...configParams.mapInfo, ...result.mapInfo };
   let flag = false;
   if (!mapInfo[host]) {
-    mapInfo[host] = mapInfo.default;
+    mapInfo[host] = commonDefault;
     flag = true;
   } else {
-    for (const k in mapInfo.default) {
+    for (const k in commonDefault) {
       if (unDef(mapInfo[host][k])) {
         flag = true;
-        mapInfo[host][k] = mapInfo.default[k];
+        mapInfo[host][k] = commonDefault[k];
       }
     }
   }
@@ -141,7 +147,7 @@ function setStorageDefault(result) {
   // chalk(configParams, result, "configParams result");
   if (flag) {
     // chalk("mapInfo变化了", mapInfo[host], configParams);
-    chrome.storage.sync.set({ mapInfo }, function () { });
+    chrome.storage.local.set({ mapInfo }, function () { });
   }
 }
 
@@ -214,9 +220,9 @@ function replaceHref(configParams) {
     location.replace(otherObj.href);
   }
   chalk('configParams--changeHref', configParams.lastLocationHerf, location.href)
-  // chrome.storage.sync.clear()
-  // chrome.storage.sync.set({ ...configParams, lastLocationHerf: href }, function () {
-  //   chrome.storage.sync.get(null, function (result) {
+  // chrome.storage.local.clear()
+  // chrome.storage.local.set({ ...configParams, lastLocationHerf: href }, function () {
+  //   chrome.storage.local.get(null, function (result) {
   //     console.log(result, '这设置好了');
   //   });
   // });
@@ -386,7 +392,7 @@ function $(domStr, dom = document) {
   return dom.querySelector(domStr);
 }
 
-function $$(domStr, dom = document) {
+export function $$(domStr, dom = document) {
   return dom.querySelectorAll(domStr);
 }
 // 移除所有
@@ -986,6 +992,10 @@ function porny91() {
 }
 
 function douyin() {
+  if($('.xgplayer-setting-playbackRatio').innerText === '1.5x') return
+  const menuList = [...$$('.xgplayer-playratio-item')]
+  const btn1point5 = menuList.find(it => it.innerText === '1.5x')
+  btn1point5 && btn1point5.click()
   // const classList = [
   //   "login-guide-container",
   //   "mPWahmAI.screen-mask.login-mask-enter-done",
@@ -1269,9 +1279,19 @@ function csdn() {
 }
 // youtube
 function youtube(payload) {
-  chalk(payload, "youtube");
   setStyle(".html5-video-player", "display: block");
-  videoPlay(payload.videoPlayRate);
+  const menusList = [...$$('.ytp-menuitem')]
+  if( menusList.some(it =>it.innerText === '播放速度1.5')) return
+  // videoPlay(payload.videoPlayRate);
+  const settintBt = $('.ytp-button.ytp-settings-button.ytp-hd-quality-badge')
+  settintBt && settintBt.click()
+  const videoPalyRateBtn = menusList.find(it => it.innerText.includes("播放速度"))
+  videoPalyRateBtn && videoPalyRateBtn.click()
+  // .ytp-menuitem-label = 1.5
+  const Btn1point5 = [...$$('.ytp-menuitem-label')].find(it => it.innerText.includes("1.5"))
+  if (Btn1point5) {
+    Btn1point5.click()
+  }
 }
 
 function mdn({ href, pathname, origin }) {
@@ -1434,11 +1454,11 @@ if (vueFlag && !href.includes("/zh/")) {
   location.href = s;
 }
 
-setTimeout(function () {
-  let performance_end = performance.now();
-  const time = performance_end - performance_now;
-  logInfo("加载时间" + "===>" + time);
-}, 0);
+// setTimeout(function () {
+//   let performance_end = performance.now();
+//   const time = performance_end - performance_now;
+//   logInfo("加载时间" + "===>" + time);
+// }, 0);
 
 setTimeout(function () {
   return false;
@@ -1473,7 +1493,7 @@ setTimeout(function () {
   }
 }, 0);
 
-function sendMessage(
+ function sendMessage(
   object = {},
   fn = function (response) {
     logInfo(response, "response-content");

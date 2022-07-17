@@ -227,7 +227,7 @@ chrome.runtime.onMessage.addListener(function notify(
 });
 
 // 获取配置
-chrome.storage.sync.get(null, function (result) {
+chrome.storage.local.get(null, function (result) {
   // chalk(result, "result");
   configParams = result;
   // 清理缓存

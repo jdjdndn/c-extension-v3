@@ -88,7 +88,7 @@ var options = {
     }),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
-      filename: "[name].css",
+      filename: "css/[name].css",
       chunkFilename: "[name].css",
     }),
     new HtmlWebpackPlugin({

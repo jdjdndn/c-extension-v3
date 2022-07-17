@@ -1,7 +1,7 @@
 <!--
  * @Author: yucheng
  * @Date: 2022-05-27 23:19:34
- * @LastEditTime: 2022-05-31 21:45:58
+ * @LastEditTime: 2022-07-17 11:56:24
  * @LastEditors: yucheng
  * @Description: 
 -->
@@ -27,7 +27,7 @@ export default {
   computed: {},
   mounted() {
     const that = this;
-    chrome.storage.sync.get(null, function(result) {
+    chrome.storage.local.get(null, function(result) {
       mouseClick(result, window);
     });
 

@@ -70,7 +70,7 @@ export default {
   mounted() {
     window.addEventListener('message', this.message);
     // autoSelect();
-    // chrome.storage.sync.get(null, function (result) {
+    // chrome.storage.local.get(null, function (result) {
     //   mouseClick(result, window);
     // });
   },

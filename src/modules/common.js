@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-14 19:07:08
+ * @LastEditTime: 2022-07-17 22:14:46
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -13,6 +13,7 @@ export const commonDefault = {
   fanyiFlag: false, // 默认不翻译
   auxclickOnly: false, // 默认auxclick与click不同时触发
   noOpenLinkList: [], // 如果新页面打开链接，这些不会新页面打开链接
+  openLinkBox: false, // 默认在左侧不打开收集a链接的盒子
 };
 // 只包含默认参数
 export const paramsDefault = {
