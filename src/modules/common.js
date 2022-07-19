@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-17 22:20:20
+ * @LastEditTime: 2022-07-19 23:22:25
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -703,8 +703,11 @@ function copyImg() {
   canvas.height = height;
   // 宽高比
 
-  img.crossOrigin = "Anonymous";
-  img.src = target.src;
+  try {
+    img.crossOrigin = "Anonymous";
+    img.src = target.src;
+  } catch (error) {
+  }
 
   img.onload = () => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -718,22 +721,25 @@ function copyImg() {
 }
 
 function canvasCopy(canvas, need = false) {
-  // 将canvas转为blob
-  canvas.toBlob((blob) => {
-    const data = [
-      new ClipboardItem({
-        [blob.type]: blob,
-      }),
-    ];
-    navigator.clipboard.write(data).then(
-      () => {
-        chalk("copy s");
-      },
-      () => {
-        chalk("copy e");
-      }
-    );
-  });
+  try {
+      // 将canvas转为blob
+      canvas.toBlob((blob) => {
+        const data = [
+          new ClipboardItem({
+            [blob.type]: blob,
+          }),
+        ];
+        navigator.clipboard.write(data).then(
+          () => {
+            chalk("copy s");
+          },
+          () => {
+            chalk("copy e");
+          }
+        );
+      });
+  } catch (error) {
+  }
 }
 
 // 选择的自动选中
@@ -746,4 +752,67 @@ export function autoSelect() {
       //   clipboardWrite(window.getSelection().toString(), true);
       // }, 1000);
     });
+}
+
+export function collectAllLink(selectorList) {
+  let newArr = [];
+  function handle(selector) {
+    // 用$做变量，用来替换
+    const variabgle = selector.replace(/\:nth-child\(.*?\)/g, "$");
+    let arr = [];
+    // 找到所有 (12)， 代表找到了nth-child
+    const list = selector.match(/\(.*?\)/g);
+    list.forEach((it) => {
+      const selectorStr = selector.slice(
+        0,
+        // 找到 li:nth-child(12)之前的选择器，找到选择器父级有多少个li
+        Math.max(0, selector.indexOf(it) - 10)
+      );
+      arr.push(document.querySelectorAll(selectorStr).length);
+    });
+    arr = arr.filter(Boolean);
+
+    let index = 0;
+    function get(index, ...args) {
+      if (arr[index]) {
+        for (let i = 1; i <= arr[index]; i++) {
+          if (i === arr[index]) {
+            index++;
+          }
+          get(index + 1, args.concat(i));
+        }
+      } else {
+        if(!args[0]) return
+        // args为 [祖父下第n个li索引a]， 将 li$ 替换成 li:nth-child(a)
+        const selectorArr = variabgle.split("$");
+        let str = "";
+        const len = selectorArr.length;
+        for (let i = 0; i < len - 1; i++) {
+          str += selectorArr[i] + ":nth-child(" + args[i] + ")";
+        }
+        str += selectorArr[len - 1];
+        newArr.push(str);
+      }
+    }
+
+    get(index);
+  }
+  if (Array.isArray(selectorList)) {
+    selectorList.forEach(handle);
+  } else {
+    handle(selectorList);
+  }
+
+  const realArr = []
+  newArr.forEach(it => {
+    if (!it.includes('undefined')) {
+       realArr.push(document.querySelector(it))
+     }
+  })
+  const linkMap = {};
+  realArr.forEach(it => {
+    console.log(it.href, it.innerText,'===');
+    linkMap[it.href] = it.innerText
+  })
+  return linkMap;
 }

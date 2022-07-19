@@ -1,7 +1,7 @@
 <!--
  * @Author: yucheng
  * @Date: 2021-08-31 08:23:13
- * @LastEditTime: 2022-07-17 11:55:18
+ * @LastEditTime: 2022-07-18 23:22:15
  * @LastEditors: yucheng
  * @Description: ...
 -->
@@ -187,7 +187,7 @@
       /></label>
     </div>
     <div class="popup-item">
-      12、收集所有a链接
+      12、收集所有a链接，并打开盒子
       开<input
           type="radio"
           :value="true"
@@ -199,6 +199,17 @@
           @click="changeOpenLinkBox(false)"
           v-model="allDataObj.openLinkBox"
       />
+    </div>
+        <div class="popup-item">
+      13、针对性收集a链接
+       <textarea
+        name=""
+        id=""
+        cols="50"
+        rows="3"
+        :value="allDataObj.collectLinkList"
+        @blur="noOpenLinkListBlur"
+      ></textarea>
     </div>
     <!-- <button @click="openBackground">打开popup页面</button> -->
   </div>

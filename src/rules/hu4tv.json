@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "cdn.cnbj1.fds.api.mi-img.com",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image"
+      ]
+    }
+  }
+]

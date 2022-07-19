@@ -2,7 +2,7 @@ import { ajax } from "../modules/ajax.js";
 import {
   // copyTargetText,
   autoSelect,
-  chalk, commonDefault, mouseClick,
+  chalk, collectAllLink, commonDefault, mouseClick,
   otherSiteHref,
   // boxInfo,
   paramsDefault,
@@ -10,7 +10,7 @@ import {
   unDef
 } from "../modules/common.js";
 import '../modules/index.scss';
-import { openLinkBoxFn } from './linkBox/index';
+// import { openLinkBoxFn } from './linkBox/index';
 let performance_now = performance.now(),
   liListStr = "", // 链接列表字符串
   linkObj = {},
@@ -37,9 +37,9 @@ chrome.storage.local.get(null, function (result) {
   // copyTargetText();
   autoSelect();
   main(mapInfo);
-  if (mapInfo[host].openLinkBox) {
-    openLinkBoxFn(configParams)
- }
+//   if (mapInfo[host].openLinkBox) {
+//     openLinkBoxFn(configParams)
+//  }
 });
 
 chalk(chrome, "chrome");
@@ -1378,6 +1378,10 @@ function juejin(payload, juejinObj) {
   if (a && !a.classList.contains("active") && payload.once === 0) {
     a.click();
     juejinObj.once++;
+  }
+  const linkMap = collectAllLink(['#juejin > div.view-container.container > main > div > div > div > div > div > div > div > li:nth-child(11) > div > div.content-wrapper > div > div.title-row > a'])
+  if (JSON.stringify(linkMap) !== '{}') {
+    chalk(linkMap,'linkMap');
   }
 }
 // 简书

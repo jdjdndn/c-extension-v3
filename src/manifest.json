@@ -52,6 +52,11 @@
         "enabled": true,
         "id": "6",
         "path": "rules/baidusousuo.json"
+      },
+      {
+        "enabled": true,
+        "id": "7",
+        "path": "rules/hu4tv.json"
       }
     ]
   },
