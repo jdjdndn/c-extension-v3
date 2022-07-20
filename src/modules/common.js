@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-19 23:22:25
+ * @LastEditTime: 2022-07-20 22:57:24
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -201,7 +201,7 @@ document.body.appendChild(YUCHENG_USE_BOX);
 
 // 工具类
 class Util {
-  constructor () {
+  constructor() {
     this.timer = null;
   }
   debounce(fn, delay = 16) {
@@ -250,9 +250,9 @@ export function getNoOpenDomList(noOpenLinkList) {
 // 判断页面是否存在
 export function sendReq(
   url,
-  fn = () => { },
-  errFn = () => { },
-  finallyFn = () => { }
+  fn = () => {},
+  errFn = () => {},
+  finallyFn = () => {}
 ) {
   fetch(url)
     .then((res) => {
@@ -304,7 +304,7 @@ export function chalk(...args) {
     }
     try {
       console.groupEnd(str);
-    } catch (error) { }
+    } catch (error) {}
   } else {
     realChalk(args[0]);
   }
@@ -312,12 +312,15 @@ export function chalk(...args) {
 
 // 当前链接与网页host不一致时或者 `https://link.juejin.cn?target=https%3A%2F%2Fgithub.com%2FPanJiaChen%2Fvue-element-admin` 直接跳转
 function getNeedChange(arr, href, host) {
-  if (!host) return arr.length > 1;
+  if (!host) {
+    console.error("host可能没传");
+    return arr.length > 1;
+  }
   return arr.length > 1 || (arr.length === 1 && new URL(href).host !== host);
 }
 
 // 跳转方法
-function gotoLink(href) {
+export function gotoLink(href) {
   if (!hrefReg.test(href)) return console.error("非正常url");
   // chalk(href, "gotoLink---href");
   const a = document.createElement("a");
@@ -368,22 +371,35 @@ export function otherSiteHref(href, host) {
 }
 
 // 判断父元素是否为a元素,找10次就不找了
-function isParentNodeA(item, max = 0) {
+export function isParentNodeA(item, max = 0) {
   if (!item || max >= 5) return null;
   max++;
   if (item.href) {
     return {
-      tag: item.nodeName,
+      nodeName: item.nodeName,
       href: item.href,
-      target: item.target,
+      target: item,
     };
   } else {
     return isParentNodeA(item.parentNode, max);
   }
 }
 
+export function doSth(item) {
+  const matched = item.innerText && item.innerText.match(findUrlReg);
+  let href = matched && matched[0];
+  // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
+  if ((href && item.href && (href = item.href)) || hrefReg.test(href)) {
+    // chalk(7);
+    gotoLink(href);
+    return true;
+  }
+  return false;
+}
+
 // shift + space 实现点击鼠标所在位置
-export function mouseClick(configParams, targetWin) {
+export function mouseClick(configParams, targetWin, aLinkMap) {
+  console.log(aLinkMap, "aLinkMap");
   // chalk(configParams, "common.js------");
   let { mapInfo, host } = configParams;
   if (!host) chalk("没有host");
@@ -391,37 +407,22 @@ export function mouseClick(configParams, targetWin) {
     mapInfo = configParamsDefault.mapInfo;
   }
 
-  function doSth(item) {
-    const matched = item.innerText && item.innerText.match(findUrlReg);
-    let href = matched && matched[0];
-    // fix:内容中的href可能被折叠展示不全，优先使用a标签的href
-    if ((href && item.href && (href = item.href)) || hrefReg.test(href)) {
-      // chalk(7);
-      gotoLink(href);
-      return true;
-    }
-    return false;
-  }
-
   function newPageOpen(item) {
     if (!item) return;
     if (doSth(item)) return;
+    if (item.href && aLinkMap[item.href]) {
+      return gotoLink(item.href);
+    }
     let parentIsANode = null;
     // 获取元素上的监听事件
     let otherObj = {};
 
-    parentIsANode = isParentNodeA(item)
+    parentIsANode = isParentNodeA(item);
     if (parentIsANode && parentIsANode.href) {
-      otherObj = otherSiteHref(parentIsANode.href, host)
+      otherObj = otherSiteHref(parentIsANode.href, host);
       if (otherObj.needChange) {
-        return gotoLink(otherObj.href)
+        return gotoLink(otherObj.href);
       }
-    }
-    if (otherObj.href) {
-      return gotoLink(otherObj.href)
-    }
-    if ("click" in item) {
-      item.click()
     }
   }
 
@@ -442,8 +443,7 @@ export function mouseClick(configParams, targetWin) {
       // chalk(1, otherObj);
       // gotoLink(otherObj.href);
       return isClick;
-    }
-    else if (
+    } else if (
       (parentIsANode = isParentNodeA(target)) &&
       (otherObj = otherSiteHref(parentIsANode.href, host)) &&
       otherObj.needChange &&
@@ -452,8 +452,7 @@ export function mouseClick(configParams, targetWin) {
       // chalk(3, otherObj);
       // gotoLink(otherObj.href);
       return isClick;
-    }
-    else if ("click" in item) {
+    } else if ("click" in item) {
       // chalk(6, parentIsANode, otherObj, item);
       // 拿不到监听的事件对象就看能否点击，能点击就点击
       item.click();
@@ -494,16 +493,16 @@ export function mouseClick(configParams, targetWin) {
       e.preventDefault();
     }
     // 这个事件 在auxclick和click中只触发一次
-    if (!auxclicked) {
-      doSth(e.target)
-    }
+    // if (!auxclicked) {
+    //   doSth(e.target);
+    // }
   }
 
   // auxclick触发时，不触发contextmenu和click
   function auxclick(e) {
     e.preventDefault();
     if (mapInfo[host].auxclickOnly) clickEventInvoke = true;
-    auxclicked = true
+    auxclicked = true;
     // chalk("auxclick触发了", clickEventInvoke, new Date().getTime());
     const auxclickTimer = setTimeout(() => {
       if (contentMenuEventsFlag) return;
@@ -512,7 +511,7 @@ export function mouseClick(configParams, targetWin) {
       // chalk("auxclick-target");
       newPageOpen(e.target);
       clickEventInvoke = false;
-      auxclicked = false
+      auxclicked = false;
     }, 200);
   }
 
@@ -600,7 +599,7 @@ export function mouseClick(configParams, targetWin) {
   }
 
   // 去除copy之后的尾巴
-  document.addEventListener("copy", function (e) {
+  document.addEventListener("copy", function(e) {
     e.preventDefault();
     const selection = window.getSelection().toString();
     e.clipboardData.setData("text/plain", selection);
@@ -660,14 +659,14 @@ function clipboardWrite(text, needClear = false) {
   if (text) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(
-        function () {
+        function() {
           /* clipboard successfully set */
           boxInfo("copy s");
           if (needClear) {
             window.getSelection().removeAllRanges();
           }
         },
-        function (err) {
+        function(err) {
           /* clipboard write failed */
           boxInfo("copy e");
           if (needClear) {
@@ -706,8 +705,7 @@ function copyImg() {
   try {
     img.crossOrigin = "Anonymous";
     img.src = target.src;
-  } catch (error) {
-  }
+  } catch (error) {}
 
   img.onload = () => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -722,24 +720,23 @@ function copyImg() {
 
 function canvasCopy(canvas, need = false) {
   try {
-      // 将canvas转为blob
-      canvas.toBlob((blob) => {
-        const data = [
-          new ClipboardItem({
-            [blob.type]: blob,
-          }),
-        ];
-        navigator.clipboard.write(data).then(
-          () => {
-            chalk("copy s");
-          },
-          () => {
-            chalk("copy e");
-          }
-        );
-      });
-  } catch (error) {
-  }
+    // 将canvas转为blob
+    canvas.toBlob((blob) => {
+      const data = [
+        new ClipboardItem({
+          [blob.type]: blob,
+        }),
+      ];
+      navigator.clipboard.write(data).then(
+        () => {
+          chalk("copy s");
+        },
+        () => {
+          chalk("copy e");
+        }
+      );
+    });
+  } catch (error) {}
 }
 
 // 选择的自动选中
@@ -757,45 +754,54 @@ export function autoSelect() {
 export function collectAllLink(selectorList) {
   let newArr = [];
   function handle(selector) {
-    // 用$做变量，用来替换
-    const variabgle = selector.replace(/\:nth-child\(.*?\)/g, "$");
-    let arr = [];
     // 找到所有 (12)， 代表找到了nth-child
     const list = selector.match(/\(.*?\)/g);
-    list.forEach((it) => {
-      const selectorStr = selector.slice(
-        0,
-        // 找到 li:nth-child(12)之前的选择器，找到选择器父级有多少个li
-        Math.max(0, selector.indexOf(it) - 10)
+    if (!list) {
+      const linkList = [...document.body.querySelectorAll(selector)].filter(
+        Boolean
       );
-      arr.push(document.querySelectorAll(selectorStr).length);
-    });
-    arr = arr.filter(Boolean);
+      // 没找到可能直接就可以querySelectorAll
+      newArr.push(...linkList);
+    } else {
+      // 用$做变量，用来替换
+      const variabgle = selector.replace(/\:nth-child\(.*?\)/g, "$");
+      let arr = [];
 
-    let index = 0;
-    function get(index, ...args) {
-      if (arr[index]) {
-        for (let i = 1; i <= arr[index]; i++) {
-          if (i === arr[index]) {
-            index++;
+      list.forEach((it) => {
+        const selectorStr = selector.slice(
+          0,
+          // 找到 li:nth-child(12)之前的选择器，找到选择器父级有多少个li
+          Math.max(0, selector.indexOf(it) - 10)
+        );
+        arr.push(document.querySelectorAll(selectorStr).length);
+      });
+      arr = arr.filter(Boolean);
+
+      let index = 0;
+      function get(index, ...args) {
+        if (arr[index]) {
+          for (let i = 1; i <= arr[index]; i++) {
+            if (i === arr[index]) {
+              index++;
+            }
+            get(index + 1, args.concat(i));
           }
-          get(index + 1, args.concat(i));
+        } else {
+          if (!args[0]) return;
+          // args为 [祖父下第n个li索引a]， 将 li$ 替换成 li:nth-child(a)
+          const selectorArr = variabgle.split("$");
+          let str = "";
+          const len = selectorArr.length;
+          for (let i = 0; i < len - 1; i++) {
+            str += selectorArr[i] + ":nth-child(" + args[i] + ")";
+          }
+          str += selectorArr[len - 1];
+          newArr.push(str);
         }
-      } else {
-        if(!args[0]) return
-        // args为 [祖父下第n个li索引a]， 将 li$ 替换成 li:nth-child(a)
-        const selectorArr = variabgle.split("$");
-        let str = "";
-        const len = selectorArr.length;
-        for (let i = 0; i < len - 1; i++) {
-          str += selectorArr[i] + ":nth-child(" + args[i] + ")";
-        }
-        str += selectorArr[len - 1];
-        newArr.push(str);
       }
-    }
 
-    get(index);
+      get(index);
+    }
   }
   if (Array.isArray(selectorList)) {
     selectorList.forEach(handle);
@@ -803,16 +809,38 @@ export function collectAllLink(selectorList) {
     handle(selectorList);
   }
 
-  const realArr = []
-  newArr.forEach(it => {
-    if (!it.includes('undefined')) {
-       realArr.push(document.querySelector(it))
-     }
-  })
+  const realArr = [];
+  newArr.forEach((it) => {
+    if (it.nodeName) {
+      realArr.push(it);
+    } else if (!it.includes("undefined")) {
+      realArr.push(...document.body.querySelectorAll(it));
+    }
+  });
   const linkMap = {};
-  realArr.forEach(it => {
-    console.log(it.href, it.innerText,'===');
-    linkMap[it.href] = it.innerText
-  })
+  realArr.forEach((it) => {
+    if (it && it.href) {
+      linkMap[it.href] = it.innerText;
+    }
+  });
   return linkMap;
+}
+
+function transformIdToNthChild(selector) {
+  // 当copy的jsPath中没有nth-child，直接通过 首位选择器找父级，拼接nth-child(0)
+  const firstSelectorList = selector.split(">");
+  const firstSelector = firstSelectorList[0];
+  if (firstSelector) {
+    if (firstSelector.startsWith("#")) {
+      const self = document.body.querySelector(firstSelector);
+      if (!self) return chalk("当前元素找父亲失败", firstSelector);
+      const parent = self.parentNode;
+      if (parent.id) {
+        const selfTag = self.nodeName.toLowerCase();
+        const sonSelector = firstSelectorList.slice(1).join(">");
+        const realSelector = `#${parent.id} > ${selfTag}:nth-child(0)${sonSelector}`;
+        console.log(realSelector, "realSelector");
+      }
+    }
+  }
 }

@@ -2,14 +2,20 @@ import { ajax } from "../modules/ajax.js";
 import {
   // copyTargetText,
   autoSelect,
-  chalk, collectAllLink, commonDefault, mouseClick,
+  chalk,
+  collectAllLink,
+  commonDefault,
+  doSth,
+  gotoLink,
+  isParentNodeA,
+  mouseClick,
   otherSiteHref,
   // boxInfo,
   paramsDefault,
   sendReq,
-  unDef
+  unDef,
 } from "../modules/common.js";
-import '../modules/index.scss';
+import "../modules/index.scss";
 // import { openLinkBoxFn } from './linkBox/index';
 let performance_now = performance.now(),
   liListStr = "", // 链接列表字符串
@@ -18,6 +24,7 @@ let performance_now = performance.now(),
   win = "",
   // youtubeFlag = false, // YouTube中文翻译只设置一次
   configParams = paramsDefault, // popup配置参数
+  aLinkMap = {}, // 指定某些a链接直接跳转
   cached = {}; // 缓存起来
 
 const { location } = window;
@@ -25,10 +32,10 @@ const { href, host, pathname, origin, search, protocol } = location;
 const { log, error, dir } = console;
 const vueAroundList = ["router.vuejs.org", "vuex.vuejs.org", "cli.vuejs.org"];
 // dom元素id
-let nodeIdNum = 0
+let nodeIdNum = 0;
 
 // 获取配置参数
-chrome.storage.local.get(null, function (result) {
+chrome.storage.local.get(null, function(result) {
   // 设置默认参数
   setStorageDefault(result);
   const { mapInfo } = configParams;
@@ -37,9 +44,9 @@ chrome.storage.local.get(null, function (result) {
   // copyTargetText();
   autoSelect();
   main(mapInfo);
-//   if (mapInfo[host].openLinkBox) {
-//     openLinkBoxFn(configParams)
-//  }
+  //   if (mapInfo[host].openLinkBox) {
+  //     openLinkBoxFn(configParams)
+  //  }
 });
 
 chalk(chrome, "chrome");
@@ -63,27 +70,16 @@ function commonEvents(configParams) {
   replaceHref(configParams);
   // 键盘点击事件
   if (!cached["mouseClick"]) {
-    mouseClick({ ...configParams, host }, window);
+    mouseClick({ ...configParams, host }, window, aLinkMap);
     // ifraemsListener({ ...configParams, host });
   }
-  cached["mouseClick"] = mouseClick;
+  // cached["mouseClick"] = mouseClick;
   // 添加/移除错误监听
   removeErrListening(configParams);
-  console.log(mapInfo[host],'mapInfo[host]');
   // 切换视频播放速度
-  videoPlay(
-    mapInfo[host].videoPlayRate
-    // unDef((configParams.mapInfo[host] || {}).videoPlayRate)
-    //   ? defaultparams.videoPlayRate
-    //   : configParams.mapInfo[host].videoPlayRate
-  );
+  videoPlay(mapInfo[host].videoPlayRate);
   // 设置是否翻译
-  setFanyi(
-    mapInfo[host].fanyiFlag
-    // unDef((configParams.mapInfo[host] || {}).fanyiFlag)
-    //   ? defaultparams.fanyiFlag
-    //   : configParams.mapInfo[host].fanyiFlag
-  );
+  setFanyi(mapInfo[host].fanyiFlag);
   // 切换收集a链接
   // configParams.mapInfo[host].collectInfoFlag =
   //   configParams.mapInfo &&
@@ -110,17 +106,17 @@ function ifraemsListener(params) {
 // addNewElement('link', 'css/service-worker.css')
 // link href
 // script src
-function addNewElement( node, src) {
+function addNewElement(node, src) {
   const element = document.createElement(node);
-  element.id = 'yucheng-'+node +'-' + nodeIdNum++
-  if (!src) return
-  if (node === 'link') {
+  element.id = "yucheng-" + node + "-" + nodeIdNum++;
+  if (!src) return;
+  if (node === "link") {
     element.href = chrome.runtime.getURL(src);
-    console.log(chrome.runtime.getURL(src),'chrome.runtime.getURL(src)');
+    console.log(chrome.runtime.getURL(src), "chrome.runtime.getURL(src)");
   } else {
     element.src = chrome.runtime.getURL(src);
   }
-  console.log(element.id,element.src,'element')
+  console.log(element.id, element.src, "element");
   document.head.appendChild(element);
 }
 
@@ -147,37 +143,32 @@ function setStorageDefault(result) {
   // chalk(configParams, result, "configParams result");
   if (flag) {
     // chalk("mapInfo变化了", mapInfo[host], configParams);
-    chrome.storage.local.set({ mapInfo }, function () { });
+    chrome.storage.local.set({ mapInfo }, function() {});
   }
 }
 
 // 判断是否中文网页
-function isChinesePage() { 
-  const lang = document.documentElement.lang
+function isChinesePage() {
+  const lang = document.documentElement.lang;
   // 获取网页的标题
-  const pageTitle = document.title
+  const pageTitle = document.title;
   // 获取网页使用的主要语言
-  const mainLang = document.characterSet.toLowerCase()
-  return lang.substring(0, 2) === 'zh' || mainLang.substring(0, 2) === 'gb' || /[\u4E00-\u9FFF]/.test(pageTitle)
+  const mainLang = document.characterSet.toLowerCase();
+  return (
+    lang.substring(0, 2) === "zh" ||
+    mainLang.substring(0, 2) === "gb" ||
+    /[\u4E00-\u9FFF]/.test(pageTitle)
+  );
 }
 
 function setFanyi(fanyiFlag) {
-  // 谷歌翻译
-  // 不翻译的列表
-  // const fanYiList = [
-  //   "stackoverflow.com",
-  //   "www.npmjs.com",
-  //   "developer.chrome.com",
-  // ];
-  // const fanyiFlag1 = fanYiList.some((item) => host === item);
-
-  if ((fanyiFlag) && !isChinesePage()) {
+  if (fanyiFlag && !isChinesePage()) {
     //   google翻译的网址  //translate.google.com/translate_a/element.js?cb=googleTranslateElementInit
     // https://cdn.jsdelivr.net/gh/zs6/gugefanyijs@1.9/element.js
     // 参考地址： https://greasyfork.org/zh-CN/scripts/398746-%E7%BD%91%E9%A1%B5%E7%BF%BB%E8%AF%91/code
 
-    const a = document.createElement('div')
-    a.id = 'yucheng-translate'
+    const a = document.createElement("div");
+    a.id = "yucheng-translate";
     a.innerHTML = `
     <div id="google_translate_element"></div>
     <script type="text/javascript">
@@ -186,25 +177,25 @@ function setFanyi(fanyiFlag) {
       }
     </script>
     <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript"></script>
-    `
-    document.body.appendChild(a)
+    `;
+    document.body.appendChild(a);
 
     // 翻译按钮
     const d = $("#google_translate_element");
-      if (d) {
-        // 选择语言的弹出盒子
-        const iframe = $(".goog-te-menu-frame.skiptranslate");
-        if (!iframe) return;
-        if (d.innerText.includes("中文")) return;
-        const zhBtn = iframe.contentWindow.document
-          .getElementById(":1.menuBody")
-          .querySelectorAll("a");
-        Array.from(zhBtn).forEach((item) => {
-          if (item.innerHTML.includes("简体")) {
-            item.click();
-          }
-        });
-      }
+    if (d) {
+      // 选择语言的弹出盒子
+      const iframe = $(".goog-te-menu-frame.skiptranslate");
+      if (!iframe) return;
+      if (d.innerText.includes("中文")) return;
+      const zhBtn = iframe.contentWindow.document
+        .getElementById(":1.menuBody")
+        .querySelectorAll("a");
+      Array.from(zhBtn).forEach((item) => {
+        if (item.innerHTML.includes("简体")) {
+          item.click();
+        }
+      });
+    }
   }
 }
 
@@ -219,13 +210,11 @@ function replaceHref(configParams) {
   if (needChange && !noChange) {
     location.replace(otherObj.href);
   }
-  chalk('configParams--changeHref', configParams.lastLocationHerf, location.href)
-  // chrome.storage.local.clear()
-  // chrome.storage.local.set({ ...configParams, lastLocationHerf: href }, function () {
-  //   chrome.storage.local.get(null, function (result) {
-  //     console.log(result, '这设置好了');
-  //   });
-  // });
+  chalk(
+    "configParams--changeHref",
+    configParams.lastLocationHerf,
+    location.href
+  );
 }
 
 function removeErrListening(configParams) {
@@ -269,33 +258,45 @@ function errListening() {
 }
 
 // 代码块不要被翻译
-['pre', 'code','.prism-code','a.type','.example-wrap','#handbook-content h2, .handbook-toc, #sidebar','.octotree-tree-view','.github-repo-size-div'].forEach(str => {
-  noTranslateFn(str)
-})
+[
+  "pre",
+  "code",
+  ".prism-code",
+  "a.type",
+  ".example-wrap",
+  "#handbook-content h2, .handbook-toc, #sidebar",
+  ".octotree-tree-view",
+  ".github-repo-size-div",
+].forEach((str) => {
+  noTranslateFn(str);
+});
 
 function noTranslateFn(str) {
-  const domList = $$(str)
-  domList.forEach(dom => {
-    if (!dom.classList.contains('notranslate')) {
-      dom.classList.add('notranslate')
+  const domList = $$(str);
+  domList.forEach((dom) => {
+    if (!dom.classList.contains("notranslate")) {
+      dom.classList.add("notranslate");
     }
-  })
+  });
 }
 function setNoTranslate(obj) {
   for (const k in obj) {
     if (k === host) {
-      obj[k].forEach(str => {
-        noTranslateFn(str)
-      })
+      obj[k].forEach((str) => {
+        noTranslateFn(str);
+      });
     }
   }
 }
 
 // 不用翻译列表
 const noTranslateList = {
-  'github.com': ['.f4.text-normal','.Details-content--hidden-not-important.js-navigation-container.js-active-navigation-container.d-md-block']
-}
-setNoTranslate(noTranslateList)
+  "github.com": [
+    ".f4.text-normal",
+    ".Details-content--hidden-not-important.js-navigation-container.js-active-navigation-container.d-md-block",
+  ],
+};
+setNoTranslate(noTranslateList);
 
 function logInfo(...msg) {
   if (!configParams.debug) return false;
@@ -446,12 +447,12 @@ function setStyle(str, css) {
 function throttle(fun, delay = 50) {
   let last;
   let deferTimer;
-  return function (...args) {
+  return function(...args) {
     const that = this;
     const now = +new Date();
     if (last && now < last + delay) {
       clearTimeout(deferTimer);
-      deferTimer = setTimeout(function () {
+      deferTimer = setTimeout(function() {
         last = now;
         fun.apply(that, args);
       }, delay);
@@ -572,9 +573,11 @@ function addLinkListBox(linkList = []) {
       text: item.innerText,
       host,
     });
-    liListStr += `<li title='${item.innerText
-      }'><a href='${item.toString()}' rel="noopener noreferrer" target="_blank">${item.innerText
-      }</a></li>\n`;
+    liListStr += `<li title='${
+      item.innerText
+    }'><a href='${item.toString()}' rel="noopener noreferrer" target="_blank">${
+      item.innerText
+    }</a></li>\n`;
   });
   hrefList = linkFilter(hrefList);
   if (!liListStr) return;
@@ -598,7 +601,7 @@ function addLinkListBox(linkList = []) {
         },
         pageProtocol: protocol,
         data: hrefList,
-        success: function (data) {
+        success: function(data) {
           chalk("这里是success函数", data);
         },
       });
@@ -616,17 +619,21 @@ function addLinkListBoxPro(linkList = [], boxName = "toolbox", oneLine = true) {
     if (oneLine) {
       // 一个li标签多个a
       itemList.forEach((it) => {
-        aLinkStr += `<a title='${it.innerText
-          }' href='${it.toString()}' rel="noopener noreferrer" target="_blank">${it.innerText
-          }</a>`;
+        aLinkStr += `<a title='${
+          it.innerText
+        }' href='${it.toString()}' rel="noopener noreferrer" target="_blank">${
+          it.innerText
+        }</a>`;
       });
       linkListStr += `<li>${aLinkStr}</li>\n`;
     } else {
       // 一个li标签里面一个a标签
       itemList.forEach((it) => {
-        aLinkStr += `<li title='${it.innerText
-          }'><a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${it.innerText
-          }</a></li>\n`;
+        aLinkStr += `<li title='${
+          it.innerText
+        }'><a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${
+          it.innerText
+        }</a></li>\n`;
       });
       linkListStr += aLinkStr;
     }
@@ -722,6 +729,10 @@ const list = {
   "www.youtube.com": {
     callback: youtube,
     scroll: "#primary .style-scope #contents",
+    selectorList: [
+      "#meta > h3 a",
+      "#dismissible > div > div.metadata.style-scope.ytd-compact-video-renderer > a",
+    ],
   },
   "developer.mozilla.org": {
     callback: mdn,
@@ -735,7 +746,11 @@ const list = {
   "juejin.cn": {
     callback: juejin,
     scroll: ".entry-list",
-    once: 0,
+    selectorList: [
+      "#juejin > div.view-container.container > main > div > div > div > div > div > div > div > li:nth-child(11) > div > div.content-wrapper > div > div.title-row > a",
+      "#juejin > div.view-container > main > div > div.sidebar.sidebar > div.sidebar-block.related-entry-sidebar-block.shadow > div.block-body > div > a:nth-child(1)",
+      "#juejin > div.view-container > main > div > div.main-area.recommended-area.shadow > div.entry-list.list.recommended-entry-list > li:nth-child(1) > div > div.content-wrapper > div > div.title-row > a",
+    ],
   },
   "lodash.com": {
     callback: lodash,
@@ -774,12 +789,24 @@ const list = {
   "www.jianshu.com": {
     callback: jianshu,
     scroll: ".note-list",
+    selectorList: [
+      "div.container.programmer > div > div.col-xs-18.col-xs-offset-8.main > div > ul > div:nth-child(2) > div > a",
+      "#__next > div > div > aside > div > div.ant-affix > section:nth-child(2) > div:nth-child(2) > div > a",
+      "#__next > div > div > div > section:nth-child(4) > ul > li:nth-child(1) > div > div > a",
+    ],
   },
   "segmentfault.com": {
     callback: sifou,
   },
   "www.google.com": {
     callback: google,
+    preventDefault: true,
+    selectorList: [
+      "#rso > div:nth-child(1) > div > div > div > a",
+      "#rso > div:nth-child(1) > div > div > div > div > div > div > a",
+      "#rso > div:nth-child(2) > div > div:nth-child(1) > div > div > div > div > a",
+      "#rso > div > div > div > div > div > a",
+    ],
   },
   "www.cnblogs.com": {
     callback: bokeyuan,
@@ -794,6 +821,12 @@ const list = {
   },
   "www.zhangxinxu.com": {
     callback: zhangxinxu,
+    selectorList: [
+      "#recent-posts-3 > ul > li:nth-child(1) > a",
+      "#daily-top-10-posts > ul > li:nth-child(1) > a",
+      "#most_commented_widget-4 > ul > li:nth-child(1) > a",
+      "#content > div:nth-child(0) h2 > a",
+    ],
   },
   "so.toutiao.com": {
     callback: toutiao,
@@ -821,6 +854,18 @@ const list = {
   },
   "cn.pornhub.com": {
     callback: pornhub,
+    selectorList: [
+      "#recommended-videos > li:nth-child(0) div > div.phimage > a",
+      "#hotVideosSection > li:nth-child(0) div > div.phimage > a",
+      "#hottestMenuSection > li:nth-child(0) div > div.phimage > a",
+      "#mostViewedPerCountry > li:nth-child(0) div > div.phimage > a",
+      "#mostViewedVerifiedAmateursSection > li:nth-child(0) div > div.phimage > a",
+      "#topContentPartnersSection > li:nth-child(0) div > div.phimage > a",
+      "#videoFeedsSection > li:nth-child(0) div > div.phimage > a",
+      "#mostRecentVideosSection > li:nth-child(0) div > div.phimage > a",
+      "#recommendedVideos > li:nth-child(0) div > div.thumbnail-info-wrapper.clearfix > span > a",
+      "#relatedVideosCenter > li:nth-child(0) div > div.phimage > a",
+    ],
   },
   "yt5.tv": {
     callback: yt5,
@@ -845,14 +890,7 @@ const config = {
 clearInterval(timer);
 
 function main(mapInfo) {
-  // // 获取所有a链接
-  // const callback1 = function(mutationsList, observer) {
-  //   addLinkListBox(getDomList("a"));
-  // };
-  // const observerGetLinks = new MutationObserver(callback1);
-  // observerGetLinks.observe(document, config);
   for (const k in list) {
-    // logInfo(host, k, "看看走的是哪一个");
     list[k].once = 0;
     if (host === k) {
       // 英文调中文网站
@@ -902,14 +940,22 @@ function main(mapInfo) {
         window.addEventListener("keydown", loadData);
       }
 
-      const callback = function (mutationsList, observer) {
+      const callback = function(mutationsList, observer) {
         logInfo("回调执行-observer");
-        addLinkListBox(getDomList("a"));
+        // addLinkListBox(getDomList("a"));
         list[k].callback &&
           list[k].callback(
             { ...params, ...list[k], ...mapInfo[host] },
             list[k]
           );
+
+        if (list[k].selectorList) {
+          const linkMap = collectAllLink(list[k].selectorList);
+          if (JSON.stringify(linkMap) !== "{}") {
+            chalk(linkMap, "linkMap");
+            aLinkMap = linkMap;
+          }
+        }
       };
       const observer = new MutationObserver(callback);
       observer.observe(document, config);
@@ -992,10 +1038,10 @@ function porny91() {
 }
 
 function douyin() {
-  if($('.xgplayer-setting-playbackRatio').innerText === '1.5x') return
-  const menuList = [...$$('.xgplayer-playratio-item')]
-  const btn1point5 = menuList.find(it => it.innerText === '1.5x')
-  btn1point5 && btn1point5.click()
+  if ($(".xgplayer-setting-playbackRatio").innerText === "1.5x") return;
+  const menuList = [...$$(".xgplayer-playratio-item")];
+  const btn1point5 = menuList.find((it) => it.innerText === "1.5x");
+  btn1point5 && btn1point5.click();
   // const classList = [
   //   "login-guide-container",
   //   "mPWahmAI.screen-mask.login-mask-enter-done",
@@ -1071,16 +1117,10 @@ function gitlab() {
 // }
 
 // 今日头条
-function toutiao() {
-  // const linkList = [...getDomList('.s-result-list .cs-view-block .text-darker a'), ...getDomList('.sldebar_out .silebar_inner li a')]
-  // addLinkListBox(linkList)
-}
+function toutiao() {}
 
 // 张鑫旭官网
-function zhangxinxu() {
-  // const linkList = [...getDomList('#content .status-publish h2 a'), ...getDomList('.sldebar_out .silebar_inner li a')]
-  // addLinkListBox(linkList, 'zhangxinxu-toolbox')
-}
+function zhangxinxu() {}
 
 // 斗鱼
 function douyu() {
@@ -1166,10 +1206,12 @@ function baidu() {
     Array.from(content_right.children)
       .filter((el) => el.tagName !== "TABLE")
       .forEach((el) => el.remove());
-  [...$$('#content_left')].forEach((el) => {
+  [...$$("#content_left")].forEach((el) => {
     [...el.children].forEach((el) => {
       console.log(el, el.className);
-      if (!el.className) { el.remove() }
+      if (!el.className) {
+        el.remove();
+      }
     });
   });
 }
@@ -1286,17 +1328,21 @@ function csdn() {
 // youtube
 function youtube(payload) {
   setStyle(".html5-video-player", "display: block");
-  const menusList = [...$$('.ytp-menuitem')]
-  if( menusList.some(it =>it.innerText === '播放速度1.5')) return
+  const menusList = [...$$(".ytp-menuitem")];
+  if (menusList.some((it) => it.innerText === "播放速度1.5")) return;
   // videoPlay(payload.videoPlayRate);
-  const settintBt = $('.ytp-button.ytp-settings-button.ytp-hd-quality-badge')
-  settintBt && settintBt.click()
-  const videoPalyRateBtn = menusList.find(it => it.innerText.includes("播放速度"))
-  videoPalyRateBtn && videoPalyRateBtn.click()
+  const settintBt = $(".ytp-button.ytp-settings-button.ytp-hd-quality-badge");
+  settintBt && settintBt.click();
+  const videoPalyRateBtn = menusList.find((it) =>
+    it.innerText.includes("播放速度")
+  );
+  videoPalyRateBtn && videoPalyRateBtn.click();
   // .ytp-menuitem-label = 1.5
-  const Btn1point5 = [...$$('.ytp-menuitem-label')].find(it => it.innerText.includes("1.5"))
+  const Btn1point5 = [...$$(".ytp-menuitem-label")].find((it) =>
+    it.innerText.includes("1.5")
+  );
   if (Btn1point5) {
-    Btn1point5.click()
+    Btn1point5.click();
   }
 }
 
@@ -1312,7 +1358,7 @@ function mdn({ href, pathname, origin }) {
         const newUrl = origin + newHref;
         location.href = newUrl;
       },
-      (err) => { },
+      (err) => {},
       () => {
         this.once = true;
       }
@@ -1362,26 +1408,18 @@ function zhihu({ href, win }) {
 }
 
 function juejin(payload, juejinObj) {
-  chalk(payload, "payload");
-  // setStyle('.article-suspended-panel.article-suspended-panel', 'right: 17rem;margin-right:unset')
-  setStyle(".sticky-block-box", "height:100%");
-  setStyle(".sticky-block-box .sidebar-block", "height:100%");
-  setStyle(".sticky-block-box .sidebar-block .article-catalog", "height:100%");
-  setStyle(
-    ".sticky-block-box .sidebar-block .article-catalog .catalog-body",
-    "max-height:calc(100% - 2rem)"
-  );
+  // setStyle(".sticky-block-box", "height:100%");
+  // setStyle(".sticky-block-box .sidebar-block", "height:100%");
+  // setStyle(".sticky-block-box .sidebar-block .article-catalog", "height:100%");
+  // setStyle(
+  //   ".sticky-block-box .sidebar-block .article-catalog .catalog-body",
+  //   "max-height:calc(100% - 2rem)"
+  // );
   rmSomeSelf(".entry-list>.item", ".tag");
-  // const linkList = [...getDomList('.content-wrapper .title-row a'), ...getDomList('.result-list .item .title-row a')]
-  // addLinkListBox(linkList, 'juejin-toolbox')
   const a = $(".panel-btn.with-badge");
   if (a && !a.classList.contains("active") && payload.once === 0) {
     a.click();
     juejinObj.once++;
-  }
-  const linkMap = collectAllLink(['#juejin > div.view-container.container > main > div > div > div > div > div > div > div > li:nth-child(11) > div > div.content-wrapper > div > div.title-row > a'])
-  if (JSON.stringify(linkMap) !== '{}') {
-    chalk(linkMap,'linkMap');
   }
 }
 // 简书
@@ -1448,8 +1486,9 @@ function github() {
     const itemList = Array.from(item.querySelectorAll("a"));
     if (itemList.length <= 0) return;
     itemList.forEach((it) => {
-      aLinkStr += `<a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${it.innerText
-        }</a>`;
+      aLinkStr += `<a href='${it.toString()}' rel="noopener noreferrer" target="_blank">${
+        it.innerText
+      }</a>`;
     });
     linkListStr += `<li>${aLinkStr}</li>\n`;
     aLinkStr = "";
@@ -1470,7 +1509,7 @@ if (vueFlag && !href.includes("/zh/")) {
 //   logInfo("加载时间" + "===>" + time);
 // }, 0);
 
-setTimeout(function () {
+setTimeout(function() {
   return false;
 
   function removeAd(e) {
@@ -1499,13 +1538,13 @@ setTimeout(function () {
       log(domStrList, "domStrList");
       const dom = document.querySelector(domStr);
       dom.remove();
-    } catch (error) { }
+    } catch (error) {}
   }
 }, 0);
 
- function sendMessage(
+function sendMessage(
   object = {},
-  fn = function (response) {
+  fn = function(response) {
     logInfo(response, "response-content");
   }
 ) {
@@ -1515,3 +1554,33 @@ setTimeout(function () {
     logInfo("发送消息错误", error);
   }
 }
+
+// 需要跳转的a链接直接跳转
+function goOtherLink(e) {
+  let target = e.target;
+  function handle(target) {
+    if (!target) return;
+    if (doSth(target)) return;
+    const preventDefault = list[host].preventDefault || false;
+    preventDefault && e.preventDefault();
+    if (target.nodeName === "A" && target.href) {
+      e.stopPropagation();
+      const otherObj = otherSiteHref(target.href, host);
+      if (otherObj.needChange) {
+        gotoLink(otherObj.href);
+        return true;
+      }
+      if (aLinkMap[target.href]) {
+        gotoLink(target.href);
+        return true;
+      }
+      console.log({ otherObj }, { hrefTitle: aLinkMap[target.href] });
+    }
+    return false;
+  }
+  if (handle(target)) return;
+  target = isParentNodeA(target);
+  if (handle(target)) return;
+}
+window.removeEventListener("click", goOtherLink);
+window.addEventListener("click", goOtherLink);

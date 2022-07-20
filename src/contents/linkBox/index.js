@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-07-17 09:41:31
- * @LastEditTime: 2022-07-17 21:50:09
+ * @LastEditTime: 2022-07-20 19:30:25
  * @LastEditors: yucheng
  * @Description: 
  */
@@ -27,26 +27,12 @@ export function openLinkBoxFn() {
     const div = document.createElement('div');
     div.id = 'yucheng-link-box'
 
-    const {host} = location
-    // chrome.storage.local.get(null, function (result) {
-    //   // 设置默认参数
-    //   const { filterLinkMap = {} } = result;
-    //   if (!filterLinkMap[host]) {
-    //     localFilterLinkMap[host] = {
-    //       index: 0
-    //     }
-    //   } else {
-    //     localFilterLinkMap = filterLinkMap
-    //   }
-    // });
-
     const callback = function (mutationsList, observer) {
       const alinkList = [...document.body.querySelectorAll('a')]
       const linkStr = alinkList.reduce((pre, cur) => {
         // svg中a标签也有href
         const href = cur.href.baseVal || cur.href.animVal || cur.href
         if(!href) return pre
-        // const isShow = !localFilterLinkMap[host][href] || localFilterLinkMap[host][href].rate < .5
         const text = cur.innerText || sliceHref(href)
         pre += href ? `<li style='list-style: none;' title="${text}"><a target="_blank" href="${href}">${text}</a></li>`:''
         return pre
@@ -58,22 +44,6 @@ export function openLinkBoxFn() {
       `
 
       const list = [...document.body.querySelectorAll('a')].map(it => it.href).filter(it => typeof it === 'string')
-
-      // localFilterLinkMap[host].index ++
-      // list.forEach(it => {
-      //   if (!localFilterLinkMap[host][it]) {
-      //     localFilterLinkMap[host][it] = {
-      //       index: 1,
-      //       rate: 0
-      //     }
-      //   } else {
-      //     localFilterLinkMap[host][it].index++
-      //     localFilterLinkMap[host][it].href = it
-      //     localFilterLinkMap[host][it].rate = localFilterLinkMap[host][it].index / localFilterLinkMap[host].index
-      //   }
-      // })
-      // console.log(localFilterLinkMap,'localFilterLinkMap==========localFilterLinkMap');
-      // chrome.storage.local.set({ filterLinkMap: localFilterLinkMap }, function () { });
     };
     // mutationObsever配置
     const config = {
