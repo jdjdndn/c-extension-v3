@@ -739,6 +739,13 @@ const list = {
   },
   "github.com": {
     callback: github,
+    selectorList: [
+      "#panel-2 > div.js-feed-container > div > article:nth-child(1) > div > section > h5 > span.Truncate > span > a",
+      "div.application-main > div > div > div > aside > div:nth-child(5) > a",
+      "#js-pjax-container > div:nth-child(2) > div > div > div > div:nth-child(1) > div:nth-child(2) > article:nth-child(1) > div > h4 > span > a",
+      "#js-pjax-container > div:nth-child(2) > div > div > div > article:nth-child(3) > div > div > div > h3 > a",
+      "#js-pjax-container > div > div > div > ul > li:nth-child(1) > div > div > div > a",
+    ],
   },
   "www.zhihu.com": {
     callback: zhihu,
@@ -1562,6 +1569,7 @@ function goOtherLink(e) {
     if (!target) return;
     if (doSth(target)) return;
     const preventDefault = list[host].preventDefault || false;
+    // todo preventDefault是否需要？
     preventDefault && e.preventDefault();
     if (target.nodeName === "A" && target.href) {
       e.stopPropagation();
@@ -1573,6 +1581,9 @@ function goOtherLink(e) {
       if (aLinkMap[target.href]) {
         gotoLink(target.href);
         return true;
+      }
+      if ("click" in target) {
+        item.click();
       }
       console.log({ otherObj }, { hrefTitle: aLinkMap[target.href] });
     }
