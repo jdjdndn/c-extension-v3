@@ -692,6 +692,12 @@ const list = {
   },
   "www.bilibili.com": {
     callback: bilibili,
+    selectorList: [
+      "#i_cecream > main > section:nth-child(1) > div > div:nth-child(2) > div > div > div > h3 > a",
+      "#i_cecream > main > section:nth-child(7) > aside > div > div> div > div > ul > li:nth-child(1) > div > a",
+      "#i_cecream > div:nth-child(1) > div:nth-child(1) > div > div > div > div > div > div:nth-child(3) > div > div > div > div > a",
+      "#reco_list > div > div > div > div.info > a",
+    ],
   },
   "search.bilibili.com": {
     // 执行函数
@@ -725,13 +731,18 @@ const list = {
   },
   "blog.csdn.net": {
     callback: csdn,
+    selectorList: [
+      "#floor-blog-index_747 > div > div.blog-content > div > div:nth-child(1) > div > a",
+    ],
   },
   "www.youtube.com": {
     callback: youtube,
     scroll: "#primary .style-scope #contents",
+    preventDefault: true,
     selectorList: [
       "#meta > h3 a",
       "#dismissible > div > div.metadata.style-scope.ytd-compact-video-renderer > a",
+      "#details > a",
     ],
   },
   "developer.mozilla.org": {
@@ -749,6 +760,10 @@ const list = {
   },
   "www.zhihu.com": {
     callback: zhihu,
+    selectorList: [
+      "#TopicMain > div.ListShortcut > div.Card.TopicFeedList > div > div > div:nth-child(2) > div > div > h2 > div > a",
+      "#TopstoryContent > div > div > div > div:nth-child(1) > div > div > div > div > h2 > span > a",
+    ],
   },
   "juejin.cn": {
     callback: juejin,
@@ -804,6 +819,11 @@ const list = {
   },
   "segmentfault.com": {
     callback: sifou,
+    selectorList: [
+      "#root > div > div > div.col > div > div > div > div > ul > li:nth-child(1) > div > h5 > a",
+      "#artRecommend > div > div > a:nth-child(1)",
+      "#root > div > div.row > div > div.my-4.card > div > a:nth-child(1)",
+    ],
   },
   "www.google.com": {
     callback: google,
@@ -879,12 +899,21 @@ const list = {
   },
   "91porny.com": {
     callback: porny91,
+    selectorList: [
+      "#main > div:nth-child(4) > div:nth-child(2) > div:nth-child(3) > div > a",
+      "#videoShowPage > div:nth-child(3) > div > div:nth-child(2) > div:nth-child(3) > div > a",
+    ],
   },
   "www.imooc.com": {
     callback: muke,
   },
   "axios-http.com": {
     callback: axios,
+  },
+  "leetcode.cn": {
+    selectorList: [
+      "#__next > div > div > div > div > div:nth-child(7) > div > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div > div > div > div > a",
+    ],
   },
 };
 
@@ -1568,7 +1597,7 @@ function goOtherLink(e) {
   function handle(target) {
     if (!target) return;
     if (doSth(target)) return;
-    const preventDefault = list[host].preventDefault || false;
+    const preventDefault = (list[host] || {}).preventDefault || false;
     // todo preventDefault是否需要？
     preventDefault && e.preventDefault();
     if (target.nodeName === "A" && target.href) {
