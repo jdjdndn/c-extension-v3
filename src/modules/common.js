@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-23 20:07:04
+ * @LastEditTime: 2022-07-23 23:43:07
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -851,4 +851,32 @@ function transformIdToNthChild(selector) {
       }
     }
   }
+}
+
+// 根据dom元素找到他的选择器
+function getSelector(dom) {
+  const selectorList = [];
+  const tag = dom.nodeName.toLowerCase();
+
+  function handle(parent, self) {
+    if (!parent) return selectorList;
+    const index = [...parent.children].findIndex((it) => it === self);
+    let tag = self.nodeName.toLowerCase();
+    let clasName = self.className ? "." + self.className : "";
+    let id = self.id ? "#" + self.id : "";
+    let selector = tag + id + clasName;
+
+    if (index !== -1) {
+      if (parent.children.length > 1) {
+        selector = tag + ":nth-child(" + (index + 1) + ")";
+      }
+      selectorList.unshift(selector);
+    }
+    if (!["html", "body"].includes(tag)) {
+      handle(parent.parentNode, parent);
+    }
+  }
+  if (["html", "body"].includes(tag)) return;
+  handle(dom.parentNode, dom);
+  return selectorList.join(" > ");
 }
