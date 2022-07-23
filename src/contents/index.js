@@ -5,9 +5,6 @@ import {
   chalk,
   collectAllLink,
   commonDefault,
-  doSth,
-  gotoLink,
-  isParentNodeA,
   mouseClick,
   otherSiteHref,
   // boxInfo,
@@ -697,6 +694,7 @@ const list = {
       "#i_cecream > main > section:nth-child(7) > aside > div > div> div > div > ul > li:nth-child(1) > div > a",
       "#i_cecream > div:nth-child(1) > div:nth-child(1) > div > div > div > div > div > div:nth-child(3) > div > div > div > div > a",
       "#reco_list > div > div > div > div.info > a",
+      "#i_cecream > main > section:nth-child(1) > div > div:nth-child(3) > div > a",
     ],
   },
   "search.bilibili.com": {
@@ -738,11 +736,11 @@ const list = {
   "www.youtube.com": {
     callback: youtube,
     scroll: "#primary .style-scope #contents",
-    preventDefault: true,
     selectorList: [
       "#meta > h3 a",
       "#dismissible > div > div.metadata.style-scope.ytd-compact-video-renderer > a",
       "#details > a",
+      "#thumbnail",
     ],
   },
   "developer.mozilla.org": {
@@ -751,11 +749,15 @@ const list = {
   "github.com": {
     callback: github,
     selectorList: [
-      "#panel-2 > div.js-feed-container > div > article:nth-child(1) > div > section > h5 > span.Truncate > span > a",
+      "#panel-2 > div > div > article:nth-child(1) > div > section > h5 > span > span > a",
       "div.application-main > div > div > div > aside > div:nth-child(5) > a",
       "#js-pjax-container > div:nth-child(2) > div > div > div > div:nth-child(1) > div:nth-child(2) > article:nth-child(1) > div > h4 > span > a",
       "#js-pjax-container > div:nth-child(2) > div > div > div > article:nth-child(3) > div > div > div > h3 > a",
       "#js-pjax-container > div > div > div > ul > li:nth-child(1) > div > div > div > a",
+      "body > div.application-main > div > div > div > aside > div:nth-child(3) > a",
+      "#panel-2 > div > div > article:nth-child(17) > div > section > h5 > span > span > a",
+      "#panel-2 > div.js-feed-container > div > div.js-for-you-feed.js-inline-dashboard-render > article:nth-child(6) > div > section > h5 > span.Truncate > span > a",
+      "#panel-1 > div:nth-child(1) > div.fork > div > div > div > div.d-flex.flex-items-baseline > div > a:nth-child(3)",
     ],
   },
   "www.zhihu.com": {
@@ -797,6 +799,32 @@ const list = {
   "www.tiktok.com": {},
   "www.qidian.com": {
     callback: qidian,
+    selectorList: [
+      "#rank-list-row > div.rank-list.sort-list.mr0 > div > ul > li:nth-child(2) > div.name-box > a",
+      "#rank-list-row > div:nth-child(3) > div > ul > li:nth-child(2) > div.name-box > a",
+      "body > div.wrap > div.index-two-wrap.box-center.mb40.cf > div.book-list-wrap.fr > div > ul > li:nth-child(4) > strong > a",
+      "body > div.wrap > div.index-two-wrap.box-center.mb40.cf > div.book-list-wrap.mr30.fl > div > ul > li:nth-child(4) > strong > a",
+      "body > div.wrap > div.index-two-wrap.box-center.mb40.cf > div.edit-rec-wrap.fl > div.edit-rec > ul:nth-child(3) > li:nth-child(3) > h3 > a",
+      "body > div.wrap > div.hot-work-wrap.box-center.mb40.cf > div.hot-classify-wrap.fl > ul > li:nth-child(3) > dl > dd:nth-child(4) > a.name",
+      "body > div.wrap > div.hot-work-wrap.box-center.mb40.cf > div.hot-classify-wrap.fl > ul > li.erciyuan > dl > dd:nth-child(2) > a.name",
+      "body > div.wrap > div.hot-work-wrap.box-center.mb40.cf > div.hot-classify-wrap.fl > ul > li:nth-child(8) > div.book-wrap.bd0.cf > div.book-info.fl > h4 > a",
+      "body > div.wrap > div.hot-work-wrap.box-center.mb40.cf > div.hot-work-box.fl > div > div > div.info-text > dl > dd:nth-child(1) > h3 > a",
+      "body > div.wrap > div.new-rec-wrap.box-center.cf > div.left-wrap.fl > div.center-book-list.fl > ul > li:nth-child(2) > div.book-info > h3 > a",
+      "body > div.wrap > div.new-rec-wrap.box-center.cf > div.right-wrap.fr > div > div > ul > li:nth-child(2) > div.name-box > a",
+      "#numero4 > div.left-wrap.fl > div.center-book-list.fl > ul > li:nth-child(2) > div.book-info > h3 > a",
+      "#numero4 > div.right-wrap.recent-finish-wrap.fr > div > div > ul > li:nth-child(3) > a",
+      "#numero4 > div.left-wrap.fl > div.left-info.fl > div.info-text > dl > dd:nth-child(2) > h3 > a",
+      "#update-list > div.update-table.all > table > tbody > tr:nth-child(2) > td:nth-child(2) > a",
+      "body > div.wrap > div.update-wrap.box-center.mb40.cf > div.update-rec-wrap.fl > div > ul > li:nth-child(1) > div > div.book-info.fr > h2 > a",
+      "body > div.wrap > div.update-wrap.box-center.mb40.cf > div.god-wrap.fr > div > ul > li:nth-child(1) > div > h3 > a",
+      "#numero5 > li:nth-child(4) > a.name",
+    ],
+  },
+  "book.qidian.com": {
+    callback: qidian,
+    selectorList: [
+      "body > div.wrap > div.book-detail-wrap.center990 > div.book-content-wrap.cf > div.left-wrap.fl > div.recommend-book > div:nth-child(5) > div > div.book_name > a",
+    ],
   },
   "read.qidian.com": {
     callback: qidian,
@@ -827,7 +855,6 @@ const list = {
   },
   "www.google.com": {
     callback: google,
-    preventDefault: true,
     selectorList: [
       "#rso > div:nth-child(1) > div > div > div > a",
       "#rso > div:nth-child(1) > div > div > div > div > div > div > a",
@@ -853,6 +880,7 @@ const list = {
       "#daily-top-10-posts > ul > li:nth-child(1) > a",
       "#most_commented_widget-4 > ul > li:nth-child(1) > a",
       "#content > div:nth-child(0) h2 > a",
+      "#post-1693 > div > div.wp_share_box > div.similarity > ul > li:nth-child(2) > a",
     ],
   },
   "so.toutiao.com": {
@@ -882,16 +910,17 @@ const list = {
   "cn.pornhub.com": {
     callback: pornhub,
     selectorList: [
-      "#recommended-videos > li:nth-child(0) div > div.phimage > a",
-      "#hotVideosSection > li:nth-child(0) div > div.phimage > a",
-      "#hottestMenuSection > li:nth-child(0) div > div.phimage > a",
-      "#mostViewedPerCountry > li:nth-child(0) div > div.phimage > a",
-      "#mostViewedVerifiedAmateursSection > li:nth-child(0) div > div.phimage > a",
-      "#topContentPartnersSection > li:nth-child(0) div > div.phimage > a",
-      "#videoFeedsSection > li:nth-child(0) div > div.phimage > a",
-      "#mostRecentVideosSection > li:nth-child(0) div > div.phimage > a",
-      "#recommendedVideos > li:nth-child(0) div > div.thumbnail-info-wrapper.clearfix > span > a",
-      "#relatedVideosCenter > li:nth-child(0) div > div.phimage > a",
+      "#recommended-videos > li:nth-child(0) div > div > a",
+      "#hotVideosSection > li:nth-child(0) div > div > a",
+      "#hottestMenuSection > li:nth-child(0) div > div > a",
+      "#mostViewedPerCountry > li:nth-child(0) div > div > a",
+      "#mostViewedVerifiedAmateursSection > li:nth-child(0) div > div > a",
+      "#topContentPartnersSection > li:nth-child(0) div > div > a",
+      "#videoFeedsSection > li:nth-child(0) div > div > a",
+      "#mostRecentVideosSection > li:nth-child(0) div > div > a",
+      "#recommendedVideos > li:nth-child(0) div > div > span > a",
+      "#relatedVideosCenter > li:nth-child(0) div > div > a",
+      "#recommendedVideos > li > div > div > a",
     ],
   },
   "yt5.tv": {
@@ -1592,35 +1621,36 @@ function sendMessage(
 }
 
 // 需要跳转的a链接直接跳转
-function goOtherLink(e) {
-  let target = e.target;
-  function handle(target) {
-    if (!target) return;
-    if (doSth(target)) return;
-    const preventDefault = (list[host] || {}).preventDefault || false;
-    // todo preventDefault是否需要？
-    preventDefault && e.preventDefault();
-    if (target.nodeName === "A" && target.href) {
-      e.stopPropagation();
-      const otherObj = otherSiteHref(target.href, host);
-      if (otherObj.needChange) {
-        gotoLink(otherObj.href);
-        return true;
-      }
-      if (aLinkMap[target.href]) {
-        gotoLink(target.href);
-        return true;
-      }
-      if ("click" in target) {
-        item.click();
-      }
-      console.log({ otherObj }, { hrefTitle: aLinkMap[target.href] });
-    }
-    return false;
-  }
-  if (handle(target)) return;
-  target = isParentNodeA(target);
-  if (handle(target)) return;
-}
-window.removeEventListener("click", goOtherLink);
-window.addEventListener("click", goOtherLink);
+// function goOtherLink(e) {
+//   let target = e.target;
+//   function handle(target) {
+//     if (!target) return;
+//     if (doSth(target)) return;
+//     const preventDefault = (list[host] || {}).preventDefault || false;
+//     // todo preventDefault是否需要？
+//     preventDefault && e.preventDefault();
+//     if (target.nodeName === "A" && target.href) {
+//       e.stopPropagation();
+//       const otherObj = otherSiteHref(target.href, host);
+//       if (otherObj.needChange) {
+//         gotoLink(otherObj.href);
+//         return true;
+//       }
+//       if (aLinkMap[target.href]) {
+//         gotoLink(target.href);
+//         return true;
+//       }
+//       console.log({ otherObj }, { href: target.href });
+//       if ("click" in target) {
+//         item.click();
+//         return;
+//       }
+//     }
+//     return false;
+//   }
+//   if (handle(target)) return;
+//   target = isParentNodeA(target);
+//   if (handle(target)) return;
+// }
+// window.removeEventListener("click", goOtherLink);
+// window.addEventListener("click", goOtherLink);

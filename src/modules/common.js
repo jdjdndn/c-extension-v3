@@ -1,7 +1,7 @@
 /*
  * @Author: yucheng
  * @Date: 2022-01-01 16:28:16
- * @LastEditTime: 2022-07-20 22:57:24
+ * @LastEditTime: 2022-07-23 20:07:04
  * @LastEditors: yucheng
  * @Description: ..
  */
@@ -488,7 +488,6 @@ export function mouseClick(configParams, targetWin, aLinkMap) {
   }
 
   function click(e) {
-    // chalk("click触发", e.target, new Date().getTime());
     if (clickEventInvoke) {
       e.preventDefault();
     }
@@ -661,14 +660,14 @@ function clipboardWrite(text, needClear = false) {
       navigator.clipboard.writeText(text).then(
         function() {
           /* clipboard successfully set */
-          boxInfo("copy s");
+          // boxInfo("copy s");
           if (needClear) {
             window.getSelection().removeAllRanges();
           }
         },
         function(err) {
           /* clipboard write failed */
-          boxInfo("copy e");
+          // boxInfo("copy e");
           if (needClear) {
             window.getSelection().removeAllRanges();
           }
@@ -714,7 +713,7 @@ function copyImg() {
   };
 
   img.onerror = () => {
-    chalk("cors e");
+    // chalk("cors e");
   };
 }
 
@@ -729,10 +728,10 @@ function canvasCopy(canvas, need = false) {
       ];
       navigator.clipboard.write(data).then(
         () => {
-          chalk("copy s");
+          // chalk("copy s");
         },
         () => {
-          chalk("copy e");
+          // chalk("copy e");
         }
       );
     });
@@ -778,12 +777,9 @@ export function collectAllLink(selectorList) {
       arr = arr.filter(Boolean);
 
       let index = 0;
-      function get(index, ...args) {
+      function get(index, args = []) {
         if (arr[index]) {
           for (let i = 1; i <= arr[index]; i++) {
-            if (i === arr[index]) {
-              index++;
-            }
             get(index + 1, args.concat(i));
           }
         } else {
@@ -793,7 +789,12 @@ export function collectAllLink(selectorList) {
           let str = "";
           const len = selectorArr.length;
           for (let i = 0; i < len - 1; i++) {
-            str += selectorArr[i] + ":nth-child(" + args[i] + ")";
+            // selector末尾为 a:nth-child(3) 才会出现 args[i] 为undefined的情况，此时拼一个 :nth-child(3) ，这里不动态变化
+            str +=
+              selectorArr[i] +
+              ":nth-child(" +
+              (args[i] || list[list.length - 1].slice(1, -1)) +
+              ")";
           }
           str += selectorArr[len - 1];
           newArr.push(str);
@@ -820,6 +821,13 @@ export function collectAllLink(selectorList) {
   const linkMap = {};
   realArr.forEach((it) => {
     if (it && it.href) {
+      if (it.target !== "blank") {
+        it.target = "_blank";
+      }
+      if (!it.rel) {
+        it.rel = "noopener noreferrer nofollow";
+      }
+      it.dataset.yucheng_tips = "新页面打开链接";
       linkMap[it.href] = it.innerText;
     }
   });
